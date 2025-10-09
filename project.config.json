@@ -1,0 +1,17 @@
+{
+  "miniprogramRoot": "miniprogram/",
+  "appid": "wx6f41ba1a7d7bc51e",
+  "projectname": "wx-earth-clean",
+  "compileType": "miniprogram",
+  "libVersion": "3.10.2",
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "coverView": true,
+    "useIsolateContext": true,
+    "useCompilerModule": true,
+    "userConfirmedUseCompilerModuleSwitch": true
+  }
+}

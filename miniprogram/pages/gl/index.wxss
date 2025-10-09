@@ -1,0 +1,15 @@
+/* 整页纯黑 */
+page { background: #000; }
+
+.wrap {
+  width: 100vw;
+  height: 100vh;      /* 全屏高 */
+  background: #000;
+  overflow: hidden;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

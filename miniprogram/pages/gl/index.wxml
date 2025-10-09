@@ -1,0 +1,11 @@
+<view class="wrap">
+  <canvas
+    type="webgl"
+    id="gl"
+    disable-scroll="true"
+    bindtouchstart="onTouchStart"
+    bindtouchmove="onTouchMove"
+    bindtouchend="onTouchEnd"
+    bindtouchcancel="onTouchEnd"
+  />
+</view>
