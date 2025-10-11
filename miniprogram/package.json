@@ -5,6 +5,7 @@
   "main": "app.js",
   "license": "ISC",
   "dependencies": {
+    "geo-tz": "^8.1.4",
     "threejs-miniprogram": "*"
   }
 }

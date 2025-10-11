@@ -1,0 +1,75 @@
+/* style.css */
+
+/* ... 文件顶部的所有其他样式无变化 ... */
+html,body{margin:0;padding:0;background:#000;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}canvas.webgl{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;z-index:0}#labels-container{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:2}.label{position:absolute;color:#fff;font-size:14px;font-weight:700;line-height:1.2;text-shadow:0 0 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.9);transform:translate(-50%,-50%);white-space:nowrap;transition:opacity .15s linear,font-size .2s ease-out}.city-label{font-weight:400!important;color:#a8d5ff!important;text-shadow:0 0 5px rgba(24,73,117,.9),0 0 8px rgba(0,0,0,.9)}.idl-indicator{position:fixed;top:50%;transform:translateY(-50%) scale(.95);background:rgba(0,0,0,.65);backdrop-filter:blur(5px);color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:500;pointer-events:none;z-index:2;opacity:0;transition:opacity .4s ease,transform .4s ease}#idl-indicator-left{left:20px}#idl-indicator-right{right:20px}.idl-indicator.visible{opacity:1;transform:translateY(-50%) scale(1)}.info-panel{position:fixed;top:70px;right:20px;left:auto;width:300px;background:rgba(15,25,40,.88);backdrop-filter:blur(12px);border:1px solid rgba(135,206,250,.25);border-radius:10px;color:#e0f8ff;padding:0;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:translateY(-10px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:3}.info-panel.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.info-header{display:flex;align-items:center;justify-content:flex-end;padding:12px 16px;border-bottom:1px solid rgba(135,206,250,.15)}.info-header h3{margin:0;width:100%;font-size:18px;font-weight:600;text-shadow:0 0 5px rgba(135,206,250,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.info-body{padding:8px 16px 16px}.info-body p{margin:10px 0;font-size:14px;display:grid;grid-template-columns:90px 1fr;gap:5px}.info-body b{font-weight:400;color:#87ceeb;opacity:.8;text-align:right;padding-right:10px}.ui-button{pointer-events:auto;background:rgba(25,45,70,.7);border:1px solid rgba(135,206,250,.3);color:#e0f8ff;font-size:14px;font-weight:600;border-radius:6px;padding:9px 15px;cursor:pointer;transition:background-color .2s ease,transform .2s ease,color .2s ease}.ui-button:hover{background:rgba(45,65,90,.8);transform:scale(1.05)}.icon-button{padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1}.icon-button:hover{color:#fff}#language-switch-btn{position:fixed;top:20px;left:20px;z-index:2}#time-observer{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column-reverse;align-items:center;pointer-events:none;z-index:2}#time-observer-main{background:radial-gradient(ellipse at center,rgba(25,45,70,.7) 0%,rgba(10,20,35,.85) 100%);backdrop-filter:blur(8px);color:#e0f8ff;font-family:Consolas,'Courier New',Courier,monospace;font-size:20px;font-weight:700;padding:10px 22px;border-radius:8px;border:1px solid rgba(135,206,250,.3);text-shadow:0 0 8px rgba(176,224,255,.7),0 0 3px rgba(255,255,255,.5);box-shadow:0 4px 20px rgba(0,0,0,.4);min-width:250px;text-align:center}#time-observer-hover{background:rgba(25,45,70,.8);color:#fff;font-size:14px;font-weight:600;padding:5px 14px;border-radius:5px;margin-top:9px;opacity:0;transform:translateY(-10px);transition:opacity .3s ease,transform .3s ease;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}#time-observer-hover.visible{opacity:1;transform:translateY(0)}#settings-btn{position:fixed;bottom:20px;left:20px;z-index:2}.settings-panel{position:fixed;bottom:70px;left:20px;width:280px;background:radial-gradient(circle at top left,rgba(45,65,90,.92),rgba(25,35,50,.92) 70%);backdrop-filter:blur(10px);border:1px solid rgba(120,150,200,.4);border-radius:10px;color:#f0f8ff;box-shadow:0 0 15px rgba(135,206,250,.15),0 8px 25px rgba(0,0,0,.45);z-index:3;opacity:0;transform-origin:bottom left;transform:translateX(-15px) translateY(15px) scale(.95);pointer-events:none;transition:opacity .2s ease-out,transform .2s ease-out}.settings-panel.visible{opacity:1;transform:translateX(0) translateY(0) scale(1);pointer-events:auto}.settings-header{display:flex;align-items:center;justify-content:flex-start;padding:12px 16px;border-bottom:1px solid rgba(120,150,200,.2)}.settings-header h3{margin:0;font-size:16px;font-weight:600}.settings-body{padding:12px 16px;display:flex;flex-direction:column;gap:16px}.setting-item{display:flex;justify-content:space-between;align-items:center;font-size:14px}.toggle-switch{position:relative;display:inline-block;width:44px;height:24px}.toggle-switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#556688;transition:.4s;border-radius:24px}.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background-color:#fff;transition:.4s;border-radius:50%}.toggle-switch input:checked+.slider{background-color:#4a90e2}.toggle-switch input:checked+.slider:before{transform:translateX(20px)}#toggle-stand-btn{position:fixed;bottom:20px;right:20px;z-index:2}
+
+/* ▼▼▼ 核心修改：恢复诗句容器的原始静态样式 ▼▼▼ */
+.poetry-container {
+  position: fixed;
+  /* top and right 将由JS根据config设置 */
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 22px;
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(176, 224, 255, 0.5), 0 0 5px rgba(0,0,0,0.8);
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+  writing-mode: vertical-rl; /* 恢复竖排文字 */
+  text-orientation: mixed;
+}
+
+.poetry-container.visible {
+  opacity: 1;
+}
+
+/* 确保 .poetry-line 样式被移除或注释掉 */
+/*
+.poetry-line { ... }
+*/
+/* ▲▲▲ 核心修改 ▲▲▲ */
+
+.setting-item-radio{display:flex;justify-content:space-between;align-items:center;font-size:14px}.radio-group{display:flex;gap:8px;background-color:#2a3a5a;border-radius:6px;padding:4px}.radio-group label{padding:4px 8px;border-radius:4px;cursor:pointer;transition:background-color .2s ease,color .2s ease;color:#a0b0d0;font-weight:500}.radio-group input[type=radio]{display:none}.radio-group input[type=radio]:checked+label{background-color:#4a90e2;color:#fff;font-weight:600}.radio-group input[type=radio]:not(:checked)+label:hover{background-color:#3a4a6a;color:#c0d0f0}
+
+/* 搜索与飞越：容器固定在左上角语言切换按钮下方 */
+#search-container{position:fixed;top:68px;left:21px;z-index:3;display:flex;align-items:flex-start;gap:10px;pointer-events:none}
+
+/* 放大镜图标：使用内联 SVG，最小化样式且避免被文本样式覆盖 */
+.search-icon {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.search-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: rgba(255, 255, 255, 0.8);
+  transition: fill 0.2s, transform 0.2s;
+}
+
+.search-icon:hover svg {
+  fill: #fff;
+  transform: scale(1.1);
+}
+
+
+/* 搜索面板：默认隐藏，深色毛玻璃、圆角 */
+#search-panel{pointer-events:auto;display:none;opacity:0;transform:translateY(-6px) scale(.98);transition:opacity .2s ease,transform .2s ease;background:radial-gradient(circle at top left,rgba(45,65,90,.92),rgba(25,35,50,.92) 70%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(120,150,200,.4);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:10px 12px;min-width:260px}
+#search-panel.visible{display:block;opacity:1;transform:translateY(0) scale(1)}
+
+/* 输入框：简洁干净，与面板统一 */
+#search-panel input[type="text"]{width:100%;padding:10px 12px;box-sizing:border-box;border-radius:8px;border:1px solid rgba(135,206,250,.25);background:rgba(10,20,35,.6);color:#e6f5ff;outline:none;font-size:14px;transition:border-color .2s ease,box-shadow .2s ease}
+#search-panel input[type="text"]::placeholder{color:rgba(230,245,255,.5)}
+#search-panel input[type="text"]:focus{border-color:rgba(135,206,250,.6);box-shadow:0 0 0 3px rgba(135,206,250,.18)}
+
+/* 建议列表容器：与面板风格一致 */
+#search-suggestions{margin-top:8px;max-height:240px;overflow:auto;border-radius:8px;border:1px solid rgba(120,150,200,.25);background:rgba(12,22,36,.65)}
+#search-suggestions .suggestion-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;color:#EAE0C8;font-size:13px;border-bottom:1px solid rgba(120,150,200,.12);cursor:pointer}
+#search-suggestions .item:last-child{border-bottom:none}
+#search-suggestions .item:hover{background:rgba(80,70,50,.7)}
+#search-suggestions .subtitle{opacity:.7;font-size:12px}

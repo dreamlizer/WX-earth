@@ -13,3 +13,72 @@ canvas {
   height: 100%;
   display: block;
 }
+
+/* 时间显示器样式（严格贴近截图） */
+.time-observer {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse; /* 名称在时间上方 */
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.time-observer-main {
+  background: rgba(10, 22, 36, 0.85);
+  color: #e8f6ff;
+  font-family: Consolas, 'Courier New', Courier, monospace; /* 优先使用 Consolas */
+  font-size: 22px;
+  font-weight: 700;
+  padding: 4px 10px; /* 左右空白各缩小 50% */
+  border-radius: 14px;
+  border: 2px solid rgba(120, 170, 220, 0.55);
+  text-shadow: 0 0 10px rgba(200, 235, 255, 0.95), 0 0 18px rgba(120, 170, 220, 0.6);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(120, 170, 220, 0.15);
+  min-width: 240px;
+  text-align: center;
+}
+
+.time-observer-hover {
+  background: rgba(10, 22, 36, 0.9);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(120, 170, 220, 0.45);
+}
+
+.time-observer-hover.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 标签容器与标签样式 */
+.labels-container {
+  /* 允许下层 WebGL canvas 接收触摸/拖动事件 */
+  pointer-events: none;
+}
+.label {
+  position: fixed; /* 覆盖在原生组件上 */
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(0,0,0,.9);
+  white-space: nowrap;
+  will-change: transform; /* 性能优化提示 */
+  /* 标签自身也不拦截触摸事件，避免影响拖动与捏合 */
+  pointer-events: none;
+}
+.city-label {
+  font-weight: 400;
+  color: #a8d5ff;
+}

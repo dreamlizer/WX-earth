@@ -1,3 +1,19 @@
+<view class="time-observer">
+  <view class="time-observer-hover {{hoverText ? 'visible' : ''}}">
+    <text>{{hoverText}}</text>
+  </view>
+  <text class="time-observer-main">{{currentTime}}</text>
+</view>
+
+<cover-view class="labels-container">
+  <cover-view
+    wx:for="{{ labels }}"
+    wx:key="id"
+    class="label {{ item.isCity ? 'city-label' : '' }}"
+    style="left: {{item.x}}px; top: {{item.y}}px; transform: translate(-50%, -50%); opacity: {{item.opacity}}; font-size: {{item.fontSize}}px;"
+  >{{ item.text }}</cover-view>
+</cover-view>
+
 <view class="wrap">
   <canvas
     type="webgl"
