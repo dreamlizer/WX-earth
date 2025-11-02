@@ -62,23 +62,3 @@ canvas {
   opacity: 1;
   transform: translateY(0);
 }
-
-/* 标签容器与标签样式 */
-.labels-container {
-  /* 允许下层 WebGL canvas 接收触摸/拖动事件 */
-  pointer-events: none;
-}
-.label {
-  position: fixed; /* 覆盖在原生组件上 */
-  color: #fff;
-  font-weight: 700;
-  text-shadow: 0 0 6px rgba(0,0,0,.9);
-  white-space: nowrap;
-  will-change: transform; /* 性能优化提示 */
-  /* 标签自身也不拦截触摸事件，避免影响拖动与捏合 */
-  pointer-events: none;
-}
-.city-label {
-  font-weight: 400;
-  color: #a8d5ff;
-}

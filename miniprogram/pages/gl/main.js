@@ -357,5 +357,5 @@ export function setDebugFlags(flags){
 
 export function getRenderContext() {
   if (!state) return null;
-  return { THREE: state.THREE, camera: state.camera, width: state.width, height: state.height, globeGroup: state.globeGroup };
+  return { THREE: state.THREE, scene: state.scene, camera: state.camera, width: state.width, height: state.height, globeGroup: state.globeGroup };
 }

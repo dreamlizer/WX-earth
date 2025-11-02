@@ -7,7 +7,8 @@ Page({
   data: {
     currentTime: '--:--:--',
     hoverText: '',
-    labels: [],
+    // 移除原有 DOM 标签数组，改为 Three.js 文本渲染
+    // labels: [],
   },
 
   // 接受 IANA 名称时，将时间格式化为 YYYY/MM/DD HH:mm:ss（24小时制，含秒）
@@ -44,7 +45,7 @@ Page({
 
     // 使用本地 country_data.json 构建基础标签（bbox 中点作为近似质心）
     try {
-      const countryMeta = require('./country_data.json');
+      const countryMeta = require('./country.data.json');
       const baseLabels = Object.keys(countryMeta).map(k => {
         const m = countryMeta[k] || {};
         const lon = ((m.MIN_LON ?? -10) + (m.MAX_LON ?? 10)) / 2;
@@ -69,29 +70,9 @@ Page({
   // 每帧钩子：由 main.js 的 render 调用
   onRenderTick(){
     try {
-      const now = Date.now();
-      if (now - (this._lastLabelsUpdate || 0) < 100) return; // 至少 100ms 才更新一次标签，降低 setData 压力
-      const newLabels = updateLabels();
-      if (this.shouldUpdate(this.data.labels, newLabels)) {
-        this.setData({ labels: newLabels });
-        this._lastLabelsUpdate = now;
-      }
+      // 改为仅驱动 3D 文本文字可见性/透明度更新，不再 setData 到 WXML
+      updateLabels();
     } catch (e) { /* noop */ }
-  },
-
-  shouldUpdate(prev, next){
-    if (!Array.isArray(prev) || !Array.isArray(next)) return true;
-    if (prev.length !== next.length) return true;
-    for (let i = 0; i < prev.length; i++) {
-      const a = prev[i], b = next[i];
-      if (!a || !b) return true;
-      if (a.id !== b.id) return true;
-      if (a.x !== b.x || a.y !== b.y) return true;
-      if (a.opacity !== b.opacity) return true;
-      if (a.fontSize !== b.fontSize) return true;
-      if (a.text !== b.text) return true;
-    }
-    return false;
   },
   onCountriesLoaded(features){
     try {

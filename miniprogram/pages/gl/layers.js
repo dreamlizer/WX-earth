@@ -51,11 +51,12 @@ function makeLineMat(THREE, color, ro=30) {
 function setRO(obj){ obj.renderOrder = obj.material?.userData?.ro ?? 0 }
 
 function makeFillMat(THREE, color=0xffcc33, alpha=0.26, ro=35) {
-  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: alpha, side: THREE.DoubleSide, depthTest: true });
+  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: alpha, side: THREE.DoubleSide, depthTest: false });
   m.depthWrite = false;
+  // 关闭或弱化偏移，避免与球体表面发生反向偏移导致的穿插
   m.polygonOffset = true;
-  m.polygonOffsetFactor = -1;
-  m.polygonOffsetUnits = -1;
+  m.polygonOffsetFactor = -0.5;
+  m.polygonOffsetUnits = -0.5;
   m.userData = { ro };
   return m;
 }
@@ -148,41 +149,109 @@ export function highlight(THREE, globeGroup, f) {
     const toV2Scaled = ([lon, lat]) => new THREE.Vector2(lon * lonScale, lat);
     const outer2D = outerUnwrapped.map(toV2Scaled);
     ensureClosed2D(outer2D);
-    const holesUnwrapped = polyRings.slice(1)
-      .filter(r => r && r.length >= 3)
-      .map(r => unwrapRing(r, baseLon));
-    const holes2D = holesUnwrapped.map(h => {
-      const arr = h.map(toV2Scaled); ensureClosed2D(arr); return arr;
-    });
+    // 实心高亮：忽略洞（holes），仅对外环进行填充
+    const holesUnwrapped = [];
+    const holes2D = [];
+
+    // 统一二维环的朝向：外环逆时针（CCW），洞顺时针（CW），并同步 3D 未展开坐标的顺序
+    const signedArea = (arr) => {
+      let A = 0; for (let i=0;i<arr.length-1;i++){ const a=arr[i], b=arr[i+1]; A += (a.x*b.y - a.y*b.x); } return A*0.5;
+    };
+    // 外环 -> CCW
+    if (signedArea(outer2D) < 0) { outer2D.reverse(); ensureClosed2D(outer2D); outerUnwrapped.reverse(); }
+    // 洞 -> CW（与外环相反）
+    for (let i=0;i<holes2D.length;i++){
+      const h2 = holes2D[i];
+      if (signedArea(h2) > 0) { h2.reverse(); ensureClosed2D(h2); holesUnwrapped[i].reverse(); }
+    }
 
     // 使用三角化生成索引（在展开+缩放后的 2D 平面进行）
-    let triangles;
-    if (THREE.ShapeUtils && typeof THREE.ShapeUtils.triangulateShape === 'function') {
-      triangles = THREE.ShapeUtils.triangulateShape(outer2D, holes2D);
-    } else {
-      // 回退：若三角化不可用，使用外环的扇形三角化（忽略洞），保证至少能绘制填充
-      triangles = [];
-      for (let i = 1; i < outer2D.length - 2; i++) {
-        triangles.push([0, i, i + 1]);
+    // 注意：三角化输入必须为“未闭合”的顶点序列，避免重复首尾点导致退化三角形
+    const contour2D = outer2D.slice(0, Math.max(0, outer2D.length - 1));
+    // 与 2D 同步构建未闭合的 3D 顶点序列（半径抬升 0.06，避免与地球贴图 Z 冲突）
+    const flatten3DOpen = outerUnwrapped.slice(0, Math.max(0, outerUnwrapped.length - 1)).map(([lon, lat]) => {
+      let normLon = ((lon + 180) % 360 + 360) % 360 - 180;
+      const v = convertLatLonToVec3(normLon, lat, RADIUS + 0.001);//原来改的是0.02
+      return new THREE.Vector3(v.x, v.y, v.z);
+    });
+
+    // 对齐简化：去除重复点与共线点，降低耳剪的数值病态与卡死风险
+    const simplifyAligned = (pts2D, pts3D, eps = 1e-6) => {
+      const out2 = []; const out3 = [];
+      const isDup = (a, b) => Math.abs(a.x - b.x) < eps && Math.abs(a.y - b.y) < eps;
+      for (let i = 0; i < pts2D.length; i++) {
+        const p2 = pts2D[i]; const p3 = pts3D[i];
+        if (out2.length > 0 && isDup(p2, out2[out2.length - 1])) continue;
+        // 共线消除：若 (prev2 -> p2) 与 (prevprev2 -> prev2) 近似共线，则移除 prev
+        if (out2.length >= 2) {
+          const a = out2[out2.length - 2], b = out2[out2.length - 1], c = p2;
+          const cross = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+          const dot = (b.x - a.x) * (c.x - b.x) + (b.y - a.y) * (c.y - b.y);
+          if (Math.abs(cross) < eps && dot >= 0) { out2.pop(); out3.pop(); }
+        }
+        out2.push(p2); out3.push(p3);
       }
-    }
-    // 将 3D 顶点按相同的拼接顺序展开
-    const flatten3D = (triangles.length && triangles[0][1] < outer2D.length && holes2D.length === 0)
-      ? outerUnwrapped.map(([lon, lat]) => {
-          let normLon = ((lon + 180) % 360 + 360) % 360 - 180;
-          const v = convertLatLonToVec3(normLon, lat, RADIUS + 0.02);
-          return new THREE.Vector3(v.x, v.y, v.z);
-        })
-      : outerUnwrapped.concat(...holesUnwrapped).map(([lon, lat]) => {
-          let normLon = ((lon + 180) % 360 + 360) % 360 - 180;
-          const v = convertLatLonToVec3(normLon, lat, RADIUS + 0.02);
-          return new THREE.Vector3(v.x, v.y, v.z);
-        });
+      return { pts2: out2, pts3: out3 };
+    };
+    const { pts2: contour2DSimpl, pts3: flatten3DSimpl } = simplifyAligned(contour2D, flatten3DOpen);
+
+    // 强制使用耳剪法，绕过 THREE.ShapeUtils.triangulateShape 在复杂凹多边形上的不稳定性
+    const earTriangulate = (pts) => {
+      const n = pts.length;
+      const idx = []; for (let i = 0; i < n; i++) idx.push(i);
+      const area = (a,b,c)=> (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x);
+      const isClockwise = () => {
+        let s=0; for (let i=0;i<n;i++){ const a=pts[i], b=pts[(i+1)%n]; s += (b.x-a.x)*(b.y+a.y); } return s>0;
+      };
+      if (isClockwise()) idx.reverse();
+      const pointInTri = (p,a,b,c)=>{
+        const ab = area(a,b,p), bc = area(b,c,p), ca = area(c,a,p);
+        const hasNeg = (ab<0)||(bc<0)||(ca<0); const hasPos = (ab>0)||(bc>0)||(ca>0);
+        return !(hasNeg && hasPos);
+      };
+      const isEar = (i)=>{
+        const i0 = idx[(i-1+idx.length)%idx.length], i1 = idx[i], i2 = idx[(i+1)%idx.length];
+        const a = pts[i0], b = pts[i1], c = pts[i2];
+        if (area(a,b,c) <= 0) return false;
+        for (let j=0;j<idx.length;j++){
+          if (j===i || j===(i-1+idx.length)%idx.length || j===(i+1)%idx.length) continue;
+          const p = pts[idx[j]];
+          if (pointInTri(p,a,b,c)) return false;
+        }
+        return true;
+      };
+      const tris = [];
+      let guard = 0;
+      while (idx.length > 2 && guard++ < 10000){
+        let cut = false;
+        for (let i=0;i<idx.length;i++){
+          if (isEar(i)){
+            const i0 = idx[(i-1+idx.length)%idx.length], i1 = idx[i], i2 = idx[(i+1)%idx.length];
+            tris.push([i0,i1,i2]);
+            idx.splice(i,1);
+            cut = true; break;
+          }
+        }
+        if (!cut) {
+          for (let i=1;i<idx.length-1;i++) tris.push([idx[0], idx[i], idx[i+1]]);
+          break;
+        }
+      }
+      return tris;
+    };
+    // 优先尝试 THREE.ShapeUtils.triangulateShape（更快），若索引非法或数量不足则回退耳剪
+    const tryTriByThree = (pts) => {
+      if (!(THREE.ShapeUtils && typeof THREE.ShapeUtils.triangulateShape === 'function')) return null;
+      const tris = THREE.ShapeUtils.triangulateShape(pts, []);
+      const valid = Array.isArray(tris) && tris.length >= Math.max(0, pts.length - 2) * 0.5 && tris.every(t => Array.isArray(t) && t.length === 3 && t.every(i => i >= 0 && i < pts.length));
+      return valid ? tris : null;
+    };
+    const triangles = tryTriByThree(contour2DSimpl) || earTriangulate(contour2DSimpl);
 
     const positions = new Float32Array(triangles.length * 9);
     for (let i = 0; i < triangles.length; i++) {
       const [a, b, c] = triangles[i];
-      const va = flatten3D[a], vb = flatten3D[b], vc = flatten3D[c];
+      const va = flatten3DSimpl[a], vb = flatten3DSimpl[b], vc = flatten3DSimpl[c];
       positions.set([va.x, va.y, va.z, vb.x, vb.y, vb.z, vc.x, vc.y, vc.z], i * 9);
     }
     const shpGeo = new THREE.BufferGeometry();
@@ -192,7 +261,6 @@ export function highlight(THREE, globeGroup, f) {
     } else if (typeof shpGeo.addAttribute === 'function') {
       shpGeo.addAttribute('position', new PosAttr(positions, 3));
     } else {
-      // 兼容极老版本：直接赋值到 attributes
       shpGeo.attributes = shpGeo.attributes || {};
       shpGeo.attributes.position = new PosAttr(positions, 3);
     }
