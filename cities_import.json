@@ -1,0 +1,29 @@
+{"name_en":"Beijing","name_zh":"北京","lat":39.9042,"lon":116.4074,"country_code":"CHN","importance":2}
+{"name_en":"Shanghai","name_zh":"上海","lat":31.2304,"lon":121.4737,"country_code":"CHN","importance":2}
+{"name_en":"Guangzhou","name_zh":"广州","lat":23.1291,"lon":113.2644,"country_code":"CHN","importance":2}
+{"name_en":"Shenzhen","name_zh":"深圳","lat":22.5431,"lon":114.0579,"country_code":"CHN","importance":2}
+{"name_en":"Chengdu","name_zh":"成都","lat":30.5728,"lon":104.0668,"country_code":"CHN","importance":2}
+{"name_en":"Chongqing","name_zh":"重庆","lat":29.563,"lon":106.5516,"country_code":"CHN","importance":2}
+{"name_en":"Wuhan","name_zh":"武汉","lat":30.6622,"lon":114.3055,"country_code":"CHN","importance":2}
+{"name_en":"Xi'an","name_zh":"西安","lat":34.3416,"lon":108.9402,"country_code":"CHN","importance":2}
+{"name_en":"Hangzhou","name_zh":"杭州","lat":30.2741,"lon":120.1551,"country_code":"CHN","importance":2}
+{"name_en":"Lhasa","name_zh":"拉萨","lat":29.6456,"lon":91.1402,"country_code":"CHN","importance":2}
+{"name_en":"New York","name_zh":"纽约","lat":40.7128,"lon":-74.006,"country_code":"USA","importance":2}
+{"name_en":"Chicago","name_zh":"芝加哥","lat":41.8781,"lon":-87.6298,"country_code":"USA","importance":2}
+{"name_en":"Denver","name_zh":"丹佛","lat":39.7392,"lon":-104.9903,"country_code":"USA","importance":2}
+{"name_en":"Los Angeles","name_zh":"洛杉矶","lat":34.0522,"lon":-118.2437,"country_code":"USA","importance":2}
+{"name_en":"Anchorage","name_zh":"安克雷奇","lat":61.2181,"lon":-149.9003,"country_code":"USA","importance":2}
+{"name_en":"Honolulu","name_zh":"檀香山","lat":21.3069,"lon":-157.8583,"country_code":"USA","importance":2}
+{"name_en":"Washington D.C.","name_zh":"华盛顿","lat":38.9072,"lon":-77.0369,"country_code":"USA","importance":2}
+{"name_en":"Houston","name_zh":"休斯顿","lat":29.7604,"lon":-95.3698,"country_code":"USA","importance":2}
+{"name_en":"Seattle","name_zh":"西雅图","lat":47.6062,"lon":-122.3321,"country_code":"USA","importance":2}
+{"name_en":"Miami","name_zh":"迈阿密","lat":25.7617,"lon":-80.1918,"country_code":"USA","importance":2}
+{"name_en":"Tokyo","name_zh":"东京","lat":35.6895,"lon":139.6917,"country_code":"JPN","importance":1}
+{"name_en":"Seoul","name_zh":"首尔","lat":37.5665,"lon":126.978,"country_code":"KOR","importance":1}
+{"name_en":"London","name_zh":"伦敦","lat":51.5074,"lon":-0.1278,"country_code":"GBR","importance":2}
+{"name_en":"Paris","name_zh":"巴黎","lat":48.8566,"lon":2.3522,"country_code":"FRA","importance":1}
+{"name_en":"Berlin","name_zh":"柏林","lat":52.52,"lon":13.405,"country_code":"DEU","importance":1}
+{"name_en":"Moscow","name_zh":"莫斯科","lat":55.7558,"lon":37.6173,"country_code":"RUS","importance":2}
+{"name_en":"Sydney","name_zh":"悉尼","lat":-33.8688,"lon":151.2093,"country_code":"AUS","importance":1}
+{"name_en":"Melbourne","name_zh":"墨尔本","lat":-37.8136,"lon":144.9631,"country_code":"AUS","importance":1}
+{"name_en":"Delhi","name_zh":"德里","lat":28.7041,"lon":77.1025,"country_code":"IND","importance":1}

@@ -1,5 +1,6 @@
 {
   "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
   "appid": "wx6f41ba1a7d7bc51e",
   "projectname": "wx-earth-clean",
   "compileType": "miniprogram",
@@ -12,6 +13,21 @@
     "coverView": true,
     "useIsolateContext": true,
     "useCompilerModule": true,
-    "userConfirmedUseCompilerModuleSwitch": true
+    "userConfirmedUseCompilerModuleSwitch": true,
+    "packNpmManually": true,
+    "packNpmRelationList": [
+      {
+        "packageJsonPath": "miniprogram/package.json",
+        "miniprogramNpmDistDir": "miniprogram/miniprogram_npm"
+      }
+    ]
+  },
+  "packOptions": {
+    "ignore": [
+      { "type": "glob", "value": "miniprogram/node_modules/**" },
+      { "type": "glob", "value": "**/*.map" },
+      { "type": "glob", "value": "**/*.md" },
+      { "type": "glob", "value": "miniprogram/assets/data/*.geojson" }
+    ]
   }
 }

@@ -12,7 +12,6 @@ import { initInteraction, updateIdlIndicators, lockedCountry, hoveredCountry, ge
 import { findCountryAt } from './modules/hit-test.js';
 import { updateLabels } from './modules/labels.js';
 import { AppConfig } from './modules/config.js';
-import { initSearch } from './modules/search.js';
 // ▼▼▼ 核心修改：导入 starfield ▼▼▼
 import { initZenMode, updateZenMode, starfield } from './modules/zen-mode.js';
 // ▲▲▲ 核心修改 ▲▲▲
@@ -48,15 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   drawGeoFeatures();
-  try {
-    await loadData();
-  } catch (err) {
-    // 友好提示：数据加载失败，避免应用崩溃
-    const el = document.getElementById('time-observer-main');
-    if (el) el.textContent = '数据加载失败';
-    console.error('[Init] Aborted due to data load failure:', err);
-    return; // 中止后续初始化，防止因依赖数据的逻辑报错
-  }
+  await loadData();
   initCities(scene);
   initInteraction();
   initZenMode({ scene, camera, renderer, controls, globeAssembly, stand, zenMasterGroup });
@@ -106,21 +97,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const initialRadio = labelDensityGroup.querySelector(`[value=${currentLabelDensity}]`);
   if (initialRadio) initialRadio.checked = true;
 
-  // 初始化搜索（显示/隐藏面板 + 加载数据 + 智能搜索）
-  try {
-    await initSearch();
-  } catch (e) {
-    console.warn('[Search] 初始化失败：', e);
-  }
-
   animate();
 });
-
-// 性能保护开关（FEATURE_FLAG，默认关闭）：当开启时，仅在相机阻尼接近静止时才进行 IDL 居中检测
-const IDL_CHECK_FEATURE = {
-  ENABLE_GATE: true, // 开启优化：仅当阻尼小于阈值时检测（如需回退，将其改为 false）
-  THRESHOLD: 0.05     // 可调阈值：越小表示越“静止”才检测
-};
 
 function animate() {
   requestAnimationFrame(animate);
@@ -142,16 +120,7 @@ function animate() {
   const finalFocusedCode = lockedCountry ? (lockedCountry.properties.ADM0_A3 || lockedCountry.properties.ISO_A3) : focusedCountryCode;
   updateLabels(finalFocusedCode, currentLabelDensity);
   updateTimeObserver();
-
-  // 仅在满足条件时进行 IDL 居中检测：
-  // - 当 FEATURE_FLAG 关闭（默认）：保持原逻辑（触屏设备或阻尼很小）
-  // - 当 FEATURE_FLAG 开启：仅在阻尼小于阈值时检测，避免运动中进行大规模顶点投影
-  const canCheckIdl = idlLine && (
-    IDL_CHECK_FEATURE.ENABLE_GATE
-      ? (controls.dampingFactor < IDL_CHECK_FEATURE.THRESHOLD)
-      : (isTouchDevice || controls.dampingFactor < 0.05)
-  );
-  if (canCheckIdl) {
+  if (idlLine && (isTouchDevice || controls.dampingFactor < 0.05)) {
     if (checkIdlCentered()) {
       if (!isIdlCentered) { isIdlCentered = true; updateIdlIndicators(true, window.currentLanguage); }
     } else {
@@ -160,4 +129,5 @@ function animate() {
   }
   renderer.render(scene, camera);
 }
-function toggleLanguage(){window.currentLanguage="en"===window.currentLanguage?"zh":"en",langBtn.textContent="en"===window.currentLanguage?"中文":"English",labels.forEach(label=>{if(label.element){const name=label[`name_${window.currentLanguage}`];name&&(label.element.textContent=name)}}),updateInfoPanelContent()}const centerRaycaster=new THREE.Raycaster;function updateTimeObserver(){if(timeObserverMain&&timeObserverHover){const dateForTime=new Date,lang=window.currentLanguage;if(lockedCountry){const data=lockedCountry.properties,code=data.ADM0_A3||data.ISO_A3,extra=extraData[code]||{},name="zh"===lang?extra.NAME_ZH||data.NAME_ZH||data.NAME_EN:data.NAME_EN||data.NAME,tz=getTimezoneFor(lockedCountry.lat,lockedCountry.lon,code);timeObserverMain.textContent=formatDateTime(tz,dateForTime),timeObserverHover.textContent=name,timeObserverHover.classList.add("visible");return}if(hoveredCountry){const data=hoveredCountry.properties,code=data.ADM0_A3||data.ISO_A3,extra=extraData[code]||{},name="zh"===lang?extra.NAME_ZH||data.NAME_ZH||data.NAME_EN:data.NAME_EN||data.NAME,tz=getTimezoneFor(data.LABEL_Y,data.LABEL_X,code);timeObserverMain.textContent=formatDateTime(tz,dateForTime),timeObserverHover.textContent=name,timeObserverHover.classList.add("visible");return}timeObserverHover.classList.remove("visible");const sphereMesh=scene.getObjectByName("earth_sphere"),hit=sphereMesh?centerRaycaster.intersectObject(sphereMesh,!1)[0]:null;hit?(timeObserverMain.textContent=formatDateTime(getTimezoneFor(convertVec3ToLatLon(hit.point,EARTH_RADIUS).lat,convertVec3ToLatLon(hit.point,EARTH_RADIUS).lon,null),dateForTime)):timeObserverMain.textContent="---"}}function updateFocus(){const sphereMesh=scene.getObjectByName("earth_sphere");centerRaycaster.setFromCamera({x:0,y:0},camera);const hit=sphereMesh?centerRaycaster.intersectObject(sphereMesh,!1)[0]:null;if(hit){const{lat,lon}=convertVec3ToLatLon(hit.point,EARTH_RADIUS),feature=findCountryAt(lat,lon);focusedCountryCode=feature&&feature.properties?feature.properties.ADM0_A3||feature.properties.ISO_A3:null}else focusedCountryCode=null}const idlCenterCheckVec=new THREE.Vector3;function checkIdlCentered(){if(!idlLine)return!1;const positions=idlLine.geometry.attributes.position.array,cameraDirection=new THREE.Vector3;camera.getWorldDirection(cameraDirection);const centerThreshold=.15;for(let i=0;i<positions.length;i+=30){idlCenterCheckVec.set(positions[i],positions[i+1],positions[i+2]);const toPoint=idlCenterCheckVec.clone().sub(camera.position).normalize;if(cameraDirection.dot(toPoint)>-.1&&(idlCenterCheckVec.project(camera),idlCenterCheckVec.x>-centerThreshold&&idlCenterCheckVec.x<centerThreshold))return!0}return!1}
+// ... 其他辅助函数无变化 ...
+function toggleLanguage(){window.currentLanguage="en"===window.currentLanguage?"zh":"en",langBtn.textContent="en"===window.currentLanguage?"中文":"English",labels.forEach(label=>{if(label.element){const name=label[`name_${window.currentLanguage}`];name&&(label.element.textContent=name)}}),updateInfoPanelContent()}const centerRaycaster=new THREE.Raycaster;function updateTimeObserver(){if(timeObserverMain&&timeObserverHover){const dateForTime=new Date,lang=window.currentLanguage;if(lockedCountry){const data=lockedCountry.properties,code=data.ADM0_A3||data.ISO_A3,extra=extraData[code]||{},name="zh"===lang?extra.NAME_ZH||data.NAME_ZH||data.NAME_EN:data.NAME_EN||data.NAME,tz=getTimezoneFor(lockedCountry.lat,lockedCountry.lon,code);timeObserverMain.textContent=formatDateTime(tz,dateForTime),timeObserverHover.textContent=name,timeObserverHover.classList.add("visible");return}if(hoveredCountry){const data=hoveredCountry.properties,code=data.ADM0_A3||data.ISO_A3,extra=extraData[code]||{},name="zh"===lang?extra.NAME_ZH||data.NAME_ZH||data.NAME_EN:data.NAME_EN||data.NAME,tz=getTimezoneFor(data.LABEL_Y,data.LABEL_X,code);timeObserverMain.textContent=formatDateTime(tz,dateForTime),timeObserverHover.textContent=name,timeObserverHover.classList.add("visible");return}timeObserverHover.classList.remove("visible");const sphereMesh=scene.getObjectByName("earth_sphere"),hits=centerRaycaster.intersectObjects(scene.children,!0),hit=hits.find(h=>h.object===sphereMesh);hit?(timeObserverMain.textContent=formatDateTime(getTimezoneFor(convertVec3ToLatLon(hit.point,EARTH_RADIUS).lat,convertVec3ToLatLon(hit.point,EARTH_RADIUS).lon,null),dateForTime)):timeObserverMain.textContent="---"}}function updateFocus(){const sphereMesh=scene.getObjectByName("earth_sphere");centerRaycaster.setFromCamera({x:0,y:0},camera);const hit=sphereMesh?centerRaycaster.intersectObject(sphereMesh,!1)[0]:null;if(hit){const{lat,lon}=convertVec3ToLatLon(hit.point,EARTH_RADIUS),feature=findCountryAt(lat,lon);focusedCountryCode=feature&&feature.properties?feature.properties.ADM0_A3||feature.properties.ISO_A3:null}else focusedCountryCode=null}const idlCenterCheckVec=new THREE.Vector3;function checkIdlCentered(){if(!idlLine)return!1;const positions=idlLine.geometry.attributes.position.array,cameraDirection=new THREE.Vector3;camera.getWorldDirection(cameraDirection);const centerThreshold=.15;for(let i=0;i<positions.length;i+=30){idlCenterCheckVec.set(positions[i],positions[i+1],positions[i+2]);const toPoint=idlCenterCheckVec.clone().sub(camera.position).normalize;if(cameraDirection.dot(toPoint)>-.1&&(idlCenterCheckVec.project(camera),idlCenterCheckVec.x>-centerThreshold&&idlCenterCheckVec.x<centerThreshold))return!0}return!1}

@@ -1,0 +1,126 @@
+[start] 周二 2025/08/19 17:42:58.54  ROOT="C:\Users\A\PycharmProjects\globe-final\assets\webp\"  OUT="C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high"
+[info] tool="C:\Users\A\PycharmProjects\globe-final\assets\webp\libwebp-1.6.0-windows-x64\bin\cwebp.exe"
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\2k_earth_daymap.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\2k_earth_daymap.jpg
+Dimension: 8192 x 4096
+Output:    959016 bytes Y-U-V-All-PSNR 51.56 52.74 54.14   52.08 dB
+           (0.23 bpp)
+block count:  intra4:      50414  (38.46%)
+              intra16:     80658  (61.54%)
+              skipped:     68488  (52.25%)
+bytes used:  header:            533  (0.1%)
+             mode-partition: 239059  (24.9%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |       3%|       8%|      14%|      76%|  131072
+      quantizer:  |      12 |      12 |      10 |       8 |
+   filter level:  |       4 |      15 |      18 |      15 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\2k_earth_daymap.jpg" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\2k_earth_daymap.webp" (w=8192 q=90  in=463087B  out=959016B 
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\8k_earth_daymap.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\8k_earth_daymap.jpg
+Dimension: 8192 x 4096
+Output:    2434102 bytes Y-U-V-All-PSNR 48.36 51.64 52.68   49.29 dB
+           (0.58 bpp)
+block count:  intra4:      50248  (38.34%)
+              intra16:     80824  (61.66%)
+              skipped:     71139  (54.27%)
+bytes used:  header:            918  (0.0%)
+             mode-partition: 279593  (11.5%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |       1%|       7%|      16%|      76%|  131072
+      quantizer:  |      12 |      12 |      10 |       8 |
+   filter level:  |       4 |       3 |      18 |       9 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\8k_earth_daymap.jpg" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\8k_earth_daymap.webp" (w=8192 q=90  in=4565076B  out=2434102B 
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\cloud_combined_2048.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\cloud_combined_2048.jpg
+Dimension: 4096 x 2048
+Output:    1144744 bytes Y-U-V-All-PSNR 45.05 99.00 99.00   46.81 dB
+           (1.09 bpp)
+block count:  intra4:      31220  (95.28%)
+              intra16:      1548  (4.72%)
+              skipped:       362  (1.10%)
+bytes used:  header:            373  (0.0%)
+             mode-partition: 176283  (15.4%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |      11%|      40%|      26%|      23%|   32768
+      quantizer:  |      12 |      10 |       8 |       5 |
+   filter level:  |       4 |       2 |       4 |       0 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\cloud_combined_2048.jpg" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\cloud_combined_2048.webp" (w=4096 q=90  in=829367B  out=1144744B 
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\earth-night-4k.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\earth-night-4k.jpg
+Dimension: 8192 x 4096
+Output:    1817962 bytes Y-U-V-All-PSNR 50.59 51.47 52.14   50.96 dB
+           (0.43 bpp)
+block count:  intra4:      35671  (27.21%)
+              intra16:     95401  (72.79%)
+              skipped:     89378  (68.19%)
+bytes used:  header:            921  (0.1%)
+             mode-partition: 170299  (9.4%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |       3%|       3%|       7%|      87%|  131072
+      quantizer:  |      12 |      12 |      10 |       8 |
+   filter level:  |       4 |       3 |       5 |       9 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\earth-night-4k.jpg" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\earth-night-4k.webp" (w=8192 q=90  in=7813537B  out=1817962B 
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\earth-day-8k.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\earth-day-8k.png
+Dimension: 8192 x 4096
+Output:    3549394 bytes Y-U-V-All-PSNR 46.86 48.14 48.13   47.24 dB
+           (0.85 bpp)
+block count:  intra4:      65193  (49.74%)
+              intra16:     65879  (50.26%)
+              skipped:     44564  (34.00%)
+bytes used:  header:           1166  (0.0%)
+             mode-partition: 318365  (9.0%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |       3%|       8%|      14%|      75%|  131072
+      quantizer:  |      12 |      12 |      10 |       8 |
+   filter level:  |       4 |       3 |       7 |      13 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\earth-day-8k.png" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\earth-day-8k.webp" (w=8192 q=90  in=24147269B  out=3549394B 
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\2k_earth_normal_map.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\2k_earth_normal_map.tif
+Dimension: 4096 x 2048
+Output:    733960 bytes (0.70 bpp)
+Lossless-ARGB compressed size: 733960 bytes
+  * Header size: 6596 bytes, image data size: 727339
+  * Lossless features used: PREDICTION CROSS-COLOR-TRANSFORM
+  * Precision Bits: histogram=6 prediction=5 cross-color=4 cache=10
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\2k_earth_normal_map.tif" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\2k_earth_normal_map.webp" (w=4096 q=90  in=521376B  out=733960B -lossless -z 9
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\2k_earth_specular_map.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\2k_earth_specular_map.tif
+Dimension: 4096 x 2048
+Output:    214668 bytes Y-U-V-All-PSNR 52.54 99.00 99.00   54.30 dB
+           (0.20 bpp)
+block count:  intra4:       6101  (18.62%)
+              intra16:     26667  (81.38%)
+              skipped:     26546  (81.01%)
+bytes used:  header:            419  (0.2%)
+             mode-partition:  36679  (17.1%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |       1%|       5%|      11%|      83%|   32768
+      quantizer:  |      12 |      12 |      11 |       8 |
+   filter level:  |       4 |       3 |       2 |       0 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\2k_earth_specular_map.tif" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\2k_earth_specular_map.webp" (w=4096 q=90  in=338524B  out=214668B 
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\8k_earth_normal_map.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\8k_earth_normal_map.tif
+Dimension: 4096 x 2048
+Output:    1475062 bytes (1.41 bpp)
+Lossless-ARGB compressed size: 1475062 bytes
+  * Header size: 6619 bytes, image data size: 1468417
+  * Precision Bits: histogram=6 cache=10
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\8k_earth_normal_map.tif" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\8k_earth_normal_map.webp" (w=4096 q=90  in=9490024B  out=1475062B -lossless -z 9
+Saving file 'C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\8k_earth_specular_map.webp'
+File:      C:\Users\A\PycharmProjects\globe-final\assets\webp\8k_earth_specular_map.tif
+Dimension: 4096 x 2048
+Output:    290612 bytes Y-U-V-All-PSNR 53.76 99.00 99.00   55.52 dB
+           (0.28 bpp)
+block count:  intra4:       5632  (17.19%)
+              intra16:     27136  (82.81%)
+              skipped:     27050  (82.55%)
+bytes used:  header:            438  (0.2%)
+             mode-partition:  34479  (11.9%)
+ Residuals bytes  |segment 1|segment 2|segment 3|segment 4|  total
+    macroblocks:  |       1%|       3%|      13%|      83%|   32768
+      quantizer:  |      12 |      12 |      10 |       8 |
+   filter level:  |       4 |       3 |       2 |       0 |
+[ok  ] "C:\Users\A\PycharmProjects\globe-final\assets\webp\8k_earth_specular_map.tif" > "C:\Users\A\PycharmProjects\globe-final\assets\webp\outputImage_high\\8k_earth_specular_map.webp" (w=4096 q=90  in=1843592B  out=290612B 
+[skip] tool:     "C:\Users\A\PycharmProjects\globe-final\assets\webp\libwebp-1.6.0-windows-x64\earth-dark.jpg" 
+[done] 周二 2025/08/19 17:43:32.88

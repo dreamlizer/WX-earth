@@ -6,59 +6,280 @@ page { background: #000; }
   height: 100vh;      /* 全屏高 */
   background: #000;
   overflow: hidden;
+  position: relative; /* 便于定位缩放控件 */
 }
 
 canvas {
   width: 100%;
-  height: 100%;
+  /* 预留非 canvas 区域给底部缩放条，避免被原生 canvas 盖住且事件穿透 */
+  /* 如需更薄/更厚，调整下方 48px 即可，例如 40px/56px */
+  height: calc(100vh - 48px);
   display: block;
 }
 
-/* 时间显示器样式（严格贴近截图） */
-.time-observer {
+/* 顶部工具栏：语言 | 时间 | 设置（统一风格） */
+.top-bar {
   position: fixed;
-  top: 20px;
+  top: calc(env(safe-area-inset-top) + 8px);
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: column-reverse; /* 名称在时间上方 */
+  display: grid;
+  grid-template-columns: 40px auto 40px; /* 两侧按钮统一 40px */
+  column-gap: 10px;
   align-items: center;
-  pointer-events: none;
-  z-index: 10;
+  width: min(92vw, 420px);
+  /* 提升层级：确保顶部时区提示位于国家面板和遮罩之上 */
+  z-index: 1200;
 }
-
-.time-observer-main {
-  background: rgba(10, 22, 36, 0.85);
+.top-icon-btn {
+  width: 40px;  /* 与右侧齿轮统一尺寸 */
+  height: 40px;
+  /* 统一与时间胶囊的竖向视觉：改为 flex 居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   color: #e8f6ff;
-  font-family: Consolas, 'Courier New', Courier, monospace; /* 优先使用 Consolas */
-  font-size: 22px;
+  background: rgba(24,40,58,0.92);
+  border: 2px solid rgba(120,170,220,0.55); /* 勾边粗细与时间胶囊一致 */
+  border-radius: 14px; /* 圆角风格与时间胶囊一致 */
   font-weight: 700;
-  padding: 4px 10px; /* 左右空白各缩小 50% */
+  box-sizing: border-box;
+}
+/* 放大齿轮按钮尺寸与字号 */
+.settings-btn {
+  /* 使用 .top-icon-btn 的统一尺寸与边框，仅调整字号 */
+  font-size: 20px;
+}
+.time-pill {
+  height: 40px;
+  line-height: 40px;
+  padding: 0 14px;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.85);
+  border: 2px solid rgba(120,170,220,0.55);
   border-radius: 14px;
-  border: 2px solid rgba(120, 170, 220, 0.55);
-  text-shadow: 0 0 10px rgba(200, 235, 255, 0.95), 0 0 18px rgba(120, 170, 220, 0.6);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(120, 170, 220, 0.15);
-  min-width: 240px;
+  box-sizing: border-box;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+  font-size: 18px; /* +2px */
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(200,235,255,0.95), 0 0 18px rgba(120,170,220,0.6);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 0 12px rgba(120,170,220,0.15);
   text-align: center;
 }
+.top-tip {
+  /* 改为固定定位：占据“搜索输入框”的位置与宽度 */
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top) + 8px + 40px + 6px);
+  width: calc(min(92vw, 420px) - 40px - 40px - 20px);
+  z-index: 1200; /* 始终在面板/遮罩之上 */
 
-.time-observer-hover {
-  background: rgba(10, 22, 36, 0.9);
+  background: rgba(10,22,36,0.9);
   color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 6px 16px;
+  font-size: 14px; /* +2px */
+  padding: 0 10px; /* 仅左右内边距，便于垂直居中 */
   border-radius: 8px;
-  margin-bottom: 10px;
+  border: 2px solid rgba(120,170,220,0.55);
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(120, 170, 220, 0.45);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.top-tip.visible { opacity: 1; }
+
+/* 搜索按钮：置于第二行第一列（在语言按钮下方） */
+.search-btn {
+  grid-column: 1 / span 1;
+  grid-row: 2;
+  /* 去掉边框，背景透明，仅用白色放大镜图标 */
+  border: none !important;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.5' y2='16.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 60% 60%;
+  color: transparent; /* 隐藏文本字符 */
+  box-shadow: none;
 }
 
-.time-observer-hover.visible {
-  opacity: 1;
-  transform: translateY(0);
+/* “切”按钮：置于第二行第一列（语言按钮下方），与“禅”对称 */
+.cut-btn {
+  grid-column: 3 / span 1; /* 替代设定按钮位置 */
+  grid-row: 1;
 }
+
+/* “禅”按钮：置于第二行第三列（设置按钮下方） */
+.zen-btn {
+  grid-column: 3 / span 1;
+  grid-row: 2; /* 固定第二行，避免上移 */
+}
+
+/* 已移除 PC 预览缩放控件 */
+
+/* 额外滚动高度：用于 PC 端滚轮触发（不可见） */
+.wheel-space {
+  height: 1200px;
+  opacity: 0;
+}
+
+/* 旧顶栏样式已移除 */
+
+/* 设置面板：固定定位，完整显示且避开时间条 */
+.settings-panel {
+  position: fixed;
+  right: calc(4vw);
+  top: calc(env(safe-area-inset-top) + 56px); /* 紧随工具栏下方，考虑安全区 */
+  width: 300px;
+  max-width: min(90vw, 320px);
+  background: rgba(10,22,36,0.88);
+  border: 1px solid rgba(120,170,220,0.45);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.55);
+  z-index: 90;
+}
+
+/* 禅模式下保留网格占位但隐藏视觉与交互 */
+.inert {
+  visibility: hidden;
+  pointer-events: none;
+}
+/* 面板外点击关闭的透明遮罩：位于画布之上、面板之下 */
+.settings-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 80;
+  background: rgba(0,0,0,0); /* 透明但可接收点击 */
+}
+.settings-panel { font-size: 16px; /* +2px */ }
+.settings-title { color: #e8f6ff; font-weight: 700; margin-bottom: 4px; }
+.settings-row { display: flex; justify-content: space-between; align-items: center; color: #cfe7ff; padding: 4px 0; gap: 8px; }
+.settings-row text:first-child { white-space: nowrap; flex: 0 0 72px; }
+.settings-row .qty-group { flex: 1 1 auto; justify-content: flex-start; overflow: hidden; }
+.toggle-group { display: flex; gap: 4px; }
+.toggle-btn { min-width: 36px; height: 26px; line-height: 26px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; }
+.toggle-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
+.qty-group { display: flex; flex-wrap: nowrap; gap: 3px; }
+.qty-btn { min-width: 42px; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; padding: 0 6px; }
+.qty-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
+
+/* 底部缩放条：统一胶囊风格（原样式恢复） */
+.zoom-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 1px); /* 紧贴底部 */
+  transform: translateX(-50%);
+  width: min(92vw, 540px);
+  padding: 0px 8px; /* 厚度由 padding 与 block-size 决定 */
+  background: rgba(10,22,36,0.88);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 999px; /* 两端半圆 */
+  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  z-index: 1000; /* 始终最前 */
+}
+.zoom-slider {
+  width: 100%;
+}
+
+/* 国家信息面板遮罩 */
+.country-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 980;
+}
+
+/* 国家信息面板 */
+.country-panel {
+  position: fixed;
+  left: 50%;
+  /* top 改为由页面数据驱动（index.wxml 内联样式），此处保留回退为自动 */
+  top: auto;
+  transform: translateX(-50%);
+  /* 与顶部时间胶囊一致：top-bar(三列)总宽 - 左(40) - 右(44) - 2个列间距(10*2) */
+  width: calc(min(92vw, 420px) - 40px - 44px - 20px);
+  background: rgba(16,28,44,0.96);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 14px;
+  padding: 5px 14px; /* 上下边距减少约60%：12px -> 5px */
+  color: #e8f6ff;
+  font-size: 15px; /* 整体字体略小 +2px */
+  box-sizing: border-box;
+  z-index: 990;
+}
+.country-title {
+  font-weight: 700;
+  font-size: 18px; /* +2px */
+  margin-bottom: 3px; /* 减少下边距 50% 使整体更紧凑 */
+}
+.country-row {
+  display: grid;
+  grid-template-columns: 62px auto;
+  align-items: center;
+  column-gap: 8px;
+  margin: 5px 0;
+}
+.country-row .k { color: #9cc3e9; }
+.country-row .v { color: #e8f6ff; }
+.country-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  margin-top: 4px; /* 上边距缩小约60% */
+}
+.close-btn, .clear-btn {
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.close-btn { background: rgba(24,40,58,0.92); border: 1px solid rgba(120,170,220,0.45); }
+.clear-btn { background: rgba(120,170,220,0.20); border: 1px solid rgba(120,170,220,0.45); }
+
+/* 搜索面板：与国家面板同宽风格 */
+.search-panel {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  /* 与时间胶囊的正下方对齐（时间胶囊高度 40px，向下留 6px 间距） */
+  top: calc(env(safe-area-inset-top) + 8px + 40px + 6px);
+  /* 与时间胶囊同宽：顶栏总宽 - 两侧按钮(40/40) - 两个列间距(10*2) */
+  width: calc(min(92vw, 420px) - 40px - 40px - 20px);
+  background: transparent; /* 外框完全隐身 */
+  border: none;            /* 去掉边框勾线 */
+  border-radius: 0;        /* 取消圆角轮廓 */
+  padding: 0;              /* 不再承载视觉外框 */
+  color: #e8f6ff;
+  z-index: 995;
+}
+
+/* 搜索遮罩：点击空白关闭并透传触摸到画布 */
+.search-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 990;
+  background: rgba(0,0,0,0);
+}
+.search-input {
+  height: 40px;             /* 与时间胶囊统一高度 */
+  line-height: 40px;
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.88);
+  border: 2px solid rgba(120,170,220,0.55); /* 勾边与时间胶囊一致 */
+  border-radius: 14px;
+}
+.search-list { margin-top: 8px; max-height: 220px; overflow-y: auto; }
+.search-item { padding: 8px 10px; border-radius: 8px; margin: 4px 0; background: rgba(24,40,58,0.86); border: 1px solid rgba(120,170,220,0.35); }
+.search-item-text { color: #e8f6ff; font-size: 16px; /* +2px */ }
+.search-item:active { background: rgba(160,200,250,0.18); }
+.search-empty { color: #9cc3e9; font-size: 13px; padding: 6px; text-align: center; }

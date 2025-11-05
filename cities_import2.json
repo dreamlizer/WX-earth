@@ -1,0 +1,317 @@
+{"name_en":"Tianjin","name_zh":"天津","lat":39.3434,"lon":117.3616,"country_code":"CHN","importance":2}
+{"name_en":"Shijiazhuang","name_zh":"石家庄","lat":38.0428,"lon":114.5149,"country_code":"CHN","importance":2}
+{"name_en":"Taiyuan","name_zh":"太原","lat":37.8706,"lon":112.5489,"country_code":"CHN","importance":2}
+{"name_en":"Shenyang","name_zh":"沈阳","lat":41.8057,"lon":123.4315,"country_code":"CHN","importance":2}
+{"name_en":"Changchun","name_zh":"长春","lat":43.8171,"lon":125.3235,"country_code":"CHN","importance":2}
+{"name_en":"Harbin","name_zh":"哈尔滨","lat":45.8038,"lon":126.5349,"country_code":"CHN","importance":2}
+{"name_en":"Nanjing","name_zh":"南京","lat":32.0603,"lon":118.7969,"country_code":"CHN","importance":2}
+{"name_en":"Hefei","name_zh":"合肥","lat":31.8206,"lon":117.2273,"country_code":"CHN","importance":2}
+{"name_en":"Fuzhou","name_zh":"福州","lat":26.0745,"lon":119.2965,"country_code":"CHN","importance":2}
+{"name_en":"Nanchang","name_zh":"南昌","lat":28.6820,"lon":115.8579,"country_code":"CHN","importance":2}
+{"name_en":"Jinan","name_zh":"济南","lat":36.6512,"lon":117.1201,"country_code":"CHN","importance":2}
+{"name_en":"Zhengzhou","name_zh":"郑州","lat":34.7473,"lon":113.6249,"country_code":"CHN","importance":2}
+{"name_en":"Changsha","name_zh":"长沙","lat":28.2282,"lon":112.9388,"country_code":"CHN","importance":2}
+{"name_en":"Nanning","name_zh":"南宁","lat":22.8170,"lon":108.3669,"country_code":"CHN","importance":2}
+{"name_en":"Haikou","name_zh":"海口","lat":20.0440,"lon":110.1999,"country_code":"CHN","importance":2}
+{"name_en":"Guiyang","name_zh":"贵阳","lat":26.6470,"lon":106.6302,"country_code":"CHN","importance":2}
+{"name_en":"Kunming","name_zh":"昆明","lat":24.8801,"lon":102.8329,"country_code":"CHN","importance":2}
+{"name_en":"Lanzhou","name_zh":"兰州","lat":36.0614,"lon":103.8343,"country_code":"CHN","importance":2}
+{"name_en":"Xining","name_zh":"西宁","lat":36.6171,"lon":101.7782,"country_code":"CHN","importance":2}
+{"name_en":"Yinchuan","name_zh":"银川","lat":38.4872,"lon":106.2309,"country_code":"CHN","importance":2}
+{"name_en":"Urumqi","name_zh":"乌鲁木齐","lat":43.8256,"lon":87.6168,"country_code":"CHN","importance":2}
+{"name_en":"Hohhot","name_zh":"呼和浩特","lat":40.8426,"lon":111.7492,"country_code":"CHN","importance":2}
+{"name_en":"Albany","name_zh":"奥尔巴尼","lat":42.6526,"lon":-73.7562,"country_code":"USA","importance":2}
+{"name_en":"Sacramento","name_zh":"萨克拉门托","lat":38.5816,"lon":-121.4944,"country_code":"USA","importance":2}
+{"name_en":"Phoenix","name_zh":"菲尼克斯","lat":33.4484,"lon":-112.0740,"country_code":"USA","importance":2}
+{"name_en":"Austin","name_zh":"奥斯汀","lat":30.2672,"lon":-97.7431,"country_code":"USA","importance":2}
+{"name_en":"Tallahassee","name_zh":"塔拉哈西","lat":30.4383,"lon":-84.2807,"country_code":"USA","importance":2}
+{"name_en":"Atlanta","name_zh":"亚特兰大","lat":33.7490,"lon":-84.3880,"country_code":"USA","importance":2}
+{"name_en":"Boston","name_zh":"波士顿","lat":42.3601,"lon":-71.0589,"country_code":"USA","importance":2}
+{"name_en":"Columbus","name_zh":"哥伦布","lat":39.9612,"lon":-82.9988,"country_code":"USA","importance":2}
+{"name_en":"Indianapolis","name_zh":"印第安纳波利斯","lat":39.7684,"lon":-86.1581,"country_code":"USA","importance":2}
+{"name_en":"Nashville","name_zh":"纳什维尔","lat":36.1627,"lon":-86.7816,"country_code":"USA","importance":2}
+{"name_en":"Salt Lake City","name_zh":"盐湖城","lat":40.7608,"lon":-111.8910,"country_code":"USA","importance":2}
+{"name_en":"Saint Paul","name_zh":"圣保罗","lat":44.9537,"lon":-93.0900,"country_code":"USA","importance":2}
+{"name_en":"Madison","name_zh":"麦迪逊","lat":43.0747,"lon":-89.3840,"country_code":"USA","importance":2}
+{"name_en":"Lansing","name_zh":"兰辛","lat":42.7325,"lon":-84.5555,"country_code":"USA","importance":2}
+{"name_en":"Des Moines","name_zh":"得梅因","lat":41.5868,"lon":-93.6250,"country_code":"USA","importance":2}
+{"name_en":"Topeka","name_zh":"托皮卡","lat":39.0473,"lon":-95.6752,"country_code":"USA","importance":2}
+{"name_en":"Lincoln","name_zh":"林肯","lat":40.8136,"lon":-96.7026,"country_code":"USA","importance":2}
+{"name_en":"Bismarck","name_zh":"俾斯麦","lat":46.8083,"lon":-100.7837,"country_code":"USA","importance":2}
+{"name_en":"Pierre","name_zh":"皮尔","lat":44.3683,"lon":-100.3509,"country_code":"USA","importance":2}
+{"name_en":"Cheyenne","name_zh":"夏延","lat":41.1400,"lon":-104.8202,"country_code":"USA","importance":2}
+{"name_en":"Helena","name_zh":"赫勒拿","lat":46.5884,"lon":-112.0245,"country_code":"USA","importance":2}
+{"name_en":"Boise","name_zh":"博伊西","lat":43.6150,"lon":-116.2023,"country_code":"USA","importance":2}
+{"name_en":"Carson City","name_zh":"卡森城","lat":39.1638,"lon":-119.7674,"country_code":"USA","importance":2}
+{"name_en":"Santa Fe","name_zh":"圣菲","lat":35.6870,"lon":-105.9378,"country_code":"USA","importance":2}
+{"name_en":"Oklahoma City","name_zh":"俄克拉何马城","lat":35.4676,"lon":-97.5164,"country_code":"USA","importance":2}
+{"name_en":"Springfield","name_zh":"斯普林菲尔德","lat":39.7817,"lon":-89.6501,"country_code":"USA","importance":2}
+{"name_en":"Baton Rouge","name_zh":"巴吞鲁日","lat":30.4515,"lon":-91.1871,"country_code":"USA","importance":2}
+{"name_en":"Jackson","name_zh":"杰克逊","lat":32.2988,"lon":-90.1848,"country_code":"USA","importance":2}
+{"name_en":"Montgomery","name_zh":"蒙哥马利","lat":32.3668,"lon":-86.3000,"country_code":"USA","importance":2}
+{"name_en":"Juneau","name_zh":"朱诺","lat":58.3019,"lon":-134.4197,"country_code":"USA","importance":2}
+{"name_en":"Richmond","name_zh":"里士满","lat":37.5407,"lon":-77.4360,"country_code":"USA","importance":2}
+{"name_en":"Raleigh","name_zh":"罗利","lat":35.7796,"lon":-78.6382,"country_code":"USA","importance":2}
+{"name_en":"Columbia","name_zh":"哥伦比亚市","lat":34.0007,"lon":-81.0348,"country_code":"USA","importance":2}
+{"name_en":"Charleston","name_zh":"查尔斯顿","lat":38.3498,"lon":-81.6326,"country_code":"USA","importance":2}
+{"name_en":"Trenton","name_zh":"特伦顿","lat":40.2171,"lon":-74.7429,"country_code":"USA","importance":2}
+{"name_en":"Dover","name_zh":"多佛","lat":39.1582,"lon":-75.5244,"country_code":"USA","importance":2}
+{"name_en":"Providence","name_zh":"普罗维登斯","lat":41.8240,"lon":-71.4128,"country_code":"USA","importance":2}
+{"name_en":"Hartford","name_zh":"哈特福德","lat":41.7658,"lon":-72.6734,"country_code":"USA","importance":2}
+{"name_en":"Annapolis","name_zh":"安纳波利斯","lat":38.9784,"lon":-76.4922,"country_code":"USA","importance":2}
+{"name_en":"Harrisburg","name_zh":"哈里斯堡","lat":40.2732,"lon":-76.8867,"country_code":"USA","importance":2}
+{"name_en":"Concord","name_zh":"康科德","lat":43.2081,"lon":-71.5376,"country_code":"USA","importance":2}
+{"name_en":"Montpelier","name_zh":"蒙彼利埃","lat":44.2601,"lon":-72.5754,"country_code":"USA","importance":2}
+{"name_en":"Little Rock","name_zh":"小石城","lat":34.7465,"lon":-92.2896,"country_code":"USA","importance":2}
+{"name_en":"Frankfort","name_zh":"法兰克福特","lat":38.2009,"lon":-84.8733,"country_code":"USA","importance":2}
+{"name_en":"Jefferson City","name_zh":"杰斐逊城","lat":38.5767,"lon":-92.1735,"country_code":"USA","importance":2}
+{"name_en":"Ottawa","name_zh":"渥太华","lat":45.4215,"lon":-75.6972,"country_code":"CAN","importance":2}
+{"name_en":"Toronto","name_zh":"多伦多","lat":43.6532,"lon":-79.3832,"country_code":"CAN","importance":2}
+{"name_en":"Quebec City","name_zh":"魁北克城","lat":46.8139,"lon":-71.2080,"country_code":"CAN","importance":2}
+{"name_en":"Halifax","name_zh":"哈利法克斯","lat":44.6488,"lon":-63.5752,"country_code":"CAN","importance":2}
+{"name_en":"Fredericton","name_zh":"弗雷德里顿","lat":45.9636,"lon":-66.6431,"country_code":"CAN","importance":2}
+{"name_en":"Charlottetown","name_zh":"夏洛特敦","lat":46.2382,"lon":-63.1311,"country_code":"CAN","importance":2}
+{"name_en":"St. John's","name_zh":"圣约翰斯","lat":47.5615,"lon":-52.7126,"country_code":"CAN","importance":2}
+{"name_en":"Winnipeg","name_zh":"温尼伯","lat":49.8951,"lon":-97.1384,"country_code":"CAN","importance":2}
+{"name_en":"Regina","name_zh":"里贾纳","lat":50.4452,"lon":-104.6189,"country_code":"CAN","importance":2}
+{"name_en":"Edmonton","name_zh":"埃德蒙顿","lat":53.5461,"lon":-113.4938,"country_code":"CAN","importance":2}
+{"name_en":"Victoria","name_zh":"维多利亚","lat":48.4284,"lon":-123.3656,"country_code":"CAN","importance":2}
+{"name_en":"Whitehorse","name_zh":"怀特霍斯","lat":60.7212,"lon":-135.0568,"country_code":"CAN","importance":2}
+{"name_en":"Yellowknife","name_zh":"耶洛奈夫","lat":62.4540,"lon":-114.3718,"country_code":"CAN","importance":2}
+{"name_en":"Iqaluit","name_zh":"伊魁特","lat":63.7467,"lon":-68.5170,"country_code":"CAN","importance":2}
+{"name_en":"Saint Petersburg","name_zh":"圣彼得堡","lat":59.9311,"lon":30.3609,"country_code":"RUS","importance":2}
+{"name_en":"Novosibirsk","name_zh":"新西伯利亚","lat":55.0084,"lon":82.9357,"country_code":"RUS","importance":2}
+{"name_en":"Yekaterinburg","name_zh":"叶卡捷琳堡","lat":56.8389,"lon":60.6057,"country_code":"RUS","importance":2}
+{"name_en":"Kazan","name_zh":"喀山","lat":55.7903,"lon":49.1125,"country_code":"RUS","importance":2}
+{"name_en":"Nizhny Novgorod","name_zh":"下诺夫哥罗德","lat":56.2965,"lon":43.9361,"country_code":"RUS","importance":2}
+{"name_en":"Samara","name_zh":"萨马拉","lat":53.1959,"lon":50.1002,"country_code":"RUS","importance":2}
+{"name_en":"Omsk","name_zh":"鄂木斯克","lat":54.9893,"lon":73.3682,"country_code":"RUS","importance":2}
+{"name_en":"Rostov-on-Don","name_zh":"顿河畔罗斯托夫","lat":47.2357,"lon":39.7015,"country_code":"RUS","importance":2}
+{"name_en":"Ufa","name_zh":"乌法","lat":54.7388,"lon":55.9721,"country_code":"RUS","importance":2}
+{"name_en":"Chelyabinsk","name_zh":"车里雅宾斯克","lat":55.1644,"lon":61.4368,"country_code":"RUS","importance":2}
+{"name_en":"Brasilia","name_zh":"巴西利亚","lat":-15.7939,"lon":-47.8828,"country_code":"BRA","importance":2}
+{"name_en":"Sao Paulo","name_zh":"圣保罗","lat":-23.5505,"lon":-46.6333,"country_code":"BRA","importance":2}
+{"name_en":"Rio de Janeiro","name_zh":"里约热内卢","lat":-22.9068,"lon":-43.1729,"country_code":"BRA","importance":2}
+{"name_en":"Salvador","name_zh":"萨尔瓦多","lat":-12.9777,"lon":-38.5016,"country_code":"BRA","importance":2}
+{"name_en":"Fortaleza","name_zh":"福塔莱萨","lat":-3.7319,"lon":-38.5267,"country_code":"BRA","importance":2}
+{"name_en":"Belo Horizonte","name_zh":"贝洛奥里藏特","lat":-19.9167,"lon":-43.9345,"country_code":"BRA","importance":2}
+{"name_en":"Porto Alegre","name_zh":"阿雷格里港","lat":-30.0346,"lon":-51.2177,"country_code":"BRA","importance":2}
+{"name_en":"Curitiba","name_zh":"库里提巴","lat":-25.4284,"lon":-49.2733,"country_code":"BRA","importance":2}
+{"name_en":"Recife","name_zh":"累西腓","lat":-8.0476,"lon":-34.8770,"country_code":"BRA","importance":2}
+{"name_en":"Manaus","name_zh":"马瑙斯","lat":-3.1190,"lon":-60.0217,"country_code":"BRA","importance":2}
+{"name_en":"Belem","name_zh":"贝伦","lat":-1.4558,"lon":-48.4902,"country_code":"BRA","importance":2}
+{"name_en":"Goiania","name_zh":"戈亚尼亚","lat":-16.6864,"lon":-49.2643,"country_code":"BRA","importance":2}
+{"name_en":"Florianopolis","name_zh":"弗洛里亚诺波利斯","lat":-27.5949,"lon":-48.5482,"country_code":"BRA","importance":2}
+{"name_en":"Canberra","name_zh":"堪培拉","lat":-35.2809,"lon":149.1300,"country_code":"AUS","importance":2}
+{"name_en":"Brisbane","name_zh":"布里斯班","lat":-27.4698,"lon":153.0251,"country_code":"AUS","importance":2}
+{"name_en":"Perth","name_zh":"珀斯","lat":-31.9523,"lon":115.8613,"country_code":"AUS","importance":2}
+{"name_en":"Adelaide","name_zh":"阿德莱德","lat":-34.9285,"lon":138.6007,"country_code":"AUS","importance":2}
+{"name_en":"Hobart","name_zh":"霍巴特","lat":-42.8821,"lon":147.3272,"country_code":"AUS","importance":2}
+{"name_en":"Darwin","name_zh":"达尔文","lat":-12.4634,"lon":130.8456,"country_code":"AUS","importance":2}
+{"name_en":"Stuttgart","name_zh":"斯图加特","lat":48.7758,"lon":9.1829,"country_code":"DEU","importance":2}
+{"name_en":"Munich","name_zh":"慕尼黑","lat":48.1351,"lon":11.5820,"country_code":"DEU","importance":2}
+{"name_en":"Potsdam","name_zh":"波茨坦","lat":52.3906,"lon":13.0645,"country_code":"DEU","importance":2}
+{"name_en":"Bremen","name_zh":"不来梅","lat":53.0793,"lon":8.8017,"country_code":"DEU","importance":2}
+{"name_en":"Hamburg","name_zh":"汉堡","lat":53.5511,"lon":9.9937,"country_code":"DEU","importance":2}
+{"name_en":"Wiesbaden","name_zh":"威斯巴登","lat":50.0782,"lon":8.2398,"country_code":"DEU","importance":2}
+{"name_en":"Hanover","name_zh":"汉诺威","lat":52.3759,"lon":9.7320,"country_code":"DEU","importance":2}
+{"name_en":"Schwerin","name_zh":"什未林","lat":53.6355,"lon":11.4013,"country_code":"DEU","importance":2}
+{"name_en":"Düsseldorf","name_zh":"杜塞尔多夫","lat":51.2277,"lon":6.7735,"country_code":"DEU","importance":2}
+{"name_en":"Mainz","name_zh":"美因茨","lat":49.9929,"lon":8.2473,"country_code":"DEU","importance":2}
+{"name_en":"Saarbrücken","name_zh":"萨尔布吕肯","lat":49.2402,"lon":6.9969,"country_code":"DEU","importance":2}
+{"name_en":"Dresden","name_zh":"德累斯顿","lat":51.0504,"lon":13.7373,"country_code":"DEU","importance":2}
+{"name_en":"Magdeburg","name_zh":"马格德堡","lat":52.1205,"lon":11.6276,"country_code":"DEU","importance":2}
+{"name_en":"Kiel","name_zh":"基尔","lat":54.3233,"lon":10.1228,"country_code":"DEU","importance":2}
+{"name_en":"Erfurt","name_zh":"爱尔福特","lat":50.9787,"lon":11.0328,"country_code":"DEU","importance":2}
+{"name_en":"Berlin","name_zh":"柏林","lat":52.5200,"lon":13.4050,"country_code":"DEU","importance":2}
+{"name_en":"Milan","name_zh":"米兰","lat":45.4642,"lon":9.1900,"country_code":"ITA","importance":2}
+{"name_en":"Venice","name_zh":"威尼斯","lat":45.4408,"lon":12.3155,"country_code":"ITA","importance":2}
+{"name_en":"Turin","name_zh":"都灵","lat":45.0703,"lon":7.6869,"country_code":"ITA","importance":2}
+{"name_en":"Aosta","name_zh":"奥斯塔","lat":45.7370,"lon":7.3201,"country_code":"ITA","importance":2}
+{"name_en":"Genoa","name_zh":"热那亚","lat":44.4056,"lon":8.9463,"country_code":"ITA","importance":2}
+{"name_en":"Bologna","name_zh":"博洛尼亚","lat":44.4949,"lon":11.3426,"country_code":"ITA","importance":2}
+{"name_en":"Florence","name_zh":"佛罗伦萨","lat":43.7696,"lon":11.2558,"country_code":"ITA","importance":2}
+{"name_en":"L'Aquila","name_zh":"拉奎拉","lat":42.3512,"lon":13.3984,"country_code":"ITA","importance":2}
+{"name_en":"Campobasso","name_zh":"坎波巴索","lat":41.5600,"lon":14.6674,"country_code":"ITA","importance":2}
+{"name_en":"Naples","name_zh":"那不勒斯","lat":40.8518,"lon":14.2681,"country_code":"ITA","importance":2}
+{"name_en":"Bari","name_zh":"巴里","lat":41.1171,"lon":16.8719,"country_code":"ITA","importance":2}
+{"name_en":"Potenza","name_zh":"波坦察","lat":40.6395,"lon":15.8051,"country_code":"ITA","importance":2}
+{"name_en":"Catanzaro","name_zh":"卡坦扎罗","lat":38.9098,"lon":16.5877,"country_code":"ITA","importance":2}
+{"name_en":"Palermo","name_zh":"巴勒莫","lat":38.1157,"lon":13.3615,"country_code":"ITA","importance":2}
+{"name_en":"Cagliari","name_zh":"卡利亚里","lat":39.2238,"lon":9.1217,"country_code":"ITA","importance":2}
+{"name_en":"Perugia","name_zh":"佩鲁贾","lat":43.1107,"lon":12.3908,"country_code":"ITA","importance":2}
+{"name_en":"Ancona","name_zh":"安科纳","lat":43.6158,"lon":13.5189,"country_code":"ITA","importance":2}
+{"name_en":"Trieste","name_zh":"的里雅斯特","lat":45.6495,"lon":13.7768,"country_code":"ITA","importance":2}
+{"name_en":"Trento","name_zh":"特伦托","lat":46.0700,"lon":11.1211,"country_code":"ITA","importance":2}
+{"name_en":"Rome","name_zh":"罗马","lat":41.9028,"lon":12.4964,"country_code":"ITA","importance":2}
+{"name_en":"Barcelona","name_zh":"巴塞罗那","lat":41.3874,"lon":2.1686,"country_code":"ESP","importance":2}
+{"name_en":"Valencia","name_zh":"瓦伦西亚","lat":39.4699,"lon":-0.3763,"country_code":"ESP","importance":2}
+{"name_en":"Seville","name_zh":"塞维利亚","lat":37.3891,"lon":-5.9845,"country_code":"ESP","importance":2}
+{"name_en":"Zaragoza","name_zh":"萨拉戈萨","lat":41.6488,"lon":-0.8891,"country_code":"ESP","importance":2}
+{"name_en":"Valladolid","name_zh":"巴利亚多利德","lat":41.6523,"lon":-4.7245,"country_code":"ESP","importance":2}
+{"name_en":"Toledo","name_zh":"托莱多","lat":39.8628,"lon":-4.0273,"country_code":"ESP","importance":2}
+{"name_en":"Mérida","name_zh":"梅里达","lat":38.9170,"lon":-6.3437,"country_code":"ESP","importance":2}
+{"name_en":"Santiago de Compostela","name_zh":"圣地亚哥-德孔波斯特拉","lat":42.8782,"lon":-8.5448,"country_code":"ESP","importance":2}
+{"name_en":"Logroño","name_zh":"洛格罗尼奥","lat":42.4627,"lon":-2.4449,"country_code":"ESP","importance":2}
+{"name_en":"Pamplona","name_zh":"潘普洛纳","lat":42.8125,"lon":-1.6458,"country_code":"ESP","importance":2}
+{"name_en":"Vitoria-Gasteiz","name_zh":"维多利亚-加斯特伊斯","lat":42.8467,"lon":-2.6716,"country_code":"ESP","importance":2}
+{"name_en":"Oviedo","name_zh":"奥维耶多","lat":43.3619,"lon":-5.8494,"country_code":"ESP","importance":2}
+{"name_en":"Santander","name_zh":"桑坦德","lat":43.4623,"lon":-3.8099,"country_code":"ESP","importance":2}
+{"name_en":"Palma","name_zh":"帕尔马","lat":39.5696,"lon":2.6502,"country_code":"ESP","importance":2}
+{"name_en":"Las Palmas de Gran Canaria","name_zh":"拉斯帕尔马斯","lat":28.1235,"lon":-15.4363,"country_code":"ESP","importance":2}
+{"name_en":"Santa Cruz de Tenerife","name_zh":"圣克鲁斯-德特内里费","lat":28.4636,"lon":-16.2518,"country_code":"ESP","importance":2}
+{"name_en":"Murcia","name_zh":"穆尔西亚","lat":37.9847,"lon":-1.1287,"country_code":"ESP","importance":2}
+{"name_en":"Ceuta","name_zh":"休达","lat":35.8894,"lon":-5.3213,"country_code":"ESP","importance":2}
+{"name_en":"Melilla","name_zh":"梅利利亚","lat":35.2923,"lon":-2.9381,"country_code":"ESP","importance":2}
+{"name_en":"Haarlem","name_zh":"哈勒姆","lat":52.3874,"lon":4.6462,"country_code":"NLD","importance":2}
+{"name_en":"The Hague","name_zh":"海牙","lat":52.0705,"lon":4.3007,"country_code":"NLD","importance":2}
+{"name_en":"Utrecht","name_zh":"乌得勒支","lat":52.0907,"lon":5.1214,"country_code":"NLD","importance":2}
+{"name_en":"Lelystad","name_zh":"莱利斯塔德","lat":52.5185,"lon":5.4714,"country_code":"NLD","importance":2}
+{"name_en":"Zwolle","name_zh":"兹沃勒","lat":52.5168,"lon":6.0830,"country_code":"NLD","importance":2}
+{"name_en":"Arnhem","name_zh":"阿纳姆","lat":51.9851,"lon":5.8987,"country_code":"NLD","importance":2}
+{"name_en":"'s-Hertogenbosch","name_zh":"海尔蒙德-斯海尔托亨博斯","lat":51.6978,"lon":5.3037,"country_code":"NLD","importance":2}
+{"name_en":"Maastricht","name_zh":"马斯特里赫特","lat":50.8514,"lon":5.6900,"country_code":"NLD","importance":2}
+{"name_en":"Middelburg","name_zh":"米德尔堡","lat":51.4988,"lon":3.6100,"country_code":"NLD","importance":2}
+{"name_en":"Groningen","name_zh":"格罗宁根","lat":53.2194,"lon":6.5665,"country_code":"NLD","importance":2}
+{"name_en":"Leeuwarden","name_zh":"吕伐登","lat":53.2012,"lon":5.7999,"country_code":"NLD","importance":2}
+{"name_en":"Assen","name_zh":"阿森","lat":52.9920,"lon":6.5632,"country_code":"NLD","importance":2}
+{"name_en":"Lyon","name_zh":"里昂","lat":45.7640,"lon":4.8357,"country_code":"FRA","importance":2}
+{"name_en":"Dijon","name_zh":"第戎","lat":47.3220,"lon":5.0415,"country_code":"FRA","importance":2}
+{"name_en":"Rennes","name_zh":"雷恩","lat":48.1173,"lon":-1.6778,"country_code":"FRA","importance":2}
+{"name_en":"Orléans","name_zh":"奥尔良","lat":47.9025,"lon":1.9090,"country_code":"FRA","importance":2}
+{"name_en":"Strasbourg","name_zh":"斯特拉斯堡","lat":48.5734,"lon":7.7521,"country_code":"FRA","importance":2}
+{"name_en":"Lille","name_zh":"里尔","lat":50.6292,"lon":3.0573,"country_code":"FRA","importance":2}
+{"name_en":"Paris","name_zh":"巴黎","lat":48.8566,"lon":2.3522,"country_code":"FRA","importance":2}
+{"name_en":"Rouen","name_zh":"鲁昂","lat":49.4432,"lon":1.0993,"country_code":"FRA","importance":2}
+{"name_en":"Bordeaux","name_zh":"波尔多","lat":44.8378,"lon":-0.5792,"country_code":"FRA","importance":2}
+{"name_en":"Toulouse","name_zh":"图卢兹","lat":43.6047,"lon":1.4442,"country_code":"FRA","importance":2}
+{"name_en":"Nantes","name_zh":"南特","lat":47.2184,"lon":-1.5536,"country_code":"FRA","importance":2}
+{"name_en":"Marseille","name_zh":"马赛","lat":43.2965,"lon":5.3698,"country_code":"FRA","importance":2}
+{"name_en":"Ajaccio","name_zh":"阿雅克肖","lat":41.9192,"lon":8.7386,"country_code":"FRA","importance":2}
+{"name_en":"Basse-Terre","name_zh":"巴斯特尔","lat":16.0145,"lon":-61.7064,"country_code":"FRA","importance":2}
+{"name_en":"Fort-de-France","name_zh":"法兰西堡","lat":14.6100,"lon":-61.0588,"country_code":"FRA","importance":2}
+{"name_en":"Cayenne","name_zh":"卡宴","lat":4.9224,"lon":-52.3135,"country_code":"FRA","importance":2}
+{"name_en":"Saint-Denis","name_zh":"圣但尼（留尼汪）","lat":-20.8789,"lon":55.4481,"country_code":"FRA","importance":2}
+{"name_en":"Mamoudzou","name_zh":"马穆楚","lat":-12.7806,"lon":45.2279,"country_code":"FRA","importance":2}
+{"name_en":"Warsaw","name_zh":"华沙","lat":52.2297,"lon":21.0122,"country_code":"POL","importance":2}
+{"name_en":"Krakow","name_zh":"克拉科夫","lat":50.0647,"lon":19.9450,"country_code":"POL","importance":2}
+{"name_en":"Lodz","name_zh":"罗兹","lat":51.7592,"lon":19.4550,"country_code":"POL","importance":2}
+{"name_en":"Wroclaw","name_zh":"弗罗茨瓦夫","lat":51.1079,"lon":17.0385,"country_code":"POL","importance":2}
+{"name_en":"Poznan","name_zh":"波兹南","lat":52.4064,"lon":16.9252,"country_code":"POL","importance":2}
+{"name_en":"Gdansk","name_zh":"格但斯克","lat":54.3520,"lon":18.6466,"country_code":"POL","importance":2}
+{"name_en":"Szczecin","name_zh":"什切青","lat":53.4285,"lon":14.5528,"country_code":"POL","importance":2}
+{"name_en":"Olsztyn","name_zh":"奥尔什丁","lat":53.7767,"lon":20.4770,"country_code":"POL","importance":2}
+{"name_en":"Bialystok","name_zh":"比亚韦斯托克","lat":53.1325,"lon":23.1688,"country_code":"POL","importance":2}
+{"name_en":"Lublin","name_zh":"卢布林","lat":51.2465,"lon":22.5684,"country_code":"POL","importance":2}
+{"name_en":"Rzeszow","name_zh":"热舒夫","lat":50.0413,"lon":21.9990,"country_code":"POL","importance":2}
+{"name_en":"Kielce","name_zh":"凯尔采","lat":50.8661,"lon":20.6286,"country_code":"POL","importance":2}
+{"name_en":"Opole","name_zh":"奥波莱","lat":50.6751,"lon":17.9213,"country_code":"POL","importance":2}
+{"name_en":"Katowice","name_zh":"卡托维兹","lat":50.2649,"lon":19.0238,"country_code":"POL","importance":2}
+{"name_en":"Zielona Gora","name_zh":"绿山城","lat":51.9356,"lon":15.5062,"country_code":"POL","importance":2}
+{"name_en":"Gorzow Wielkopolski","name_zh":"大波兰戈茹夫","lat":52.7368,"lon":15.2288,"country_code":"POL","importance":2}
+{"name_en":"Bydgoszcz","name_zh":"比得哥什","lat":53.1235,"lon":18.0084,"country_code":"POL","importance":2}
+{"name_en":"Torun","name_zh":"托伦","lat":53.0138,"lon":18.5984,"country_code":"POL","importance":2}
+{"name_en":"Newcastle upon Tyne","name_zh":"纽卡斯尔","lat":54.9783,"lon":-1.6178,"country_code":"GBR","importance":2}
+{"name_en":"Manchester","name_zh":"曼彻斯特","lat":53.4808,"lon":-2.2426,"country_code":"GBR","importance":2}
+{"name_en":"Leeds","name_zh":"利兹","lat":53.8008,"lon":-1.5491,"country_code":"GBR","importance":2}
+{"name_en":"Nottingham","name_zh":"诺丁汉","lat":52.9548,"lon":-1.1581,"country_code":"GBR","importance":2}
+{"name_en":"Birmingham","name_zh":"伯明翰","lat":52.4862,"lon":-1.8904,"country_code":"GBR","importance":2}
+{"name_en":"Cambridge","name_zh":"剑桥","lat":52.2053,"lon":0.1218,"country_code":"GBR","importance":2}
+{"name_en":"London","name_zh":"伦敦","lat":51.5072,"lon":-0.1276,"country_code":"GBR","importance":2}
+{"name_en":"Guildford","name_zh":"吉尔福德","lat":51.2362,"lon":-0.5704,"country_code":"GBR","importance":2}
+{"name_en":"Bristol","name_zh":"布里斯托","lat":51.4545,"lon":-2.5879,"country_code":"GBR","importance":2}
+{"name_en":"Edinburgh","name_zh":"爱丁堡","lat":55.9533,"lon":-3.1883,"country_code":"GBR","importance":2}
+{"name_en":"Cardiff","name_zh":"加的夫","lat":51.4816,"lon":-3.1791,"country_code":"GBR","importance":2}
+{"name_en":"Belfast","name_zh":"贝尔法斯特","lat":54.5973,"lon":-5.9301,"country_code":"GBR","importance":2}
+{"name_en":"Cherkasy","name_zh":"切尔卡瑟","lat":49.4444,"lon":32.0598,"country_code":"UKR","importance":2}
+{"name_en":"Chernihiv","name_zh":"切尔尼戈夫","lat":51.4982,"lon":31.2893,"country_code":"UKR","importance":2}
+{"name_en":"Chernivtsi","name_zh":"切尔诺夫策","lat":48.2915,"lon":25.9403,"country_code":"UKR","importance":2}
+{"name_en":"Dnipro","name_zh":"第聂伯","lat":48.4647,"lon":35.0462,"country_code":"UKR","importance":2}
+{"name_en":"Donetsk","name_zh":"顿涅茨克","lat":48.0159,"lon":37.8028,"country_code":"UKR","importance":2}
+{"name_en":"Ivano-Frankivsk","name_zh":"伊万诺-弗兰科夫斯克","lat":48.9226,"lon":24.7111,"country_code":"UKR","importance":2}
+{"name_en":"Kharkiv","name_zh":"哈尔科夫","lat":49.9935,"lon":36.2304,"country_code":"UKR","importance":2}
+{"name_en":"Kherson","name_zh":"赫尔松","lat":46.6354,"lon":32.6169,"country_code":"UKR","importance":2}
+{"name_en":"Khmelnytskyi","name_zh":"赫梅利尼茨基","lat":49.4216,"lon":26.9965,"country_code":"UKR","importance":2}
+{"name_en":"Kropyvnytskyi","name_zh":"克罗皮夫尼茨基","lat":48.5079,"lon":32.2623,"country_code":"UKR","importance":2}
+{"name_en":"Kyiv","name_zh":"基辅","lat":50.4501,"lon":30.5234,"country_code":"UKR","importance":2}
+{"name_en":"Kyiv (Oblast)","name_zh":"基辅州（基辅）","lat":50.4501,"lon":30.5234,"country_code":"UKR","importance":2}
+{"name_en":"Luhansk","name_zh":"卢甘斯克","lat":48.5733,"lon":39.3550,"country_code":"UKR","importance":2}
+{"name_en":"Lviv","name_zh":"利沃夫","lat":49.8397,"lon":24.0297,"country_code":"UKR","importance":2}
+{"name_en":"Mykolaiv","name_zh":"尼古拉耶夫","lat":46.9750,"lon":31.9946,"country_code":"UKR","importance":2}
+{"name_en":"Odesa","name_zh":"敖德萨","lat":46.4825,"lon":30.7233,"country_code":"UKR","importance":2}
+{"name_en":"Poltava","name_zh":"波尔塔瓦","lat":49.5883,"lon":34.5514,"country_code":"UKR","importance":2}
+{"name_en":"Rivne","name_zh":"罗夫诺","lat":50.6199,"lon":26.2516,"country_code":"UKR","importance":2}
+{"name_en":"Sumy","name_zh":"苏梅","lat":50.9077,"lon":34.7981,"country_code":"UKR","importance":2}
+{"name_en":"Ternopil","name_zh":"捷尔诺波尔","lat":49.5535,"lon":25.5948,"country_code":"UKR","importance":2}
+{"name_en":"Vinnytsia","name_zh":"文尼察","lat":49.2331,"lon":28.4682,"country_code":"UKR","importance":2}
+{"name_en":"Lutsk","name_zh":"卢茨克","lat":50.7472,"lon":25.3254,"country_code":"UKR","importance":2}
+{"name_en":"Uzhhorod","name_zh":"乌日霍罗德","lat":48.6208,"lon":22.2879,"country_code":"UKR","importance":2}
+{"name_en":"Zaporizhzhia","name_zh":"扎波罗热","lat":47.8388,"lon":35.1396,"country_code":"UKR","importance":2}
+{"name_en":"Zhytomyr","name_zh":"日托米尔","lat":50.2547,"lon":28.6587,"country_code":"UKR","importance":2}
+{"name_en":"Sevastopol","name_zh":"塞瓦斯托波尔","lat":44.6167,"lon":33.5254,"country_code":"UKR","importance":2}
+{"name_en":"Simferopol","name_zh":"辛菲罗波尔","lat":44.9521,"lon":34.1024,"country_code":"UKR","importance":2}
+{"name_en":"Bucharest","name_zh":"布加勒斯特","lat":44.4268,"lon":26.1025,"country_code":"ROU","importance":2}
+{"name_en":"Cluj-Napoca","name_zh":"克卢日-纳波卡","lat":46.7712,"lon":23.6236,"country_code":"ROU","importance":2}
+{"name_en":"Iași","name_zh":"雅西","lat":47.1585,"lon":27.6014,"country_code":"ROU","importance":2}
+{"name_en":"Timișoara","name_zh":"蒂米什瓦拉","lat":45.7489,"lon":21.2087,"country_code":"ROU","importance":2}
+{"name_en":"Constanța","name_zh":"康斯坦察","lat":44.1598,"lon":28.6348,"country_code":"ROU","importance":2}
+{"name_en":"Abuja","name_zh":"阿布贾（联邦首都区）","lat":9.0765,"lon":7.3986,"country_code":"NGA","importance":2}
+{"name_en":"Lagos","name_zh":"拉各斯（拉各斯州）","lat":6.5244,"lon":3.3792,"country_code":"NGA","importance":2}
+{"name_en":"Kano","name_zh":"卡诺（卡诺州）","lat":12.0022,"lon":8.5920,"country_code":"NGA","importance":2}
+{"name_en":"Port Harcourt","name_zh":"哈科特港（河流州）","lat":4.8156,"lon":7.0498,"country_code":"NGA","importance":2}
+{"name_en":"Enugu","name_zh":"埃努古（埃努古州）","lat":6.5244,"lon":7.5175,"country_code":"NGA","importance":2}
+{"name_en":"Addis Ababa","name_zh":"亚的斯亚贝巴（联邦直辖）","lat":8.9806,"lon":38.7578,"country_code":"ETH","importance":2}
+{"name_en":"Mekelle","name_zh":"默克莱（提格雷州）","lat":13.4967,"lon":39.4753,"country_code":"ETH","importance":2}
+{"name_en":"Bahir Dar","name_zh":"巴赫达尔（阿姆哈拉州）","lat":11.5936,"lon":37.3908,"country_code":"ETH","importance":2}
+{"name_en":"Adama","name_zh":"阿达玛（奥罗米亚州）","lat":8.5406,"lon":39.2706,"country_code":"ETH","importance":2}
+{"name_en":"Hawassa","name_zh":"哈瓦萨（南方州）","lat":7.0621,"lon":38.4763,"country_code":"ETH","importance":2}
+{"name_en":"Cairo","name_zh":"开罗（省）","lat":30.0444,"lon":31.2357,"country_code":"EGY","importance":2}
+{"name_en":"Giza","name_zh":"吉萨（省）","lat":30.0131,"lon":31.2089,"country_code":"EGY","importance":2}
+{"name_en":"Alexandria","name_zh":"亚历山大（省）","lat":31.2001,"lon":29.9187,"country_code":"EGY","importance":2}
+{"name_en":"Zagazig","name_zh":"扎加齐格（东部省）","lat":30.5877,"lon":31.5020,"country_code":"EGY","importance":2}
+{"name_en":"Tanta","name_zh":"坦塔（加尔比亚省）","lat":30.7865,"lon":31.0004,"country_code":"EGY","importance":2}
+{"name_en":"Kinshasa","name_zh":"金沙萨（直辖）","lat":-4.4419,"lon":15.2663,"country_code":"COD","importance":2}
+{"name_en":"Lubumbashi","name_zh":"卢本巴希（上加丹加）","lat":-11.6870,"lon":27.5026,"country_code":"COD","importance":2}
+{"name_en":"Goma","name_zh":"戈马（北基伍）","lat":-1.6585,"lon":29.2218,"country_code":"COD","importance":2}
+{"name_en":"Kananga","name_zh":"卡南加（开赛西）","lat":-5.8962,"lon":22.4166,"country_code":"COD","importance":2}
+{"name_en":"Kisangani","name_zh":"基桑加尼（冲果利）","lat":0.5153,"lon":25.1916,"country_code":"COD","importance":2}
+{"name_en":"Dodoma","name_zh":"多多马（直辖）","lat":-6.1630,"lon":35.7516,"country_code":"TZA","importance":2}
+{"name_en":"Dar es Salaam","name_zh":"达累斯萨拉姆（直辖）","lat":-6.7924,"lon":39.2083,"country_code":"TZA","importance":2}
+{"name_en":"Mwanza","name_zh":"姆万扎（区）","lat":-2.5164,"lon":32.9175,"country_code":"TZA","importance":2}
+{"name_en":"Arusha","name_zh":"阿鲁沙（区）","lat":-3.3869,"lon":36.6820,"country_code":"TZA","importance":2}
+{"name_en":"Zanzibar City","name_zh":"桑给巴尔市（乌干扎）","lat":-6.1659,"lon":39.2026,"country_code":"TZA","importance":2}
+{"name_en":"Pretoria","name_zh":"比勒陀利亚（豪登省政府/国家行政首都）","lat":-25.7479,"lon":28.2293,"country_code":"ZAF","importance":2}
+{"name_en":"Johannesburg","name_zh":"约翰内斯堡（豪登省）","lat":-26.2041,"lon":28.0473,"country_code":"ZAF","importance":2}
+{"name_en":"Cape Town","name_zh":"开普敦（西开普）","lat":-33.9249,"lon":18.4241,"country_code":"ZAF","importance":2}
+{"name_en":"Durban","name_zh":"德班（夸祖鲁-纳塔尔）","lat":-29.8587,"lon":31.0218,"country_code":"ZAF","importance":2}
+{"name_en":"Bloemfontein","name_zh":"布隆方丹（自由州/司法首都）","lat":-29.0852,"lon":26.1596,"country_code":"ZAF","importance":2}
+{"name_en":"Nairobi","name_zh":"内罗毕（县）","lat":-1.2921,"lon":36.8219,"country_code":"KEN","importance":2}
+{"name_en":"Mombasa","name_zh":"蒙巴萨（县）","lat":-4.0435,"lon":39.6682,"country_code":"KEN","importance":2}
+{"name_en":"Kisumu","name_zh":"基苏木（县）","lat":-0.0917,"lon":34.7679,"country_code":"KEN","importance":2}
+{"name_en":"Nakuru","name_zh":"纳库鲁（县）","lat":-0.3031,"lon":36.0800,"country_code":"KEN","importance":2}
+{"name_en":"Eldoret","name_zh":"埃尔多雷特（乌辛吉舒县）","lat":0.5143,"lon":35.2698,"country_code":"KEN","importance":2}
+{"name_en":"Khartoum","name_zh":"喀土穆（州）","lat":15.5007,"lon":32.5599,"country_code":"SDN","importance":2}
+{"name_en":"Omdurman","name_zh":"恩图曼（喀土穆州）","lat":15.6361,"lon":32.4372,"country_code":"SDN","importance":2}
+{"name_en":"Port Sudan","name_zh":"苏丹港（红海州）","lat":19.6158,"lon":37.2164,"country_code":"SDN","importance":2}
+{"name_en":"Al-Ubayyid","name_zh":"欧拜伊德（北科尔多凡）","lat":13.1833,"lon":30.2167,"country_code":"SDN","importance":2}
+{"name_en":"Wad Madani","name_zh":"瓦德迈达尼（格济拉）","lat":14.4012,"lon":33.5199,"country_code":"SDN","importance":2}
+{"name_en":"Algiers","name_zh":"阿尔及尔（省）","lat":36.7538,"lon":3.0588,"country_code":"DZA","importance":2}
+{"name_en":"Oran","name_zh":"奥兰（省）","lat":35.6971,"lon":-0.6308,"country_code":"DZA","importance":2}
+{"name_en":"Constantine","name_zh":"君士坦丁（省）","lat":36.3650,"lon":6.6147,"country_code":"DZA","importance":2}
+{"name_en":"Blida","name_zh":"布利达（省）","lat":36.4700,"lon":2.8295,"country_code":"DZA","importance":2}
+{"name_en":"Annaba","name_zh":"安纳巴（省）","lat":36.9023,"lon":7.7566,"country_code":"DZA","importance":2}
+{"name_en":"Kampala","name_zh":"坎帕拉（区）","lat":0.3476,"lon":32.5825,"country_code":"UGA","importance":2}
+{"name_en":"Gulu","name_zh":"古卢（区）","lat":2.7746,"lon":32.2989,"country_code":"UGA","importance":2}
+{"name_en":"Mbarara","name_zh":"姆巴拉拉（区）","lat":-0.6072,"lon":30.6545,"country_code":"UGA","importance":2}
+{"name_en":"Jinja","name_zh":"金贾（区）","lat":0.4446,"lon":33.2032,"country_code":"UGA","importance":2}
+{"name_en":"Mbale","name_zh":"姆巴莱（区）","lat":1.0821,"lon":34.1750,"country_code":"UGA","importance":2}
+{"name_en":"Moscow","name_zh":"莫斯科","lat":55.7558,"lon":37.6173,"country_code":"RUS","importance":2}
+{"name_en":"Saint Petersburg","name_zh":"圣彼得堡","lat":59.9311,"lon":30.3609,"country_code":"RUS","importance":2}
+{"name_en":"Novosibirsk","name_zh":"新西伯利亚","lat":55.0084,"lon":82.9357,"country_code":"RUS","importance":2}
+{"name_en":"Yekaterinburg","name_zh":"叶卡捷琳堡","lat":56.8389,"lon":60.6057,"country_code":"RUS","importance":2}
+{"name_en":"Kazan","name_zh":"喀山","lat":55.7903,"lon":49.1125,"country_code":"RUS","importance":2}
+{"name_en":"Nizhny Novgorod","name_zh":"下诺夫哥罗德","lat":56.3269,"lon":44.0059,"country_code":"RUS","importance":2}
+{"name_en":"Sochi","name_zh":"索契","lat":43.5855,"lon":39.7231,"country_code":"RUS","importance":2}
+{"name_en":"Vladivostok","name_zh":"符拉迪沃斯托克","lat":43.1155,"lon":131.8855,"country_code":"RUS","importance":2}
+{"name_en":"Volgograd","name_zh":"伏尔加格勒","lat":48.7080,"lon":44.5133,"country_code":"RUS","importance":2}
+{"name_en":"Kaliningrad","name_zh":"加里宁格勒","lat":54.7104,"lon":20.4522,"country_code":"RUS","importance":2}

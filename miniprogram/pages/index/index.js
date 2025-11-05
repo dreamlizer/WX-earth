@@ -107,7 +107,7 @@ Page({
     } else if (selectedItem.type) {
       console.log("selectedItem", selectedItem)
       wx.navigateTo({
-        url: `/pages/example/index?envId=${this.data.selectedEnv?.envId}&type=${selectedItem.type}`,
+        url: `/pages/example/index?type=${selectedItem.type}`,
       });
     } else if (selectedItem.page) {
       wx.navigateTo({
@@ -131,11 +131,11 @@ Page({
     console.log("jump page", type, page)
     if (type) {
       wx.navigateTo({
-        url: `/pages/example/index?envId=${this.data.selectedEnv?.envId}&type=${type}`,
+        url: `/pages/example/index?type=${type}`,
       });
     } else {
       wx.navigateTo({
-        url: `/pages/${page}/index?envId=${this.data.selectedEnv?.envId}`,
+        url: `/pages/${page}/index`,
       });
     }
   },

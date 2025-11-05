@@ -6,10 +6,10 @@ import { convertLatLonToVec3 } from './geography.js';
 
 const RADIUS = 1;
 const OFFSET_Y = -0.55;
-const LIGHT_MAIN = 1.15;
-const LIGHT_AMBI = 0.30;
+const LIGHT_MAIN = 1.95; // 太阳光强度（调大更亮，建议 1.3–1.8；在普通/禅模式都会生效）
+const LIGHT_AMBI = 0.10; // 环境光强度（调小更暗，建议 0.18–0.28；夜侧更黑、分界更清晰）
 const MARGIN = 1.02;
-const BORDER_DECIMATE = 3; // 采样步长（每隔 N 个点取一个），以降低边界几何复杂度
+const BORDER_DECIMATE = 1; // 取消抽样，使用完整点集以提升邻国边界重合度
 
 export function createScene(canvas, dpr, width, height) {
   const THREE = createScopedThreejs(canvas);
@@ -29,15 +29,16 @@ export function createScene(canvas, dpr, width, height) {
   const distH = RADIUS / (Math.tan(vFov/2) * camera.aspect);
   const baseDist = Math.max(distV, distH) * MARGIN;
 
-  scene.add(new THREE.AmbientLight(0xffffff, LIGHT_AMBI));
-  const dirLight = new THREE.DirectionalLight(0xffffff, LIGHT_MAIN);
+  const ambientLight = new THREE.AmbientLight(0xffffff, LIGHT_AMBI); // 如需调整强度，优先改上面的 LIGHT_AMBI 常量
+  scene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, LIGHT_MAIN); // 如需调整“太阳光”强度，优先改上面的 LIGHT_MAIN 常量
   scene.add(dirLight);
 
   const globeGroup = new THREE.Group();
   globeGroup.position.y = OFFSET_Y;
   scene.add(globeGroup);
 
-  return { THREE, renderer, scene, camera, dirLight, globeGroup, baseDist };
+  return { THREE, renderer, scene, camera, dirLight, ambientLight, globeGroup, baseDist };
 }
 
 export function updateCameraDistance(camera, baseDist, zoom) {
@@ -79,7 +80,8 @@ export function makeBorder(THREE, globeGroup, COUNTRY_FEATURES) {
     const addRing = (ring) => {
       const r = decimateRing(ring, BORDER_DECIMATE);
       const pts = r.map(([lon, lat]) => {
-        const v = convertLatLonToVec3(lon, lat, RADIUS + 0.0015);
+        // 统一微抬升高度，避免不同数据集误差导致的双线错位感
+        const v = convertLatLonToVec3(lon, lat, RADIUS + 0.0012);
         return new THREE.Vector3(v.x, v.y, v.z);
       });
       const g = new THREE.BufferGeometry().setFromPoints(pts);
@@ -278,4 +280,40 @@ export function highlight(THREE, globeGroup, f) {
   }
   globeGroup.add(HIGHLIGHT_GROUP);
   return HIGHLIGHT_GROUP;
+}
+
+// 金黄色赤道与南北回归线（淡淡可见，略微抬升避免穿插）
+export function makeEquatorAndTropics(THREE, globeGroup) {
+  // 使用薄型 TubeGeometry 提升精致度；开启深度测试避免背面穿模
+  const group = new THREE.Group();
+  const color = 0xffd24d; // 更亮的金黄色
+  const opacity = 0.72;   // 适度提亮但不抢眼
+  const ro = 28;          // 高于地球、低于标签
+  const matBase = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthTest: true });
+  matBase.depthWrite = false; matBase.polygonOffset = true; matBase.polygonOffsetFactor = -1; matBase.polygonOffsetUnits = -1; matBase.userData = { ro };
+
+  const buildLatTube = (latDeg) => {
+    const ALT = 0.0013; // 轻微抬升，减少与地球贴图的 Z 冲突
+    const pts = [];
+    for (let lon = -180; lon <= 180; lon += 3) {
+      const v = convertLatLonToVec3(lon, latDeg, RADIUS + ALT);
+      pts.push(new THREE.Vector3(v.x, v.y, v.z));
+    }
+    const curve = new THREE.CatmullRomCurve3(pts, true, 'centripetal', 0.6);
+    const tubularSegments = Math.max(120, Math.min(360, Math.floor(360/3) * 2));
+    const tubeRadius = 0.0032; // 细圆管半径，略粗于线以提升可读性
+    const radialSegments = 12;
+    const geo = new THREE.TubeGeometry(curve, tubularSegments, tubeRadius, radialSegments, true);
+    const mat = matBase.clone();
+    const mesh = new THREE.Mesh(geo, mat);
+    setRO(mesh);
+    group.add(mesh);
+  };
+
+  buildLatTube(0); // 赤道
+  const TROPIC = 23.437; // 回归线约 23.437°
+  buildLatTube(+TROPIC);
+  buildLatTube(-TROPIC);
+  globeGroup.add(group);
+  return group;
 }

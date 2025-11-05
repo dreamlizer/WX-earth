@@ -1,0 +1,13 @@
+{
+  "name": "citiesFetch",
+  "version": "1.0.0",
+  "description": "Cities data cloud function",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}

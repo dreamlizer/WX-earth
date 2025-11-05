@@ -15,7 +15,7 @@
     "showES6CompileOption": false,
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true,
-    "bigPackageSizeSupport": false,
+    "bigPackageSizeSupport": true,
     "useIsolateContext": true
   },
   "condition": {},

@@ -1,0 +1,13 @@
+{
+  "name": "citiesImport",
+  "version": "1.0.0",
+  "description": "Bulk upsert cities into cloud DB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}

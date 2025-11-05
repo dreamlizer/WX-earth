@@ -47,7 +47,7 @@ Page({
     "agent-ui":"/components/agent-ui/index"
   },
 }`,
-    ai_wxml_config: `&lt;agent-ui agentConfig="{{agentConfig}}" showBotAvatar="{{showBotAvatar}}" chatMode="{{chatMode}}" modelConfig="{{modelConfig}}""&gt;&lt;/agent-ui&gt;`,
+    ai_wxml_config: `&lt;agent-ui agentConfig="{{agentConfig}}" showBotAvatar="{{showBotAvatar}}" chatMode="{{chatMode}}" modelConfig="{{modelConfig}}"&gt;&lt;/agent-ui&gt;`,
     ai_data_config: `data: {
   chatMode: "bot", // bot 表示使用agent，model 表示使用大模型
   showBotAvatar: true, // 是否在对话框左侧显示头像
@@ -444,7 +444,7 @@ Page({
     const app = getApp();
     this.setData({
       callcbrCode: `const c1 = new wx.cloud.Cloud({
-  resourceEnv: ${app.globalData.env}
+  resourceEnv: '${app.globalData.env}'
 })
 await c1.init()
 const r = await c1.callContainer({
@@ -461,7 +461,7 @@ const r = await c1.callContainer({
     const app = getApp();
     this.setData({
       initEnvCode: `wx.cloud.init({
-  env: ${app.globalData.env},
+  env: '${app.globalData.env}',
   traceUser: true,
 });`,
     });

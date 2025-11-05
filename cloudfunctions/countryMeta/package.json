@@ -1,0 +1,13 @@
+{
+  "name": "countryMeta",
+  "version": "1.0.0",
+  "description": "Country metadata cloud function",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}
