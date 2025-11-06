@@ -2,6 +2,7 @@
 // 用途：通过云存储 fileID -> 临时 HTTPS URL（CDN），失败则回退到本地图片。
 
 const CACHE_KEY = '__texture_urls_cache_v1';
+const SAVED_PATHS_KEY = '__texture_saved_paths_v1';
 const TTL_MS = 12 * 60 * 60 * 1000; // 12 小时：临时链接有效期通常较短，定期刷新
 
 // 从你的截图复制的 fileID（如环境迁移请按需更新）
@@ -28,6 +29,45 @@ function writeCache(obj) {
   try { wx.setStorageSync(CACHE_KEY, obj || {}); } catch(_) {}
 }
 
+function readSavedPaths(){
+  try { return wx.getStorageSync(SAVED_PATHS_KEY) || {}; } catch(_) { return {}; }
+}
+function writeSavedPaths(obj){
+  try { wx.setStorageSync(SAVED_PATHS_KEY, obj || {}); } catch(_) {}
+}
+
+function ensureDir(path){
+  try {
+    const fs = wx.getFileSystemManager();
+    fs.mkdir({ dirPath: path, recursive: true, success(){}, fail(){} });
+  } catch(_){}
+}
+function extOf(path){
+  const m = String(path||'').match(/\.(\w+)$/); return m ? ('.'+m[1]) : '';
+}
+function targetPathFor(name, fallback){
+  const root = (wx.env && wx.env.USER_DATA_PATH) ? wx.env.USER_DATA_PATH : ''; 
+  const dir = root ? (root + '/textures') : '';
+  const ext = extOf(fallback) || '.dat';
+  return dir ? (dir + '/' + name + ext) : '';
+}
+function hasFile(p){
+  try { wx.getFileSystemManager().accessSync(p); return true; } catch(_) { return false; }
+}
+async function savePermanentFromTemp(tempPath, name, fallback){
+  try {
+    const target = targetPathFor(name, fallback);
+    if (!target) return '';
+    ensureDir(target.replace(/\/[^\/]*$/, ''));
+    const fs = wx.getFileSystemManager();
+    await new Promise((resolve,reject)=>{
+      fs.saveFile({ tempFilePath: tempPath, filePath: target, success(){ resolve(); }, fail(e){ reject(e); } });
+    });
+    const map = readSavedPaths(); map[name] = target; writeSavedPaths(map);
+    return target;
+  } catch(e) { try { console.warn('[texture] savePermanent失败', name, e); } catch(_){}; return ''; }
+}
+
 export function clearTextureCache(){ writeCache({}); }
 
 // 返回：{ url, fallback } —— url 可能是云端临时链接，也可能直接是本地兜底
@@ -50,17 +90,44 @@ export async function getTextureUrl(name) {
   // 非法键直接回退
   if (!FILE_ID_MAP[name]) return { url: fallback, fallback };
 
-  // 开发者工具默认走本地，避免 403 噪声；真机保持云端优先
-  if (isDevtools && !forceCloud) {
-    try { console.info('[texture] devtools 环境，使用本地兜底:', name, fallback); } catch(_){}
-    return { url: fallback, fallback };
-  }
+  // 强制云端：即使在 DevTools 也走云端临时链接（不再默认回本地）
+
+  // 若已有持久化文件，直接使用离线路径
+  try {
+    const saved = readSavedPaths()[name];
+    if (saved && hasFile(saved)) {
+      try { console.log('[texture] use offline saved', name, saved); } catch(_){}
+      return { url: saved, fallback };
+    }
+  } catch(_){}
 
   // 命中缓存且未过期
   const cache = readCache();
   const hit = cache[name];
   if (hit && typeof hit.url === 'string' && hit.exp > now()) {
     return { url: hit.url, fallback };
+  }
+
+  // 开发者工具：直接使用 downloadFile 的临时路径，避免 403(no referrer)
+  if (isDevtools) {
+    try {
+      const df0 = await wx.cloud.downloadFile({ fileID: FILE_ID_MAP[name] });
+      const p0 = df0?.tempFilePath || '';
+      try { console.log('[texture] devtools downloadFile', name, { path: p0 }); } catch(_){ }
+      if (p0) {
+        // 保存为持久化文件
+        const saved = await savePermanentFromTemp(p0, name, fallback);
+        if (saved) {
+          cache[name] = { url: saved, exp: now() + TTL_MS };
+          writeCache(cache);
+          return { url: saved, fallback };
+        } else {
+          cache[name] = { url: p0, exp: now() + TTL_MS };
+          writeCache(cache);
+          return { url: p0, fallback };
+        }
+      }
+    } catch(e){ try { console.warn('[texture] devtools downloadFile 失败', name, e); } catch(_){ } }
   }
 
   // 拉取临时 URL（显式指定 env，增强可观测性）
@@ -80,14 +147,46 @@ export async function getTextureUrl(name) {
       return { url, fallback };
     }
   } catch (e) {
-    // 记录但不打扰用户
-    try { console.warn('[texture] getTempFileURL 失败:', name, e); } catch(_){}
+    try { console.warn('[texture] getTempFileURL 异常:', name, e); } catch(_){}
+    // 不抛出，改为在下方尝试 downloadFile 兜底
   }
-  // 失败回退
-  return { url: fallback, fallback };
+  // 兜底：下载为临时路径，规避 CDN/Referer 问题
+  try {
+    const df1 = await wx.cloud.downloadFile({ fileID: FILE_ID_MAP[name] });
+    const p1 = df1?.tempFilePath || '';
+    try { console.log('[texture] fallback downloadFile', name, { path: p1 }); } catch(_){ }
+    if (p1) {
+      const saved = await savePermanentFromTemp(p1, name, fallback);
+      if (saved) {
+        cache[name] = { url: saved, exp: now() + TTL_MS };
+        writeCache(cache);
+        return { url: saved, fallback };
+      } else {
+        cache[name] = { url: p1, exp: now() + TTL_MS };
+        writeCache(cache);
+        return { url: p1, fallback };
+      }
+    }
+  } catch(e) { try { console.error('[texture] downloadFile 失败', name, e); } catch(_){ } }
+  // 未拿到有效云端 URL：显式抛错，避免返回本地路径
+  throw new Error('TEMP_URL_UNAVAILABLE');
 }
 
 // 预取若干纹理，提升首帧稳定性
 export async function prefetchTextureUrls(names = ['earth','earth_night','cloud']){
   for (const n of names) { try { await getTextureUrl(n); } catch(_){} }
+}
+
+// 首次打开时确保纹理持久化到本地（离线可用）
+export async function ensureOfflineTextures(names = ['earth','earth_night','cloud']){
+  for (const n of names) {
+    try {
+      const fallback = FALLBACK_MAP[n];
+      const saved = readSavedPaths()[n];
+      if (saved && hasFile(saved)) { continue; }
+      const df = await wx.cloud.downloadFile({ fileID: FILE_ID_MAP[n] });
+      const temp = df?.tempFilePath || '';
+      if (temp) await savePermanentFromTemp(temp, n, fallback);
+    } catch(e) { try { console.warn('[texture] ensureOffline失败', n, e); } catch(_){} }
+  }
 }

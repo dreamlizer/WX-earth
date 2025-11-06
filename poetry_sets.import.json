@@ -1,0 +1,25 @@
+[
+  {
+    "_id": "preset_1",
+    "preset": 1,
+    "lines": [
+      { "text": "天体运行，周而复始。", "duration": 7000 },
+      { "text": "星汉灿烂，若出其里。", "duration": 7000 },
+      { "text": "日月之行，若出其中。", "duration": 7000 },
+      { "text": "俯察品类之盛，仰观宇宙之大。", "duration": 8000 },
+      { "text": "寄蜉蝣于天地，渺沧海之一粟。", "duration": 8000 },
+      { "text": "此中有真意，欲辨已忘言。", "duration": 7000 }
+    ],
+    "updatedAt": 1730865600000
+  },
+  {
+    "_id": "preset_2",
+    "preset": 2,
+    "lines": [
+      { "text": "风起于青萍之末。", "duration": 7000 },
+      { "text": "水落而石出。", "duration": 7000 },
+      { "text": "山高月小，水落石出。", "duration": 7000 }
+    ],
+    "updatedAt": 1730865600000
+  }
+]

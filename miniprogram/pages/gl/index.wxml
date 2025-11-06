@@ -8,10 +8,28 @@
   <view class="top-icon-btn search-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSearch" role="button"></view>
   <!-- 第二行：右侧“禅”按钮（位于设置按钮正下方） -->
   <view class="top-icon-btn zen-btn" bindtap="onToggleZenMode" role="button">禅</view>
-  <!-- 第一行第三列：禅模式时出现“切”按钮，替代设定按钮位置 -->
-  <view wx:if="{{zenMode}}" class="top-icon-btn cut-btn" bindtap="onToggleCut" role="button">切</view>
+  <!-- 第一行第三列：“切”按钮常驻，通过 inert 类淡入淡出（禅定下可见） -->
+  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}}" bindtap="onToggleCut" role="button">切</view>
   <!-- 提示信息（可选）：与时间保持同一行，不占宽度 -->
   <view class="top-tip {{hoverText ? 'visible' : ''}} {{zenMode ? 'inert' : ''}}">{{hoverText}}</view>
+  <!-- 禅定诗句改为独立层：双容器交替，支持淡入淡出与位移 -->
+</view>
+
+<!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
+<view wx:if="{{zenMode}}" class="poetry-layer">
+  <view id="poetryA" class="poetry-item {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
+    <!-- 多层残影：不依赖 text-shadow，在微信小程序更稳定 -->
+    <block wx:for="{{poetryTrailLayers}}" wx:key="index">
+      <text class="poetry-text poetry-trail" style="opacity: {{item.alpha}}; transform: translate3d(0px, {{item.offset}}px, 0);">{{poetryA.text}}</text>
+    </block>
+    <text class="poetry-text">{{poetryA.text}}</text>
+  </view>
+  <view id="poetryB" class="poetry-item {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
+    <block wx:for="{{poetryTrailLayers}}" wx:key="index">
+      <text class="poetry-text poetry-trail" style="opacity: {{item.alpha}}; transform: translate3d(0px, {{item.offset}}px, 0);">{{poetryB.text}}</text>
+    </block>
+    <text class="poetry-text">{{poetryB.text}}</text>
+  </view>
 </view>
 
 <!-- 搜索面板遮罩：点击任意空白关闭，同时把触摸事件转交到渲染层（与国家面板一致） -->
@@ -29,10 +47,10 @@
 </view>
 
 <!-- 面板外点击关闭：透明遮罩，放在画布之上、面板之下 -->
-<view wx:if="{{settingsOpen}}" class="settings-mask" catchtouchmove="true" bindtap="onCloseSettings"></view>
+<view wx:if="{{settingsOpen}}" class="settings-mask {{settingsFading?'fading-out':''}}" bindtap="onCloseSettings" bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
 
 <!-- 设置面板：移出滚动容器，保持与顶栏同层级，避免遮挡与层级冲突 -->
-<view class="settings-panel" wx:if="{{settingsOpen}}">
+<view class="settings-panel {{settingsFading?'fading-out':''}}" wx:if="{{settingsOpen}}">
   <view class="settings-title">设置</view>
   <view class="settings-row">
     <text>夜间模式</text>
@@ -92,9 +110,9 @@
 </scroll-view>
 
 <!-- 底部缩放条：统一胶囊风格，保留原 slider（事件吃掉，避免冒泡到 canvas） -->
-<view wx:if="{{!zenMode}}" class="zoom-bar" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">
+<view class="zoom-bar {{zenMode ? 'inert' : ''}}" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">
   <slider class="zoom-slider"
-          min="0.6" max="2.86" step="0.01"
+          min="{{uiZoomMin}}" max="{{uiZoomMax}}" step="0.01"
           value="{{uiZoom}}"
           active-color="#78aadc"
           backgroundColor="#17283c"
@@ -106,10 +124,10 @@
 
 <!-- 国家信息面板遮罩：点击除语言按钮外的任意处关闭（与设置面板一致） -->
 <!-- 允许穿透拖动：去掉 catchtouchmove，保留点击关闭 -->
-<view wx:if="{{countryPanelOpen}}" class="country-mask" bindtap="onCloseCountryPanel" bindtouchstart="onMaskTouchStart" bindtouchmove="onMaskTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
+<view wx:if="{{countryPanelOpen}}" class="country-mask {{countryPanelFading?'fading-out':''}}" bindtap="onCloseCountryPanel" bindtouchstart="onMaskTouchStart" bindtouchmove="onMaskTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
 
 <!-- 国家信息面板：点击国家后显示（保持画布可旋转；遮罩负责关闭） -->
-<view class="country-panel" wx:if="{{countryPanelOpen}}" style="top: {{countryPanelTop}}px" bindtouchstart="onPanelTouchStart" bindtouchmove="onPanelTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+<view class="country-panel {{countryPanelFading?'fading-out':''}}" wx:if="{{countryPanelOpen}}" style="top: {{countryPanelTop}}px" bindtouchstart="onPanelTouchStart" bindtouchmove="onPanelTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
   <view class="country-title">{{countryInfo.name || '未知'}}{{countryInfo.titleTzSuffix || ''}}</view>
   <view class="country-row"><text class="k">{{labels.capital}}</text><text class="v">{{countryInfo.capital || '--'}}</text></view>
   <view class="country-row"><text class="k">{{labels.area}}</text><text class="v">{{countryInfo.areaKm2 || '--'}} km²</text></view>

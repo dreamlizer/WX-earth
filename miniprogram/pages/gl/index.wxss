@@ -26,6 +26,7 @@ canvas {
   display: grid;
   grid-template-columns: 40px auto 40px; /* 两侧按钮统一 40px */
   column-gap: 10px;
+  row-gap: 8px; /* 新增：上下行留间距，避免“禅”与“设定”重叠 */
   align-items: center;
   width: min(92vw, 420px);
   /* 提升层级：确保顶部时区提示位于国家面板和遮罩之上 */
@@ -45,6 +46,8 @@ canvas {
   border-radius: 14px; /* 圆角风格与时间胶囊一致 */
   font-weight: 700;
   box-sizing: border-box;
+  /* 禅模式切换时的淡入淡出 */
+  transition: opacity var(--ui-fade-ms, 320ms) ease;
 }
 /* 放大齿轮按钮尺寸与字号 */
 .settings-btn {
@@ -66,6 +69,8 @@ canvas {
   text-shadow: 0 0 10px rgba(200,235,255,0.95), 0 0 18px rgba(120,170,220,0.6);
   box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 0 12px rgba(120,170,220,0.15);
   text-align: center;
+  /* 禅模式切换时的淡入淡出 */
+  transition: opacity var(--ui-fade-ms, 320ms) ease;
 }
 .top-tip {
   /* 改为固定定位：占据“搜索输入框”的位置与宽度 */
@@ -110,8 +115,8 @@ canvas {
 
 /* “切”按钮：置于第二行第一列（语言按钮下方），与“禅”对称 */
 .cut-btn {
-  grid-column: 3 / span 1; /* 替代设定按钮位置 */
-  grid-row: 1;
+  grid-column: 1 / span 1; /* 第二行左侧，与“禅”对称 */
+  grid-row: 2;
 }
 
 /* “禅”按钮：置于第二行第三列（设置按钮下方） */
@@ -119,6 +124,41 @@ canvas {
   grid-column: 3 / span 1;
   grid-row: 2; /* 固定第二行，避免上移 */
 }
+
+/* 禅定诗句盒：右上角显示，跟随顶部安全区与工具栏布局 */
+.poetry-box {
+  /* 旧右上角诗句盒不再使用，改为独立层 */
+  display: none;
+}
+
+.poetry-box.visible { opacity: 1; }
+
+/* 新：诗句独立层与条目样式 */
+.poetry-layer {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 1200;
+  pointer-events: none; /* 不拦截触控 */
+}
+.poetry-item {
+  position: fixed; /* 相对视口定位以便全屏移动 */
+  color: #e8f6ff;
+  background: transparent; /* 移除背景框 */
+  border: none;
+  border-radius: 0; /* 去掉圆角，彻底无框 */
+  padding: 0; /* 纯文字呈现 */
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+  word-break: keep-all;
+  display: inline-block;
+  opacity: 0; /* 通过 .visible 切换 */
+  will-change: transform, opacity; /* 降低移动时的闪烁 */
+  backface-visibility: hidden;
+}
+.poetry-text { display: inline-block; writing-mode: inherit; text-orientation: inherit; color: inherit; }
+.poetry-trail { position: absolute; left: 0; top: 0; pointer-events: none; }
+.poetry-item.visible { opacity: 1; }
 
 /* 已移除 PC 预览缩放控件 */
 
@@ -147,7 +187,7 @@ canvas {
 
 /* 禅模式下保留网格占位但隐藏视觉与交互 */
 .inert {
-  visibility: hidden;
+  opacity: 0;
   pointer-events: none;
 }
 /* 面板外点击关闭的透明遮罩：位于画布之上、面板之下 */
@@ -182,6 +222,8 @@ canvas {
   border-radius: 999px; /* 两端半圆 */
   box-shadow: 0 10px 24px rgba(0,0,0,0.45);
   z-index: 1000; /* 始终最前 */
+  /* 禅模式切换时的淡入淡出 */
+  transition: opacity var(--ui-fade-ms, 320ms) ease;
 }
 .zoom-slider {
   width: 100%;
@@ -191,7 +233,7 @@ canvas {
 .country-mask {
   position: fixed;
   left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0,0,0,0); /* 改为透明：不再暗化地球 */
   z-index: 980;
 }
 
@@ -216,17 +258,19 @@ canvas {
 .country-title {
   font-weight: 700;
   font-size: 18px; /* +2px */
-  margin-bottom: 3px; /* 减少下边距 50% 使整体更紧凑 */
+  margin-bottom: 2px; /* 标题更紧凑，距离缩小约 33% */
+  white-space: nowrap;
+  word-break: keep-all;
 }
 .country-row {
   display: grid;
   grid-template-columns: 62px auto;
   align-items: center;
-  column-gap: 8px;
-  margin: 5px 0;
+  column-gap: 4px; /* 标签与值间距缩小约 50% */
+  margin: 2px 0;   /* 行距缩小约 60% → 更紧凑 */
 }
-.country-row .k { color: #9cc3e9; }
-.country-row .v { color: #e8f6ff; }
+.country-row .k { color: #9cc3e9; white-space: nowrap; word-break: keep-all; }
+.country-row .v { color: #e8f6ff; white-space: nowrap; word-break: keep-all; }
 .country-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -283,3 +327,12 @@ canvas {
 .search-item-text { color: #e8f6ff; font-size: 16px; /* +2px */ }
 .search-item:active { background: rgba(160,200,250,0.18); }
 .search-empty { color: #9cc3e9; font-size: 13px; padding: 6px; text-align: center; }
+
+/* —— 额外规则：强制不换行（时间胶囊 & 国家面板内容） —— */
+.time-pill { white-space: nowrap; word-break: keep-all; }
+/* 面板淡出统一样式：用于禅定模式下 0.5s 退场 */
+.fading-out {
+  opacity: 0;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}

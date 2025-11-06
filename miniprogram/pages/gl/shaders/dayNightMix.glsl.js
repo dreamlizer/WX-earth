@@ -26,6 +26,8 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uDaySideGain: { value: 1.0 },
     // 新增：整体曝光（乘法系数；1 为不变），用于快速整体提亮
     uExposure: { value: 1.0 },
+    // 新增：高光压缩（ToneMap）系数；>0 时压低高亮避免“冲白”
+    uHighlightsRoll: { value: 0.0 },
   };
 
   const vertexShader = `
@@ -55,6 +57,7 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uniform float uDayNightContrast;
     uniform float uDaySideGain;
     uniform float uExposure;
+    uniform float uHighlightsRoll;
 
     void main() {
       // 基于世界坐标计算球面法线（纠正位移对法线的影响）
@@ -81,6 +84,12 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       vec4 color = mix(night, day, t);
       // 整体曝光：在伽马之前乘以曝光系数，便于统一提亮
       color.rgb *= uExposure;
+
+      // 高光压缩：在曝光后进行柔和的高亮滚降，避免过曝发灰
+      // 采用简单的 Reinhard 近似：c' = c / (1 + k * c)
+      if (uHighlightsRoll > 0.0001) {
+        color.rgb = color.rgb / (vec3(1.0) + vec3(uHighlightsRoll) * color.rgb);
+      }
 
       // 简易 gamma 调整，保持贴图观感
       color.rgb = pow(color.rgb, vec3(uGamma));

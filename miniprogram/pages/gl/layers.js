@@ -1,8 +1,11 @@
 // 场景/图层/渲染循环
 // 提供：createScene(canvas, dpr, width, height), makeBorder, highlight, updateCameraDistance
 
-import { createScopedThreejs } from 'threejs-miniprogram';
+// 为规避 DevTools 的包名解析缓存问题，改为引用本页的兼容别名（CommonJS 形式，切断循环）
+const { createScopedThreejs } = require('./threejs-miniprogram.js');
 import { convertLatLonToVec3 } from './geography.js';
+import { applyWarp, getAnchors } from './geo-warp.js';
+import { APP_CFG } from './config.js';
 
 const RADIUS = 1;
 const OFFSET_Y = -0.55;
@@ -20,6 +23,10 @@ export function createScene(canvas, dpr, width, height) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
   renderer.setPixelRatio(pr);
   renderer.setSize(width, height, false);
+  // 启用与 PC 端一致的色彩与映射：优先使用新 API，兼容旧版 threejs-miniprogram
+  try { renderer.outputColorSpace = THREE.SRGBColorSpace; } catch(_){ try { renderer.outputEncoding = THREE.sRGBEncoding; } catch(__){} }
+  try { renderer.toneMapping = THREE.ACESFilmicToneMapping; } catch(_){ }
+  try { renderer.toneMappingExposure = 1.0; } catch(_){ }
 
   const scene  = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
@@ -81,7 +88,9 @@ export function makeBorder(THREE, globeGroup, COUNTRY_FEATURES) {
       const r = decimateRing(ring, BORDER_DECIMATE);
       const pts = r.map(([lon, lat]) => {
         // 统一微抬升高度，避免不同数据集误差导致的双线错位感
-        const v = convertLatLonToVec3(lon, lat, RADIUS + 0.0012);
+        // 新增：在经纬→3D 前应用 warp 校正
+        const [wLon, wLat] = applyWarp(lon, lat);
+        const v = convertLatLonToVec3(wLon, wLat, RADIUS + 0.0012);
         return new THREE.Vector3(v.x, v.y, v.z);
       });
       const g = new THREE.BufferGeometry().setFromPoints(pts);
@@ -92,6 +101,27 @@ export function makeBorder(THREE, globeGroup, COUNTRY_FEATURES) {
     else if (f.type === 'MultiPolygon') f.coords.forEach(poly => poly.forEach(addRing));
   });
   globeGroup.add(BORDER_GROUP);
+
+  // 调试：在锚点处绘制位移箭头（便于快速肉眼标定）
+  try {
+    const dbg = APP_CFG?.warp?.debug || {};
+    if (dbg.showArrows) {
+      const anchors = getAnchors();
+      const arrowGroup = new THREE.Group();
+      const mat = new THREE.LineBasicMaterial({ color: 0xff6633 });
+      anchors.forEach(a => {
+        const [adjLon, adjLat] = applyWarp(a.lon, a.lat);
+        const v0 = convertLatLonToVec3(a.lon, a.lat, RADIUS + 0.0014);
+        const v1 = convertLatLonToVec3(adjLon, adjLat, RADIUS + 0.0014);
+        const p0 = new THREE.Vector3(v0.x, v0.y, v0.z);
+        const p1 = new THREE.Vector3(v1.x, v1.y, v1.z);
+        const g = new THREE.BufferGeometry().setFromPoints([p0, p1]);
+        const line = new THREE.Line(g, mat); setRO(line);
+        arrowGroup.add(line);
+      });
+      globeGroup.add(arrowGroup);
+    }
+  } catch(_){ }
   return BORDER_GROUP;
 }
 
@@ -100,12 +130,14 @@ export function highlight(THREE, globeGroup, f) {
   if (!f) return null;
   const HIGHLIGHT_GROUP = new THREE.Group();
   const edgeMat = makeLineMat(THREE, 0xffcc33, 40);
-  const fillMat = makeFillMat(THREE, 0xffcc33, 0.26, 35);
+  const fillAlpha = (APP_CFG?.highlight?.fillOpacity ?? 0.26);
+  const fillMat = makeFillMat(THREE, 0xffcc33, fillAlpha, 35);
 
   const processPolygon = (rings) => {
     rings.forEach(ring => {
       const pts = ring.map(([lon, lat]) => {
-        const v = convertLatLonToVec3(lon, lat, RADIUS + 0.002);
+        const [wLon, wLat] = applyWarp(lon, lat);
+        const v = convertLatLonToVec3(wLon, wLat, RADIUS + 0.002);
         return new THREE.Vector3(v.x, v.y, v.z);
       });
       const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), edgeMat);
@@ -173,7 +205,8 @@ export function highlight(THREE, globeGroup, f) {
     // 与 2D 同步构建未闭合的 3D 顶点序列（半径抬升 0.06，避免与地球贴图 Z 冲突）
     const flatten3DOpen = outerUnwrapped.slice(0, Math.max(0, outerUnwrapped.length - 1)).map(([lon, lat]) => {
       let normLon = ((lon + 180) % 360 + 360) % 360 - 180;
-      const v = convertLatLonToVec3(normLon, lat, RADIUS + 0.001);//原来改的是0.02
+      const [wLon, wLat] = applyWarp(normLon, lat);
+      const v = convertLatLonToVec3(wLon, wLat, RADIUS + 0.001);//原来改的是0.02
       return new THREE.Vector3(v.x, v.y, v.z);
     });
 

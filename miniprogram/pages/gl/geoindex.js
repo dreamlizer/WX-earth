@@ -2,6 +2,7 @@
 // 提供：loadCountries、bboxOf、buildIndex、gatherCandidates
 
 import { normalizeLon } from './geography.js';
+import { APP_CFG } from './config.js';
 
 export function bboxOf(type, coords) {
   let minLon = 181, minLat = 91, maxLon = -181, maxLat = -91;
@@ -14,7 +15,18 @@ export function bboxOf(type, coords) {
 export function loadCountries() {
   return new Promise((resolve, reject) => {
     try {
-      const gj = require('../../assets/data/countries.json.js');
+      // 注意：微信小程序 require 不支持动态路径，需使用静态字符串
+      const lod = (APP_CFG?.bordersLod || '110m').toString().toLowerCase();
+      let gj = null;
+      if (lod === '50m') {
+        try { gj = require('../../assets/data/countries_50m.json.js'); }
+        catch(_) { gj = require('../../assets/data/countries.json.js'); }
+      } else if (lod === '10m') {
+        try { gj = require('../../assets/data/countries_10m.json.js'); }
+        catch(_) { gj = require('../../assets/data/countries.json.js'); }
+      } else {
+        gj = require('../../assets/data/countries.json.js');
+      }
       const features = gj.features.map(f => ({
         props: f.properties || {},
         type: f.geometry.type,

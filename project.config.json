@@ -13,6 +13,7 @@
     "coverView": true,
     "useIsolateContext": true,
     "useCompilerModule": true,
+    "disableUseStrict": true,
     "userConfirmedUseCompilerModuleSwitch": true,
     "packNpmManually": true,
     "packNpmRelationList": [
@@ -27,7 +28,9 @@
       { "type": "glob", "value": "miniprogram/node_modules/**" },
       { "type": "glob", "value": "**/*.map" },
       { "type": "glob", "value": "**/*.md" },
-      { "type": "glob", "value": "miniprogram/assets/data/*.geojson" }
+      { "type": "glob", "value": "miniprogram/assets/data/*.geojson" },
+      { "type": "glob", "value": "miniprogram/libs/troika-three-text.min.js" },
+      { "type": "glob", "value": "WinReference/**" }
     ]
   }
 }

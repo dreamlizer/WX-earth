@@ -1,12 +1,34 @@
 // 极薄适配层：页面生命周期与事件绑定，只转交给 main.js
-import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, getRenderContext, setZoom, setNightMode, setCloudVisible, getCountries, setPaused, flyTo, setDebugFlags, selectCountryByCode, setZenMode } from './main.js';
+import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, getRenderContext, setZoom, setNightMode, setCloudVisible, getCountries, setPaused, flyTo, setDebugFlags, selectCountryByCode, setZenMode, startPoetry3D, stopPoetry3D } from './main.js';
+import { APP_CFG } from './config.js';
 // 避免直接 import JSON 在小程序里不被当作模块，改为 JS 导出
 import countryMeta from './country_data.js';
 import tzlookup from '../../libs/tz-lookup.js';
 import { initLabels, updateLabels, setLabelsBudget, setForcedLabel, setForcedCityCountries, clearForcedCityCountries } from './labels.js';
 import { initCityMarkers, updateCityMarkers, disposeCityMarkers, highlightCityMarker } from './city-markers.js';
-import { ENABLE_CITY_LABELS, INTERACTION_DEBUG_LOG } from './label-constants.js';
+import { ENABLE_CITY_LABELS, INTERACTION_DEBUG_LOG, LABELS_DEBUG_LOG } from './label-constants.js';
 import { cities } from '../../assets/data/cities_data.js';
+
+// —— 数字格式化：跨端一致的千分位（避免部分手机不支持 toLocaleString 分组）
+const formatThousandsInt = (n) => {
+  try {
+    const v = Math.round(Number(n));
+    if (!isFinite(v)) return '--';
+    // 优先 Intl，失败则回退正则分组
+    try { return new Intl.NumberFormat('en-US').format(v); } catch(_){}
+    return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  } catch(_){ return '--'; }
+};
+const formatThousandsFixed = (n, digits = 2) => {
+  try {
+    const v = Number(n);
+    if (!isFinite(v)) return '--';
+    const fixed = v.toFixed(digits);
+    const parts = fixed.split('.');
+    const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.length > 1 ? `${int}.${parts[1]}` : int;
+  } catch(_){ return '--'; }
+};
 
 Page({
   data: {
@@ -17,6 +39,9 @@ Page({
     scrollTop: 0,
     // UI 可见缩放值（与原 slider 双向同步）
     uiZoom: 1.0,
+    // 由配置驱动的缩放边界，供底部 slider 使用
+    uiZoomMin: (APP_CFG?.camera?.minZoom ?? 0.6),
+    uiZoomMax: (APP_CFG?.camera?.maxZoom ?? 2.86),
     // PC 端判断与页面滚动锚点
     isPC: false,
     lastPageScrollTop: 0,
@@ -33,6 +58,10 @@ Page({
     // 国家信息面板
     countryPanelOpen: false,
     countryInfo: null,
+    // 面板淡出控制（禅定模式进入时 0.5s 退场）
+    settingsFading: false,
+    countryPanelFading: false,
+    panelFadeMs: 500,
     // 小标题多语言映射与当前标签集
     uiLabels: {
       zh: { capital: '首都', area: '面积', population: '人口', gdp: 'GDP' },
@@ -47,6 +76,30 @@ Page({
     suggestions: [],
     // 禅定模式开关（仅UI显隐与面板关闭，不改变渲染逻辑）
     zenMode: false,
+    // 禅定诗句当前文本（进入禅定后循环显示）
+    poetryText: '',
+    poetryVisible: false,
+    poetryFadeMs: 600,
+    // 诗句字号（来自配置）
+    poetryFontSizePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Number(APP_CFG.poetry.fontSizePx) : 16,
+    // 诗句拖影/描边样式（内联 CSS 片段）
+    poetryShadowStyle: '',
+    // 诗句移动与交替配置（从 config.js 读取并缓存，便于绑定与逻辑使用）
+    poetryCrossfadeMs: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.crossfadeMs)) ? Number(APP_CFG.poetry.crossfadeMs) : 1000,
+    poetryMovePxPerSec: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.movePxPerSec)) ? Number(APP_CFG.poetry.movePxPerSec) : 36,
+    poetrySafeMarginPx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.safeMarginPx)) ? Number(APP_CFG.poetry.safeMarginPx) : 18,
+    // 下一句首字贴近上一句首字的最大距离（px）
+    poetryNextStartMaxDistancePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.nextStartMaxDistancePx)) ? Number(APP_CFG.poetry.nextStartMaxDistancePx) : 20,
+    poetryInitialCenterRatio: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.initialCenterRatio)) ? Number(APP_CFG.poetry.initialCenterRatio) : 0.35,
+    // 双层容器（A/B）用于句间交替与位移
+    poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+    poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+    // 诗句残影层：由 _startPoetry 按配置生成，按偏移/透明度渲染
+    poetryTrailLayers: [],
+    // 云端音频 FileID（只走云端，不再回退本地）
+    // 与贴图保持一致的 fileID 格式：cloud://<env>.<bucket>/path
+    cloudZen1FileId: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/zen-1.aac',
+    cloudZen2FileId: '',
   },
 
   // 页面滚动事件：用于 PC 端鼠标滚轮触发缩放
@@ -158,6 +211,7 @@ Page({
     try {
       const sys = wx.getSystemInfoSync();
       const isPC = /windows|mac/i.test(sys.platform || '') || sys.deviceType === 'pc' || sys.environment === 'devtools';
+      try { this.__isDevtools = (sys && sys.environment === 'devtools'); } catch(_){}
       const anchor = 200;
       this.setData({ isPC, lastPageScrollTop: anchor, pageScrollAnchor: anchor });
       if (isPC) wx.pageScrollTo({ scrollTop: anchor, duration: 0 });
@@ -195,8 +249,13 @@ Page({
     };
     waitInit();
     this._lastLabelsUpdate = 0;
-    // 预加载云端城市数据（存在则替换本地）
-    this.preloadCitiesCloud();
+    // 预加载云端数据：在 DevTools 中跳过，以减少噪音与避免参数校验报错
+    if (!this.__isDevtools) {
+      this.preloadCitiesCloud();
+      this.preloadPoetryCloud();
+      // 首次加载：尝试将禅音频持久化保存到本地，提升离线可用性
+      try { this.ensureOfflineAudio(); } catch(_){}
+    }
     try { this.updateTopOffsets(); } catch(_){ }
   },
   onReady(){
@@ -211,9 +270,35 @@ Page({
   onUnload() { teardown(); },
   onShow() { try { setPaused(false); } catch(_){ } },
   onHide() { try { setPaused(true); } catch(_){ } },
-  onTouchStart(e){ onTouchStart(e); },
-  onTouchMove(e){ onTouchMove(e); },
-  onTouchEnd(e){ onTouchEnd(e); },
+  // 拖动丝滑：一旦检测到拖动，自动关闭所有面板（国家/搜索/设置），避免重绘与事件干扰
+  onTouchStart(e){
+    try { this.__dragClosedPanels = false; } catch(_){}
+    // 拖动优先：若有面板打开，仅记录“待关闭”标记，不在本帧 setData
+    try {
+      this.__pendingPanelsClose = !!(this.data.countryPanelOpen || this.data.searchOpen || this.data.settingsOpen);
+    } catch(_){}
+    const ev = this.__normalizeToCanvasTouches(e);
+    onTouchStart(ev);
+  },
+  onTouchMove(e){
+    // 不在 move 阶段关闭面板，避免同步重排造成的顿挫
+    // 仅把事件转交到渲染层，保持地球旋转的最高优先级
+    const ev = this.__normalizeToCanvasTouches(e);
+    onTouchMove(ev);
+  },
+  onTouchEnd(e){
+    try { this.__dragClosedPanels = false; } catch(_){}
+    const ev = this.__normalizeToCanvasTouches(e);
+    onTouchEnd(ev);
+    // 在本次交互结束后统一关闭已打开的面板（若标记存在），避免影响拖动流畅度
+    try {
+      if (this.__pendingPanelsClose) {
+        this.setData({ countryPanelOpen: false, searchOpen: false, settingsOpen: false });
+        try { this.updateTopOffsets(); } catch(_){}
+        this.__pendingPanelsClose = false;
+      }
+    } catch(_){}
+  },
 
   // —— 工具：把任意组件的触摸事件统一转换为 canvas 坐标系（x/y）
   __normalizeToCanvasTouches(e){
@@ -497,8 +582,8 @@ Page({
   // 搜索遮罩透传：与国家面板相同策略
   onSearchMaskTouchStart(e){
     try {
-      // 立即关闭输入框，并把事件转交给渲染层以继续旋转
-      if (this.data.searchOpen) this.setData({ searchOpen: false, suggestions: [] });
+      // 不立即关闭：仅标记待关闭，并把事件转交给渲染层继续旋转
+      if (this.data.searchOpen) this.__pendingPanelsClose = true;
       const { touches } = this.__normalizeToCanvasTouches(e);
       onTouchStart({ touches });
     } catch(_){}
@@ -567,10 +652,10 @@ Page({
     // 不在 touchstart 立即关闭；先转交事件（坐标归一化为 canvas），避免中断当前手势
     try { const en = this.__normalizeToCanvasTouches(e); onTouchStart(en); } catch(_){}
     this.__panelClosing = true;
+    this.__pendingPanelsClose = true;
   },
   onPanelTouchMove(e){
-    // 第一次 move 执行关闭，再继续把事件转交，不打断当前拖动手势
-    try { if (this.__panelClosing && this.data.countryPanelOpen) this.setData({ countryPanelOpen: false }); } catch(_){}
+    // 不在 move 阶段执行关闭，继续把事件转交，保证拖动不卡顿
     this.__panelClosing = false;
     try { const en = this.__normalizeToCanvasTouches(e); onTouchMove(en); } catch(_){}
   },
@@ -580,9 +665,10 @@ Page({
     // 遮罩同上：touchstart 不关，第一次 move 关；坐标统一为 canvas
     try { const en = this.__normalizeToCanvasTouches(e); onTouchStart(en); } catch(_){}
     this.__maskClosing = true;
+    this.__pendingPanelsClose = true;
   },
   onMaskTouchMove(e){
-    try { if (this.__maskClosing && this.data.countryPanelOpen) this.setData({ countryPanelOpen: false }); } catch(_){}
+    // 不在 move 阶段关闭，继续把事件转交到渲染层
     this.__maskClosing = false;
     try { const en = this.__normalizeToCanvasTouches(e); onTouchMove(en); } catch(_){}
   },
@@ -624,11 +710,13 @@ Page({
     if (!isNaN(val)) { this.setData({ uiZoom: val }); setZoom(val); }
   },
   onZoomPlus(){
-    const next = Math.min(2.2, this.data.uiZoom + 0.08);
+    const maxZ = (APP_CFG?.camera?.maxZoom ?? 2.2);
+    const next = Math.min(maxZ, this.data.uiZoom + 0.08);
     this.setData({ uiZoom: next }); setZoom(next);
   },
   onZoomMinus(){
-    const next = Math.max(0.6, this.data.uiZoom - 0.08);
+    const minZ = (APP_CFG?.camera?.minZoom ?? 0.6);
+    const next = Math.max(minZ, this.data.uiZoom - 0.08);
     this.setData({ uiZoom: next }); setZoom(next);
   },
 
@@ -653,25 +741,45 @@ Page({
   onToggleZenMode(){
     const next = !this.data.zenMode;
     if (next) {
-      this.setData({
-        zenMode: true,
-        settingsOpen: false,
-        searchOpen: false,
-        countryPanelOpen: false,
-      });
+      // 进入禅定：若面板已打开，先触发 0.5s 淡出，再关闭
+      const fadeMs = Number(this.data.panelFadeMs || 500);
+      const updates = { zenMode: true, searchOpen: false };
+      if (this.data.settingsOpen) updates.settingsFading = true;
+      if (this.data.countryPanelOpen) updates.countryPanelFading = true;
+      // 禁止时区胶囊：清空 hover 文本
+      updates.hoverText = '';
+      this.setData(updates);
+      // 到达淡出时间后真正关闭面板
+      if (this.data.settingsOpen || this.data.countryPanelOpen) {
+        setTimeout(() => {
+          this.setData({ settingsOpen: false, countryPanelOpen: false, settingsFading: false, countryPanelFading: false });
+        }, fadeMs);
+      }
       // 页面层调用渲染层进入禅定：动画倾斜23°并稍微缩小，锁定交互
       try { setZenMode(true); } catch(_){}
+      // 音频与诗句：进入禅定时启动 preset1（zen-1 + poetry-1）
+      try { this._startZenAudio(1); } catch(_){}
+      try { this._startPoetry(1); } catch(_){}
     } else {
       this.setData({ zenMode: false });
       // 退出禅定：恢复先前视角并解除锁定
       try { setZenMode(false); } catch(_){}
+      // 禅定退出：关闭音乐与诗句循环
+      try { this._stopZenAudio(); } catch(_){}
+      try { this._stopPoetry(); } catch(_){}
     }
   },
 
   // “切”按钮：后续用于切换音乐与诗句组合，这里先占位
   onToggleCut(){
     try {
-      const msg = this.data.lang === 'zh' ? '切换预设（占位）' : 'Switch preset (stub)';
+      // 在两个预设之间切换：1 <-> 2
+      const nextPreset = (this.__zenPreset === 1) ? 2 : 1;
+      this.__zenPreset = nextPreset;
+      this._startZenAudio(nextPreset);
+      this._startPoetry(nextPreset);
+      // 轻提示
+      const msg = (this.data.lang === 'zh') ? `切到预设${nextPreset}` : `Preset ${nextPreset}`;
       this.setData({ hoverText: msg });
       setTimeout(() => { this.setData({ hoverText: '' }); }, 1200);
     } catch(_) {}
@@ -685,6 +793,428 @@ Page({
     const on = String(valStr) === 'true';
     if (key === 'nightMode') { this.setData({ nightMode: on }); setNightMode(on); }
     else if (key === 'showCloud') { this.setData({ showCloud: on }); setCloudVisible(on); }
+  },
+  // ===== 禅定：音频播放（云端优先，本地回退）与诗句循环 =====
+  __zenPreset: 1,
+  __zenAudio: null,
+  __poetryTimer: null,
+  __poetryTimer2: null,
+  __poetryIndex: 0,
+  __poetryPresets: {
+    // poetry-1：先准备好（与 zen-1 搭配）。可按需调整显示顺序和时长。
+    1: [
+      // 原有六句：去除尾部句号
+      { text: '天体运行，周而复始', duration: 7000 },
+      { text: '星汉灿烂，若出其里', duration: 7000 },
+      { text: '日月之行，若出其中', duration: 7000 },
+      { text: '俯察品类之盛，仰观宇宙之大', duration: 8000 },
+      { text: '寄蜉蝣于天地，渺沧海之一粟', duration: 8000 },
+      { text: '此中有真意，欲辨已忘言', duration: 7000 },
+      // 新增诗句（zen-1 对应），已移除尾部句号（保留问号）
+      { text: '天地玄黄，宇宙洪荒', duration: 7000 },
+      { text: '日月盈昃，辰宿列张', duration: 7000 },
+      { text: '北辰高悬，众星共之', duration: 7000 },
+      { text: '列星随旋，日月递炤', duration: 7000 },
+      { text: '天高地迥，觉宇宙之无穷', duration: 7000 },
+      { text: '日月安属，列星安陈？', duration: 7000 },
+      { text: '星垂平野阔，月涌大江流', duration: 7000 },
+      { text: '银汉迢迢，星河欲转', duration: 7000 },
+      { text: '寥廓苍天，斗转星移', duration: 7000 },
+      { text: '上下未形，何由考之？', duration: 7000 },
+      { text: '冥昭瞢暗，谁能极之？', duration: 7000 },
+      { text: '角宿未旦，曜灵安藏？', duration: 7000 },
+      { text: '乾坤浩荡，日月昭昭', duration: 7000 },
+      { text: '天旋地转，万物萧然', duration: 7000 },
+      { text: '云汉昭回，日月光华', duration: 7000 },
+      { text: '巡天遥看，一千河', duration: 7000 },
+      { text: '浩浩乎，如冯虚御风', duration: 8000 },
+      { text: '茫茫宇宙，渺渺太虚', duration: 7000 },
+      { text: '周流六虚，无有止息', duration: 7000 },
+      { text: '四方上下，谓之宇也', duration: 7000 }
+    ],
+    // poetry-2：占位（后续你上传 zen-2 后可替换具体诗句）
+    2: [
+      { text: '风起于青萍之末。', duration: 7000 },
+      { text: '水落而石出。', duration: 7000 },
+      { text: '山高月小，水落石出。', duration: 7000 }
+    ]
+  },
+
+  // 云端拉取诗句集（按 preset 分组），存在则覆盖本地 __poetryPresets
+  async preloadPoetryCloud(){
+    // 本地预览或云能力不可用时直接跳过，避免控制台噪声
+    if (APP_CFG?.cloud?.enabled === false || !(wx && wx.cloud && typeof wx.cloud.callFunction === 'function')) {
+      try { console.warn('[poetry] 云能力不可用，跳过预加载'); } catch(_){}
+      return;
+    }
+    const normalize = (arr) => {
+      const map = {};
+      for (const doc of (Array.isArray(arr) ? arr : [])) {
+        const preset = Number(doc?.preset || 1);
+        const lines = Array.isArray(doc?.lines) ? doc.lines
+          .map(l => ({ text: String(l?.text || ''), duration: Number(l?.duration || 7000) }))
+          .filter(x => x.text.length > 0) : [];
+        if (lines.length) map[preset] = lines;
+      }
+      return map;
+    };
+    const tryLoad = async (fnName) => {
+      const { result } = await wx.cloud.callFunction({ name: fnName, data: { type: 'list' } });
+      const arr = result && Array.isArray(result.data) ? result.data : [];
+      return normalize(arr);
+    };
+    try {
+      let source = '';
+      // 1) 主函数名
+      let map = await tryLoad('poetrySets');
+      if (Object.keys(map).length) { source = 'cloud-fn:poetrySets'; }
+      // 2) 若失败或为空，尝试备用函数名（用于你临时改名重建）
+      if (!Object.keys(map).length) {
+        try { map = await tryLoad('poetrySetsV2'); if (Object.keys(map).length) source = 'cloud-fn:poetrySetsV2'; } catch(_){ }
+      }
+      // 2.5) 若云函数不可用或仍为空，直接从云数据库读取（无需云函数）
+      if (!Object.keys(map).length && wx.cloud && wx.cloud.database) {
+        try {
+          const db = wx.cloud.database();
+          const r = await db.collection('poetry_sets').limit(100).get();
+          const arr = Array.isArray(r?.data) ? r.data : [];
+          map = normalize(arr);
+          if (Object.keys(map).length) { source = 'db:poetry_sets'; console.info('[poetry] 直接从数据库读取成功'); }
+        } catch(dbErr){ console.warn('[poetry] 数据库直接读取失败：', dbErr); }
+      }
+      // 3) 若仍为空，使用本地回退 JSON
+      if (!Object.keys(map).length) {
+        try {
+          const local = require('../../assets/data/poetry_sets.json');
+          map = normalize(local);
+          source = 'local:poetry_sets.json';
+          console.warn('[poetry] 使用本地回退 JSON');
+        } catch(_){ }
+      }
+      if (Object.keys(map).length) {
+        this.__poetryPresets = { ...this.__poetryPresets, ...map };
+        this.__poetrySource = source || this.__poetrySource || 'unknown';
+        console.info(`[poetry] 载入 ${Object.keys(map).length} 组，来源：${this.__poetrySource}`);
+      }
+    } catch(e){ console.warn('[poetry] 载入失败：', e); }
+  },
+
+  // 开发者工具辅助：将当前预设写入云端，便于从控制台快速更新
+  async pushPoetryPresetToCloud(preset){
+    try {
+      const lines = this.__poetryPresets[preset] || [];
+      const { result } = await wx.cloud.callFunction({ name: 'poetrySets', data: { type: 'upsert', preset, lines } });
+      try { console.log('[poetry upsert]', result); } catch(_){}
+    } catch(e){ try { console.warn('[poetry upsert] 失败：', e); } catch(_){} }
+  },
+
+  // —— 诗句移动/交替工具函数 ——
+  __rand(min, max){ return min + Math.random() * (max - min); },
+  __clamp(v, a, b){ return Math.max(a, Math.min(b, v)); },
+  __getViewport(){
+    try {
+      // 减少弃用警告：优先使用新 API（存在时）
+      if (typeof wx.getWindowInfo === 'function') return wx.getWindowInfo();
+      // 次优：异步版本（保持同步返回需求，改用 Sync 回退）
+      return wx.getSystemInfoSync();
+    } catch(_) {
+      return { windowWidth: 360, windowHeight: 640, safeArea: null };
+    }
+  },
+  __computeStartNearCenter(w, h, itemW, itemH, bounds){
+    // 若提供边界，则在该边界内部的中心附近随机；否则退化为全屏中心附近
+    const r = this.data.poetryInitialCenterRatio || 0.35;
+    const bx = bounds ? (bounds.maxX - bounds.minX) : w;
+    const by = bounds ? (bounds.maxY - bounds.minY) : h;
+    const cx = (bounds ? bounds.minX : 0) + bx * 0.5;
+    const cy = (bounds ? bounds.minY : 0) + by * 0.5;
+    const rx = bx * r * 0.5, ry = by * r * 0.5;
+    const rawX = this.__rand(cx - rx, cx + rx);
+    const rawY = this.__rand(cy - ry, cy + ry);
+    const x = this.__clamp(rawX, (bounds ? bounds.minX : 0), (bounds ? bounds.maxX : w) - itemW);
+    const y = this.__clamp(rawY, (bounds ? bounds.minY : 0), (bounds ? bounds.maxY : h) - itemH);
+    return { x, y };
+  },
+  __computeMove(start, itemW, itemH, speedPxPerSec, showMs, bounds){
+    const dist = Math.max(0, speedPxPerSec) * Math.max(0, showMs) / 1000;
+    const theta = this.__rand(0, Math.PI * 2);
+    let endX = start.x + dist * Math.cos(theta);
+    let endY = start.y + dist * Math.sin(theta);
+    // clamp 到安全边界内
+    endX = this.__clamp(endX, bounds.minX, bounds.maxX - itemW);
+    endY = this.__clamp(endY, bounds.minY, bounds.maxY - itemH);
+    return { endX, endY, tx: (endX - start.x), ty: (endY - start.y) };
+  },
+  __nearbyFrom(end, itemW, itemH, bounds){
+    const limit = Number((APP_CFG && APP_CFG.poetry && APP_CFG.poetry.nextStartMaxDistancePx) || this.data.poetryNextStartMaxDistancePx || 20);
+    // 先对上一句的结束点进行安全夹取，避免其位于边界之外导致异常偏移
+    const safeEndX = this.__clamp(end.x, bounds.minX, bounds.maxX - itemW);
+    const safeEndY = this.__clamp(end.y, bounds.minY, bounds.maxY - itemH);
+    // 贴近规则：仅约束纵向（首字顶端）差值 <= limit；横向轻微扰动即可
+    const dx = this.__rand(-Math.max(6, limit * 0.5), Math.max(6, limit * 0.5));
+    const dy = this.__rand(-limit, limit);
+    const x = this.__clamp(safeEndX + dx, bounds.minX, bounds.maxX - itemW);
+    const y = this.__clamp(safeEndY + dy, bounds.minY, bounds.maxY - itemH);
+    return { x, y };
+  },
+  __measure(id){
+    return new Promise(resolve => {
+      try {
+        const q = wx.createSelectorQuery();
+        q.select(`#${id}`).boundingClientRect(rect => { resolve(rect || { width: 80, height: 160 }); }).exec();
+      } catch(_) { resolve({ width: 80, height: 160 }); }
+    });
+  },
+  _getLocalAudio(preset){
+    // 策略调整：云端不可用则不播放，不再使用本地兜底
+    return '';
+    // 如需恢复本地兜底：
+    // return preset === 1 ? '/assets/zen-1.aac' : '/assets/zen-2.aac';
+  },
+  __audioSavedPathsKey: '__audio_saved_paths_v1',
+  // 避免 this 绑定问题与本地预览报错：显式使用常量 key，且判断 API 可用
+  __readAudioSaved(){ try { return (typeof wx?.getStorageSync === 'function') ? (wx.getStorageSync('__audio_saved_paths_v1') || {}) : {}; } catch(_) { return {}; } },
+  __writeAudioSaved(obj){ try { if (typeof wx?.setStorageSync === 'function') wx.setStorageSync('__audio_saved_paths_v1', obj || {}); } catch(_){} },
+  __audioTargetPath(preset){
+    try {
+      const root = wx.env?.USER_DATA_PATH || '';
+      if (!root) return '';
+      const dir = root + '/audio';
+      wx.getFileSystemManager().mkdir({ dirPath: dir, recursive: true, success(){}, fail(){} });
+      const name = preset === 1 ? 'zen-1.aac' : 'zen-2.aac';
+      return dir + '/' + name;
+    } catch(_) { return ''; }
+  },
+  async ensureOfflineAudio(){
+    // 本地预览或缺少文件系统/云下载能力时直接跳过
+    if (APP_CFG?.cloud?.enabled === false || !(wx?.cloud?.downloadFile && wx?.getFileSystemManager)) { return; }
+    try {
+      const map = this.__readAudioSaved();
+      const fs = wx.getFileSystemManager();
+      const files = [ { preset: 1, fileID: this.data.cloudZen1FileId } /* , { preset: 2, fileID: this.data.cloudZen2FileId } */ ];
+      for (const it of files) {
+        const pSaved = map[it.preset];
+        if (pSaved) { try { fs.accessSync(pSaved); continue; } catch(_){} }
+        if (!it.fileID || !wx.cloud?.downloadFile) continue;
+        const df = await wx.cloud.downloadFile({ fileID: it.fileID });
+        const temp = df?.tempFilePath || '';
+        if (!temp) continue;
+        const target = this.__audioTargetPath(it.preset);
+        if (!target) continue;
+        await new Promise((resolve,reject)=>{ fs.saveFile({ tempFilePath: temp, filePath: target, success(){ resolve(); }, fail(e){ reject(e); } }); });
+        map[it.preset] = target; this.__writeAudioSaved(map);
+        try { console.info('[ZEN audio] 禅音频已离线保存', { preset: it.preset, path: target }); } catch(_){}
+      }
+    } catch(e) { try { console.warn('[ZEN audio] ensureOffline失败', e); } catch(_){} }
+  },
+  async _resolveCloudAudio(preset){
+    // 离线优先
+    try {
+      const saved = this.__readAudioSaved()[preset];
+      if (saved) { try { wx.getFileSystemManager().accessSync(saved); return saved; } catch(_){} }
+    } catch(_){}
+    // 使用与贴图一致的云临时链接获取逻辑，并显式传入 env
+    const FILE_ID_1 = this.data.cloudZen1FileId || '';
+    const fileId = (preset === 1) ? FILE_ID_1 : (this.data.cloudZen2FileId || '');
+    const app = (typeof getApp === 'function') ? getApp() : null;
+    const env = app?.globalData?.env;
+    try { console.info('[ZEN audio] resolving cloud URL', { fileId, env }); } catch(_){}
+    if (!fileId || !wx.cloud) return '';
+    try {
+      if (wx.cloud.getTempFileURL) {
+        const res = await wx.cloud.getTempFileURL({
+          fileList: [{ fileID: fileId, maxAge: 3600 }],
+          ...(env ? { config: { env } } : {})
+        });
+        const item = res?.fileList?.[0] || {};
+        const status = (typeof item.status === 'number') ? item.status : undefined;
+        const url = item?.tempFileURL || '';
+        const errMsg = item?.errMsg || res?.errMsg;
+        try { console.info('[ZEN audio] tempFileURL result:', { status, errMsg, url }); } catch(_){}
+        if (url && status === 0) return url;
+        // 未拿到有效临时链接：尝试下载为本地临时文件路径
+        const df1 = await wx.cloud.downloadFile({ fileID: fileId });
+        const path1 = df1?.tempFilePath || '';
+        try { console.info('[ZEN audio] fallback downloadFile tempFilePath:', path1); } catch(_){}
+        return path1;
+      }
+      // 旧版开发工具：没有 getTempFileURL，直接下载为临时路径
+      const df = await wx.cloud.downloadFile({ fileID: fileId });
+      const path = df?.tempFilePath || '';
+      try { console.info('[ZEN audio] downloadFile tempFilePath:', path); } catch(_){}
+      return path;
+    } catch(e){
+      // 补充错误细节，便于排查：常见为 -430003（fileID 错误）或权限问题
+      try { console.warn('[ZEN audio] resolve error:', { message: e?.message, errCode: e?.errCode, errMsg: e?.errMsg }); } catch(_){}
+      return '';
+    }
+  },
+  async _startZenAudio(preset){
+    try {
+      this.__zenPreset = preset || 1;
+      if (!this.__zenAudio) {
+        const a = wx.createInnerAudioContext();
+        a.loop = true; a.autoplay = false; a.obeyMuteSwitch = false;
+        try {
+          a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
+          a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
+          a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
+        } catch(_){}
+        this.__zenAudio = a;
+      }
+      const cloudUrl = await this._resolveCloudAudio(this.__zenPreset);
+      const localUrl = this._getLocalAudio(this.__zenPreset);
+      if (cloudUrl) {
+        this.__zenAudio.src = cloudUrl;
+        try { console.info('[ZEN audio] src(cloud):', cloudUrl); } catch(_){}
+        try { this.__zenAudio.play(); } catch(_){}
+      } else if (localUrl) {
+        // 当前策略本地兜底禁用：localUrl 为空不会进入到这里
+        this.__zenAudio.src = localUrl;
+        try { console.info('[ZEN audio] src(local):', localUrl); } catch(_){}
+        try { this.__zenAudio.play(); } catch(_){}
+      } else {
+        try { console.warn('[ZEN audio] 云端链接未获取到，本地兜底已禁用，跳过播放'); } catch(_){}
+      }
+    } catch(_){}
+  },
+  _stopZenAudio(){ try { this.__zenAudio?.stop?.(); } catch(_){} },
+  _startPoetry(preset){
+    try {
+      clearTimeout(this.__poetryTimer); clearTimeout(this.__poetryTimer2);
+      this.__poetryTimer = null; this.__poetryTimer2 = null; this.__poetryIndex = 0;
+      const cfg = APP_CFG?.poetry || {};
+      // 生成拖影/描边样式（仅禅定时启用拖影；描边可常开）
+      try { this.setData({ poetryShadowStyle: this.__buildPoetryShadowStyle(cfg) }); } catch(_){}
+      // 生成“多层克隆残影”参数：更稳定，不依赖 text-shadow
+      try {
+        const trail = cfg?.trail || {};
+        const layers = Math.max(0, Number(trail.layers || 5));
+        const stepPx = Math.max(1, Number(trail.stepPx || 3));
+        const maxAlpha = Math.max(0, Math.min(1, Number(trail.maxAlpha || 0.35)));
+        const arr = [];
+        for (let i = 1; i <= layers; i++) {
+          const f = i / layers;
+          arr.push({ offset: i * stepPx, alpha: Number(((1 - f) * maxAlpha).toFixed(3)) });
+        }
+        this.setData({ poetryTrailLayers: arr });
+      } catch(_){}
+      const fadeInMs = Number(cfg.fadeInMs || 600);
+      const fadeOutMs = Number(cfg.fadeOutMs || 600);
+      const crossMs = Number(cfg.crossfadeMs || this.data.poetryCrossfadeMs || 1000);
+      const moveSpeed = Number(cfg.movePxPerSec || this.data.poetryMovePxPerSec || 36);
+      const margin = Number(cfg.safeMarginPx || this.data.poetrySafeMarginPx || 18);
+      if (this.data.poetryFadeMs !== fadeInMs) this.setData({ poetryFadeMs: fadeInMs });
+
+      const lines = this.__poetryPresets[preset] || this.__poetryPresets[1];
+      try { console.info('[poetry] 开始播放', { preset, lines: (Array.isArray(lines)? lines.length : 0), source: this.__poetrySource || 'unknown' }); } catch(_){}
+      if (!Array.isArray(lines) || !lines.length) return;
+      // 3D 模式：交由 three.js 层渲染（被地球遮挡），关闭 DOM 叠加层
+      if (cfg.use3D) {
+        try { startPoetry3D(lines, cfg); } catch(_){}
+        try { this.setData({ 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){}
+        return;
+      }
+
+      const vp = this.__getViewport();
+      // 下边界：以地球画布上半区为基准，再额外向下扩展 10% 屏幕高度（用户要求）
+      const gl = this.__canvasRect;
+      const halfCanvasBottom = (gl && typeof gl.top === 'number' && typeof gl.height === 'number')
+        ? (gl.top + gl.height * 0.5)
+        : (vp.windowHeight * 0.5);
+      const extra = Math.max(0, vp.windowHeight * 0.10);
+      const targetBottom = halfCanvasBottom + extra;
+      const maxY = Math.max(margin, Math.min(vp.windowHeight - margin, targetBottom - margin));
+      const bounds = { minX: margin, minY: margin, maxX: vp.windowWidth - margin, maxY };
+
+      const showLineOn = async (useA, text, showMs, startPosOpt) => {
+        const id = useA ? 'poetryA' : 'poetryB';
+        const setText = {}; setText[useA ? 'poetryA.text' : 'poetryB.text'] = text;
+        setText[useA ? 'poetryA.visible' : 'poetryB.visible'] = false;
+        // 先将移动时长置为 0，避免把上一次残留的 transform 动画到初始位
+        setText[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
+        this.setData(setText);
+        const rect = await this.__measure(id);
+        const itemW = Math.max(1, rect?.width || 80);
+        const itemH = Math.max(1, rect?.height || 160);
+        const start = startPosOpt || this.__computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds);
+        const showDuration = Number(cfg.displayMs || showMs || 7000);
+        const move = this.__computeMove(start, itemW, itemH, moveSpeed, showDuration, bounds);
+
+        // 三阶段设置：
+        // Phase1：无过渡地把 transform 重置为 0，并淡入显示
+        const phase1 = {};
+        phase1[useA ? 'poetryA.x' : 'poetryB.x'] = start.x;
+        phase1[useA ? 'poetryA.y' : 'poetryB.y'] = start.y;
+        phase1[useA ? 'poetryA.tx' : 'poetryB.tx'] = 0;
+        phase1[useA ? 'poetryA.ty' : 'poetryB.ty'] = 0;
+        phase1[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
+        phase1[useA ? 'poetryA.visible' : 'poetryB.visible'] = true;
+        this.setData(phase1);
+        await new Promise(r => setTimeout(r, 16)); // 等一帧确保初始样式应用
+        // Phase2：启用位移过渡时长
+        const phase2 = {}; phase2[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = showDuration; this.setData(phase2);
+        await new Promise(r => setTimeout(r, 16)); // 再等一帧，确保过渡时长生效
+        // Phase3：设置目标位移，开始移动动画
+        const phase3 = {}; phase3[useA ? 'poetryA.tx' : 'poetryB.tx'] = move.tx; phase3[useA ? 'poetryA.ty' : 'poetryB.ty'] = move.ty; this.setData(phase3);
+
+        const nearEnd = Math.max(0, showDuration - crossMs);
+        const endPos = { x: move.endX, y: move.endY };
+        this.__poetryTimer = setTimeout(async () => {
+          const nextItem = lines[(++this.__poetryIndex) % lines.length];
+          const nextStart = this.__nearbyFrom(endPos, itemW, itemH, bounds);
+          await showLineOn(!useA, nextItem.text, Number(cfg.displayMs || 7000), nextStart);
+          const hide = {}; hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false; this.setData(hide);
+        }, nearEnd);
+      };
+
+      const item0 = lines[0];
+      // 首句延迟 1 秒再出现，避免过早出现
+      setTimeout(() => { showLineOn(true, item0.text, Number(cfg.displayMs || 7000)); }, 1000);
+    } catch(_){}
+  },
+  __buildPoetryShadowStyle(cfg){
+    try {
+      const trail = cfg?.trail || {};
+      const outline = cfg?.outline || {};
+      const isZen = !!this.data.zenMode;
+      const parts = [];
+      // 黑描边：用近似的多层 text-shadow 形成轮廓，保证可读性
+      if (outline?.enabled) {
+        const t = Math.max(0, Number(outline.thicknessPx || 0.8));
+        parts.push(`0 0 ${t}px rgba(0,0,0,0.85)`);
+        parts.push(`0 0 ${Math.max(t * 1.5, t + 0.5)}px rgba(0,0,0,0.55)`);
+      }
+      // 白色拖影（禅定模式）：多层渐变模糊的白色阴影
+      if (isZen && trail?.enabled) {
+        const layers = Math.max(1, Number(trail.layers || 4));
+        const maxBlur = Math.max(0, Number(trail.maxBlurPx || 8));
+        const maxAlpha = Math.max(0, Math.min(1, Number(trail.maxAlpha || 0.35)));
+        for (let i = 1; i <= layers; i++) {
+          const f = i / layers;
+          const blur = Math.round(f * maxBlur);
+          const alpha = Math.max(0, (1 - f) * maxAlpha);
+          parts.push(`0 0 ${blur}px rgba(255,255,255,${alpha.toFixed(3)})`);
+        }
+      }
+      const textShadow = parts.length ? `text-shadow: ${parts.join(', ')};` : '';
+      return textShadow;
+    } catch(_){ return ''; }
+  },
+  _stopPoetry(){
+    try {
+      // 若启用 3D 模式，先停止 three 层
+      try { if (APP_CFG?.poetry?.use3D) { stopPoetry3D(); } } catch(_){ }
+      clearTimeout(this.__poetryTimer); clearTimeout(this.__poetryTimer2);
+      this.__poetryTimer = null; this.__poetryTimer2 = null;
+      this.setData({ 'poetryA.visible': false, 'poetryB.visible': false });
+      setTimeout(() => {
+        this.setData({
+          poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+          poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false }
+        });
+      }, Math.max(0, Math.min(2000, this.data.poetryFadeMs || 600)));
+    } catch(_){}
   },
   onSetLabelQty(e){
     const v = e?.currentTarget?.dataset?.val || e?.detail?.value || 'default';
@@ -726,8 +1256,9 @@ Page({
           USA: { lon: -98.8433, lat: 38.2847 },
           RU: { lon: 105.0, lat: 61.0 },
           RUS: { lon: 105.0, lat: 61.0 },
-          FR: { lon: 2.2137, lat: 46.2276 },
-          FRA: { lon: 2.2137, lat: 46.2276 },
+          // 法国：将标签锚点上移到比利时下方（法国北部），避免与中部城市/山脉冲突
+          FR: { lon: 2.8, lat: 49.0 },
+          FRA: { lon: 2.8, lat: 49.0 },
         };
         const baseLabels = features.map((f, idx) => {
           const p = f.props || {};
@@ -779,11 +1310,11 @@ Page({
         }
         const total = baseLabels.length + cityLabels.length;
         initLabels(baseLabels.concat(cityLabels));
-        try { console.info(`[labels rebuild] base=${baseLabels.length}, city=${cityLabels.length}, total=${total}`); } catch(_){}
+        try { if (LABELS_DEBUG_LOG) console.info(`[labels rebuild] base=${baseLabels.length}, city=${cityLabels.length}, total=${total}`); } catch(_){}
       } else {
         // 特征未加载时仅提示一次，避免日志刷屏；等待 onCountriesLoaded 回调统一重建
         if (!this.__rebuildWarnedOnce) {
-          try { console.warn('[labels rebuild] features not ready yet; will rebuild after load'); } catch(_){ }
+          try { if (LABELS_DEBUG_LOG) console.warn('[labels rebuild] features not ready yet; will rebuild after load'); } catch(_){ }
           this.__rebuildWarnedOnce = true;
         }
       }
@@ -791,6 +1322,11 @@ Page({
   },
   // 云端拉取城市数据（一次性缓存 + 回退）
   async preloadCitiesCloud(){
+    if (!(wx && wx.cloud && typeof wx.cloud.callFunction === 'function')) {
+      try { if (INTERACTION_DEBUG_LOG) console.warn('[cities] 云能力不可用，跳过预加载'); } catch(_){}
+      this._citiesCloud = null;
+      return;
+    }
     try {
       const { result } = await wx.cloud.callFunction({ name: 'citiesFetch', data: { type: 'list' } });
       const arr = result && Array.isArray(result.data) ? result.data : [];
@@ -863,6 +1399,11 @@ Page({
       }
       // 强制显示该国所有城市（兼容 A3/A2）
       try { setForcedCityCountries([code, p.ISO_A3, p.ISO_A2].filter(Boolean)); } catch(_){}
+      // 禅定模式：允许点击国家，但不弹面板、不显示时区胶囊
+      if (this.data.zenMode) {
+        this.setData({ countryPanelOpen: false, hoverText: '' });
+        return;
+      }
       // 组装展示数据（优先使用 country_data.json 中的元信息）
       const lang = this.data.lang;
       const meta = code ? (await this.fetchCountryMetaCloud(code)) : null;
@@ -872,10 +1413,10 @@ Page({
       const nameZh = meta?.NAME_ZH || p.NAME_ZH || p.ADMIN_ZH || p.NAME || p.ADMIN || '';
       const displayName = lang === 'zh' ? (nameZh || nameEn) : (nameEn || nameZh || (code || '未知'));
       const capital = lang === 'zh' ? (meta?.CAPITAL_ZH || '') : (meta?.CAPITAL_EN || '');
-      const areaKm2 = meta?.AREA_KM2 ? meta.AREA_KM2.toLocaleString('en-US') : (p.AREA ? Math.round(p.AREA).toLocaleString('en-US') : '--');
-      const population = meta?.POPULATION ? meta.POPULATION.toLocaleString('en-US') : '--';
+      const areaKm2 = meta?.AREA_KM2 ? formatThousandsInt(meta.AREA_KM2) : (p.AREA ? formatThousandsInt(Math.round(p.AREA)) : '--');
+      const population = meta?.POPULATION ? formatThousandsInt(meta.POPULATION) : '--';
       const gdpVal = (typeof meta?.GDP_USD_TRILLION === 'number') ? meta.GDP_USD_TRILLION : null;
-      const gdp = (gdpVal !== null) ? gdpVal.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '--';
+      const gdp = (gdpVal !== null) ? formatThousandsFixed(gdpVal, 2) : '--';
       const tzName = this.selectedTimezone || '';
       const tzOffsetStr = this.computeGmtOffsetStr(tzName); // 例如 GMT+4 / GMT-3
       const timeStr = this.formatTime(new Date(), tzName);

@@ -85,11 +85,17 @@ export function makeTextSprite(THREE, text, params = {}) {
   }
 
   // 为避免在不同平台出现材质实例共享导致的副作用，每次创建独立材质
-  const material = new THREE.SpriteMaterial({ map: item.texture, transparent: true, depthTest: false, depthWrite: false });
+  const material = new THREE.SpriteMaterial({
+    map: item.texture,
+    transparent: true,
+    depthTest: (params.depthTest === true),
+    depthWrite: (params.depthWrite === true)
+  });
   const sprite = new THREE.Sprite(material);
   const worldWidth = worldHeight * (item.w / item.h);
   sprite.scale.set(worldWidth, worldHeight, 1);
   sprite.center.set(0.5, 0.5);
-  sprite.renderOrder = 999; // 确保在球体之上渲染
+  // 默认置顶；如需被地球遮挡，调用方可传入较低 renderOrder
+  sprite.renderOrder = (typeof params.renderOrder === 'number') ? params.renderOrder : 999;
   return sprite;
 }

@@ -2,11 +2,15 @@
 // 注意：不直接 import THREE；由 main.js 的 createScopedThreejs(canvas) 提供上下文
 import { convertLatLonToVec3 } from './geography.js';
 
-const MARKER_RADIUS = 0.002; // 光点半径
+const MARKER_RADIUS = 0.002; // 光点半径（可调）
 const MARKER_COLOR = 0x66ccff; // 光点颜色
 const HIGHLIGHT_COLOR = 0xffdd66; // 高亮颜色（偏暖黄）
-const MARKER_OPACITY = 0.18; // 基础透明度
-const MARKER_HEIGHT = 0.001; // 相对于地球表面的高度
+const MARKER_OPACITY = 0.18; // 基础透明度（可调）
+const MARKER_HEIGHT = 0.006; // 抬升高度：略高于国家高亮填充，避免被遮罩覆盖
+const RENDER_ORDER_MARKERS = 50; // 渲染顺序：确保绘制在高亮填充/描边之后
+const HIGHLIGHT_SCALE = 1.35; // 被选中城市点的放大比例
+const BASE_SCALE = 1.0;       // 默认缩放
+const HIGHLIGHT_OPACITY_BOOST = 1.25; // 高亮时透明度提升系数（上限 0.95）
 
 const MARKER_DEBUG_LOG = true; // 临时诊断开关
 
@@ -63,6 +67,10 @@ function createMarkers() {
       });
       const marker = new THREE_CTX.Mesh(geometry, material);
       marker.position.copy(position);
+      // 确保在黄色遮罩之上绘制
+      try { marker.renderOrder = RENDER_ORDER_MARKERS; } catch(_){}
+      // 默认缩放
+      try { marker.scale.set(BASE_SCALE, BASE_SCALE, BASE_SCALE); } catch(_){}
       // 与搜索建议一致的ID：CITY_<A3>_<name_en>
       const id = `CITY_${String(city.country_code || 'UNK').toUpperCase()}_${city.name_en || city.name_zh || ''}`;
       marker.userData.cityId = id;
@@ -101,12 +109,7 @@ export function updateCityMarkers(camera, currentTime) {
 
     // 呼吸效果：低幅度慢速，保持“若隐若现”
     const breathe = 0.85 + 0.15 * Math.sin(currentTime / 900);
-    const currentOpacity = baseOpacity * (1 - distFactor) * breathe * backFade;
-
-    // 仅在需要时更新，减少 GPU 指令
-    if (Math.abs(marker.material.opacity - currentOpacity) > 0.001) {
-      marker.material.opacity = currentOpacity;
-    }
+    let currentOpacity = baseOpacity * (1 - distFactor) * breathe * backFade;
 
     // 颜色：处于高亮集合则切换为高亮色（不改变尺寸）
     const id = marker.userData?.cityId;
@@ -117,6 +120,16 @@ export function updateCityMarkers(camera, currentTime) {
         marker.material.color.setHex(targetColor);
       }
     } catch(_){}
+
+    // 高亮：放大并略微提升不透明度（上限 0.95，避免过曝）
+    const targetScale = shouldHighlight ? HIGHLIGHT_SCALE : BASE_SCALE;
+    if (Math.abs(marker.scale.x - targetScale) > 0.001) {
+      try { marker.scale.set(targetScale, targetScale, targetScale); } catch(_){}
+    }
+    const finalOpacity = shouldHighlight ? Math.min(0.95, currentOpacity * HIGHLIGHT_OPACITY_BOOST) : currentOpacity;
+    if (Math.abs(marker.material.opacity - finalOpacity) > 0.001) {
+      marker.material.opacity = finalOpacity;
+    }
   });
 }
 

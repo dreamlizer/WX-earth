@@ -2,9 +2,9 @@
 // 目标：标签只在前半球可见、靠近地平线渐隐；屏幕边缘渐隐；网格碰撞与预算；矩阵每帧刷新。
 // 依赖：main.js 导出 getRenderContext()；项目内已存在 THREE、globeGroup、camera 等。
 
-import { getRenderContext } from './main.js';
+import { getRenderContext, getCountries } from './main.js';
 import { getHighlightedWorldPositions } from './city-markers.js';
-import { convertLatLonToVec3 } from './geography.js';
+import { convertLatLonToVec3, featureContains } from './geography.js';
 import { makeTextSprite } from './text-sprite.js';
 
 
@@ -85,6 +85,66 @@ export function setForcedLabel(id){
 }
 export function clearForcedLabel(){ FORCED_ID = null; }
 
+// 新增：选中国家特征缓存（减少每帧查找开销）
+let __selectedFeature = null;
+function __resolveSelectedFeature(){
+  try {
+    if (!FORCED_ID) { __selectedFeature = null; return null; }
+    // 已缓存且代码未变化时直接返回
+    const lastCode = __resolveSelectedFeature.__lastCode || null;
+    if (lastCode === FORCED_ID && __selectedFeature) return __selectedFeature;
+    const feats = getCountries() || [];
+    const codeUp = String(FORCED_ID || '').toUpperCase();
+    const f = feats.find(feat => {
+      const p = feat?.props || {};
+      const a3 = String(p.ISO_A3 || '').toUpperCase();
+      const a2 = String(p.ISO_A2 || p.ISO || p.ISO2 || p.CC || '').toUpperCase();
+      return codeUp && (a3 === codeUp || a2 === codeUp);
+    }) || null;
+    __selectedFeature = f;
+    __resolveSelectedFeature.__lastCode = FORCED_ID;
+    return f;
+  } catch(_) { __selectedFeature = null; return null; }
+}
+
+// 新增：将给定经纬从选中国家中心沿径向“推”到边界之外
+function __pushOutsideSelected(lon, lat, feature) {
+  try {
+    if (!feature) return null;
+    // 若原本不在该国范围内，直接不处理
+    if (!featureContains(lon, lat, feature)) return null;
+    const b = feature.bbox || [-180,-90,180,90];
+    const cLon = (b[0] + b[2]) * 0.5;
+    const cLat = (b[1] + b[3]) * 0.5;
+    let dLon = lon - cLon;
+    let dLat = lat - cLat;
+    // 退化情况：中心与标签几乎重合，给一个固定方向
+    if (Math.abs(dLon) < 1e-3 && Math.abs(dLat) < 1e-3) { dLon = 0.6; dLat = 0.0; }
+    // 逐步沿中心->标签方向外推，直到 featureContains 为 false
+    const steps = 24;          // 最多尝试 24 次
+    const stepMul = 0.12;      // 每步放大 12%
+    const marginDeg = 0.25;    // 走出边界后的额外边距（度）
+    let outLon = lon, outLat = lat;
+    let k = 1.0;
+    for (let i = 0; i < steps; i++) {
+      const testLon = cLon + dLon * (k + stepMul);
+      const testLat = cLat + dLat * (k + stepMul);
+      if (!featureContains(testLon, testLat, feature)) {
+        // 已在边界外：再沿同方向增加少许边距
+        outLon = testLon + (dLon >= 0 ? marginDeg : -marginDeg);
+        outLat = testLat + (dLat >= 0 ? marginDeg * 0.2 : -marginDeg * 0.2);
+        break;
+      }
+      k += stepMul;
+    }
+    // 经纬度钳制，避免极点和经度越界
+    const clampLat = v => Math.max(-85, Math.min(85, v));
+    const normLon = v => { let x = v; while (x <= -180) x += 360; while (x > 180) x -= 360; return x; };
+    outLon = normLon(outLon); outLat = clampLat(outLat);
+    return convertLatLonToVec3(outLon, outLat, 1.0);
+  } catch(_) { return null; }
+}
+
 // 新增：强制显示某些国家内的所有城市（点击国家后）
 let FORCED_CITY_CODES = new Set();
 export function setForcedCityCountries(list){
@@ -150,9 +210,7 @@ export function initLabels(list){
     return meta;
   });
 
-  try {
-    console.info('[labels:init] meshes=', LABEL_MESHES.size, 'ctxReady=', !!ctx);
-  } catch(_){}
+  try { if (_const?.LABELS_DEBUG_LOG) console.info('[labels:init] meshes=', LABEL_MESHES.size, 'ctxReady=', !!ctx); } catch(_){}
 }
 
 // 可选：供外部查看当前 winners
@@ -309,7 +367,7 @@ export function updateLabels(){
   for (const [id, mesh] of LABEL_MESHES.entries()) {
     // 诊断：若渲染上下文宽高为 0，则可能是未初始化尺寸或 canvas 查询失败
     if (!width || !height) {
-      try { console.warn('[labels:update] width/height invalid:', width, height); } catch(_){}
+      try { if (!globalThis.__labelsWarnedInvalidSizeOnce) { console.warn('[labels:update] width/height invalid:', width, height); globalThis.__labelsWarnedInvalidSizeOnce = true; } } catch(_){}
       return; // 退出以避免除以 0 导致异常
     }
     const meta = BASE_LABEL_MAP.get(id) || {};
@@ -450,7 +508,7 @@ export function updateLabels(){
 
   // 节流调试日志：避免每帧刷屏，仅每 1.5 秒输出一次
   try {
-    if (_const?.LABEL_DEBUG_LOG) {
+    if (_const?.LABELS_DEBUG_LOG) {
       const now = Date.now();
       const last = updateLabels.__lastDebug || 0;
       if (now - last >= 1500) {
@@ -494,7 +552,15 @@ export function updateLabels(){
     // 不再移动被搜索城市的标签位置：始终使用基础位置
     try {
       if (meta?.baseVec3) {
-        const local = new ctx.THREE.Vector3(meta.baseVec3.x, meta.baseVec3.y, meta.baseVec3.z).multiplyScalar(1 + LABEL_ALTITUDE);
+        let pos = null;
+        // 机制：当选中国家时，凡是在该国边界内的其他国家标签，将其外推到边界外
+        const sel = __resolveSelectedFeature();
+        if (sel && !isForced && !meta.isCity && typeof meta.lon === 'number' && typeof meta.lat === 'number') {
+          const outside = __pushOutsideSelected(meta.lon, meta.lat, sel);
+          if (outside) { pos = outside; }
+        }
+        if (!pos) { pos = meta.baseVec3; }
+        const local = new ctx.THREE.Vector3(pos.x, pos.y, pos.z).multiplyScalar(1 + LABEL_ALTITUDE);
         mesh.position.set(local.x, local.y, local.z);
       }
     } catch(_){ }
@@ -561,23 +627,29 @@ export function updateLabels(){
       let pulseMul = 1.0;
       if (isForced) {
         const st = LABEL_STATES.get(id) || {};
-        // 仅在飞行结束后启动脉冲：飞行中不触发
-        if (st.pulsePending && !ctx.isFlying) {
-          st.pulsePending = false; st.pulseStart = Date.now(); LABEL_STATES.set(id, st);
-        }
-        const dur = Math.max(300, st.pulseDur || 1000);
-        const start = st.pulseStart || 0;
-        const now = Date.now();
-        const elapsed = now - start;
-        if (elapsed >= 0 && elapsed <= dur) {
-          const t = Math.max(0, Math.min(1, elapsed / dur));
-          // 柔和正弦缓动：从 0→1→0 的形状（sin(pi*t)），避免突然起停
-          const peak = Math.max(1.10, Math.min(2.0 / Math.max(1e-3, highlightBase), 2.0));
-          const s = Math.sin(Math.PI * t); // 0→1→0
-          // 轻微缓入缓出：在两端再乘一个 0.5-0.5*cos 的因子
-          const easeInOut = 0.5 - 0.5 * Math.cos(Math.PI * t);
-          pulseMul = 1 + (peak - 1) * (0.6 * s + 0.4 * easeInOut);
-          if (t >= 1) { st.pulseStart = null; LABEL_STATES.set(id, st); }
+        if (meta && meta.isCity) {
+          // 城市保持原有脉冲动画逻辑
+          if (st.pulsePending && !ctx.isFlying) {
+            st.pulsePending = false; st.pulseStart = Date.now(); LABEL_STATES.set(id, st);
+          }
+          const dur = Math.max(300, st.pulseDur || 1000);
+          const start = st.pulseStart || 0;
+          const now = Date.now();
+          const elapsed = now - start;
+          if (elapsed >= 0 && elapsed <= dur) {
+            const t = Math.max(0, Math.min(1, elapsed / dur));
+            // 柔和正弦缓动：从 0→1→0 的形状（sin(pi*t)），避免突然起停
+            const peak = Math.max(1.10, Math.min(2.0 / Math.max(1e-3, highlightBase), 2.0));
+            const s = Math.sin(Math.PI * t); // 0→1→0
+            // 轻微缓入缓出：在两端再乘一个 0.5-0.5*cos 的因子
+            const easeInOut = 0.5 - 0.5 * Math.cos(Math.PI * t);
+            pulseMul = 1 + (peak - 1) * (0.6 * s + 0.4 * easeInOut);
+            if (t >= 1) { st.pulseStart = null; LABEL_STATES.set(id, st); }
+          }
+        } else {
+          // 国家：取消脉冲，严格限制为基础+20%
+          pulseMul = 1.0;
+          st.pulsePending = false; st.pulseStart = null; LABEL_STATES.set(id, st);
         }
       }
       const scaleMul = highlightBase * pulseMul;
@@ -593,15 +665,25 @@ export function updateLabels(){
       // 像素级最大/最小字号钳制：根据当前屏幕投影的像素高度调整
       const sizeNow = estimatePixelSize(mesh, world, normal, ctx);
       const isCity = !!meta.isCity;
-      const baseMaxPx = isCity ? FONT_MAX_SCREEN_PX_CITY : FONT_MAX_SCREEN_PX_COUNTRY;
-      let maxPx = baseMaxPx;
-      if (isForced) {
-        const st = LABEL_STATES.get(id) || {};
-        const pulseActive = !!st.pulseStart && (Date.now() - st.pulseStart) <= (st.pulseDur || 1000);
-        // 脉冲期允许到约 2.2x；脉冲结束但仍高亮允许约 1.7x（略放宽防止“卡边”）
-        maxPx = pulseActive ? Math.round(baseMaxPx * 2.2) : Math.round(baseMaxPx * 1.7);
-      }
+      const baseMaxPxFar = isCity ? FONT_MAX_SCREEN_PX_CITY : FONT_MAX_SCREEN_PX_COUNTRY;
       const minPx = isCity ? FONT_MIN_SCREEN_PX_CITY : FONT_MIN_SCREEN_PX_COUNTRY;
+      // 随相机距离动态上限：越近上限越接近 minPx，越远上限越接近 baseMaxPxFar
+      const nearDist = _const?.NEAR_FONT_DIST ?? 4.0;
+      const farDist  = FAR_FONT_STABLE_DIST;
+      const tZoom = Math.max(0, Math.min(1, (camDist - nearDist) / Math.max(1e-6, (farDist - nearDist))));
+      const baseMaxPxDyn = Math.round(minPx + (baseMaxPxFar - minPx) * tZoom);
+      let maxPx = baseMaxPxDyn;
+      if (isForced) {
+        if (meta && meta.isCity) {
+          const st = LABEL_STATES.get(id) || {};
+          const pulseActive = !!st.pulseStart && (Date.now() - st.pulseStart) <= (st.pulseDur || 1000);
+          // 城市：保留更明显的脉冲与高亮范围
+          maxPx = pulseActive ? Math.round(baseMaxPxDyn * 2.2) : Math.round(baseMaxPxDyn * 1.7);
+        } else {
+          // 国家：不再放宽上限，严格等于配置值（避免“明显超标”）
+          maxPx = baseMaxPxDyn;
+        }
+      }
       const h = sizeNow.h;
       if (h > maxPx && h > 0) {
         const r = maxPx / h;

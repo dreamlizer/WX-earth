@@ -8,11 +8,13 @@ import {
   normalizeLon
 } from './geography.js';
 import { loadCountries, buildIndex, gatherCandidates } from './geoindex.js';
-import { getTextureUrl, prefetchTextureUrls } from './texture-source.js';
+import { getTextureUrl, prefetchTextureUrls, ensureOfflineTextures } from './texture-source.js';
 import { createScene, makeBorder, makeEquatorAndTropics, highlight as highlightLayer, updateCameraDistance as updateCamDist } from './layers.js';
 import { INTERACTION_DEBUG_LOG } from './label-constants.js';
 import { createDayNightMaterial } from './shaders/dayNightMix.glsl.js';
 import { APP_CFG } from './config.js';
+import { createStarfield } from './starfield.glsl.js';
+import { createPoetry3D } from './poetry3d.js';
 // 兼容旧引用名：保持 LIGHT_CFG 的别名，避免到处改动
 const LIGHT_CFG = APP_CFG;
 
@@ -23,6 +25,9 @@ const OFFSET_Y = -0.55;
 const DEBUG = { lonSameSign: true, invertLon: false, invertLat: false, logFly: true, calibLonDeg: 0, calibLatDeg: 15 };
 // 选择诊断：在点击命中时输出候选格子、首个命中、可能的多重命中
 const DEBUG_SELECT = true; // 仅在 INTERACTION_DEBUG_LOG 开启时实际打印
+
+// 星光诊断日志总开关（如需静默可改为 false）
+const STAR_LOG = false; // 关闭星空调试日志，避免控制台刷屏
 
 // 状态容器
 let state = null;
@@ -41,10 +46,13 @@ export function boot(page) {
     const { THREE, renderer, scene, camera, dirLight, ambientLight, globeGroup, baseDist } = createScene(canvas, dpr, width, height);
     // 默认旋转顺序为 'XYZ'；禅模式将切换为 'ZXY'（先 Z 倾斜、后 Y 旋转）
     try { globeGroup.rotation.order = 'XYZ'; } catch(_){}
+    // 3D 诗句层实例（按需创建）
+    let poetry3d = null;
 
     // 统一缩放因子：通过调节相机与原点的距离来实现缩放
     let zoom = 1.0; // 1=默认视距，>1 更近（放大），<1 更远（缩小）
-    const minZoom = 0.6, maxZoom = 2.86; // 放大极限提升约 30%
+    const minZoom = (APP_CFG?.camera?.minZoom ?? 0.6);
+    const maxZoom = (APP_CFG?.camera?.maxZoom ?? 2.86);
     const clampZoom = (z) => Math.max(minZoom, Math.min(maxZoom, z));
     updateCamDist(camera, baseDist, zoom);
 
@@ -63,6 +71,76 @@ export function boot(page) {
     // 禅定稳定时间戳与上一帧时间（用于自动旋转）
     let zenStableSince = 0;
     let __prevRenderTime = 0;
+    // 星空：目标透明度与实例对象（渲染循环中平滑逼近）
+    let __starTargetOpacity = 0.0;
+    let starfield = null;
+    let __starLogNext = 0;
+    let __starLogNextMiss = 0;
+  let __starUniformWarned = false;
+
+    // 调试工具：统一输出渲染器与贴图、着色器参数，便于对齐 PC 端
+    const _tmName = (THREE, v) => {
+      try {
+        const names = ['NoToneMapping','LinearToneMapping','ReinhardToneMapping','CineonToneMapping','ACESFilmicToneMapping'];
+        for (const n of names) { if (THREE?.[n] === v) return n; }
+      } catch(_){}
+
+      // 特例修正：若法国与科索沃同时命中且当前命中为科索沃，优先改为法国
+      try {
+        let frFeat = null, xkFeat = null;
+        for (let i = 0; i < COUNTRY_FEATURES.length; i++) {
+          const f = COUNTRY_FEATURES[i];
+          if (!featureContains(lon, lat, f)) continue;
+          const p = f?.props || {};
+          const codeA3 = String(p.ISO_A3 || '').toUpperCase();
+          const codeA2 = String(p.ISO_A2 || p.ISO || p.ISO2 || p.CC || '').toUpperCase();
+          const nm = p.NAME || p.ADMIN || '';
+          const isFR = (codeA3 === 'FRA' || codeA2 === 'FR');
+          const isXK = (codeA3 === 'XKX' || codeA2 === 'XK' || /KOSOVO/i.test(nm));
+          if (isFR) frFeat = f;
+          if (isXK) xkFeat = f;
+        }
+        if (frFeat && xkFeat && hit) {
+          const hp = hit?.props || {};
+          const hA3 = String(hp.ISO_A3 || '').toUpperCase();
+          const hA2 = String(hp.ISO_A2 || hp.ISO || hp.ISO2 || hp.CC || '').toUpperCase();
+          const hNm = hp.NAME || hp.ADMIN || '';
+          const hitIsXK = (hA3 === 'XKX' || hA2 === 'XK' || /KOSOVO/i.test(hNm));
+          if (hitIsXK) {
+            if (INTERACTION_DEBUG_LOG && DEBUG_SELECT) {
+              try { console.warn('[hit-test] override XK -> FR (special case)'); } catch(_){}
+            }
+            hit = frFeat;
+          }
+        }
+      } catch(_){}
+      return String(v);
+    };
+    const dumpRendererInfo = () => {
+      try {
+        const colorSpace = (renderer.outputColorSpace ?? renderer.outputEncoding);
+        const tone = renderer.toneMapping;
+        const exposure = (renderer.toneMappingExposure ?? 1.0);
+        console.info('[PIPELINE]', {
+          pixelRatio: (typeof renderer.getPixelRatio === 'function' ? renderer.getPixelRatio() : undefined),
+          size: (typeof renderer.getSize === 'function' ? renderer.getSize(new THREE.Vector2()).toArray() : undefined),
+          outputColorSpace: (colorSpace && colorSpace.name) ? colorSpace.name : colorSpace,
+          toneMapping: _tmName(THREE, tone),
+          toneMappingExposure: Number(exposure).toFixed(3),
+        });
+      } catch(_){}
+    };
+    const dumpTextureInfo = (name, tex) => {
+      try {
+        if (!tex) { console.info('[TEX]', name, 'not loaded'); return; }
+        const cs = (tex.colorSpace ?? tex.encoding);
+        console.info('[TEX]', name, {
+          colorSpace: (cs && cs.name) ? cs.name : cs,
+          min: tex.minFilter, mag: tex.magFilter, aniso: tex.anisotropy,
+          flipY: tex.flipY,
+        });
+      } catch(_){}
+    };
 
     // PC 端滚轮缩放（DevTools/Windows/Mac）：优先绑到 canvas；不支持时回退到 document/window
     const wheelHandlers = [];
@@ -88,6 +166,8 @@ export function boot(page) {
       return true;
     };
     let wheelAttached = attachWheel(canvas);
+    // 启动后立即输出一次渲染管线配置（色彩空间 / tone mapping / 曝光）
+    dumpRendererInfo();
     if (!wheelAttached) {
       wheelAttached = attachWheel(globalThis?.document);
     }
@@ -115,6 +195,43 @@ export function boot(page) {
       pinchStartDist: 0,
       pinchStartZoom: zoom,
     };
+
+    // 创建星空背景：置于场景后方，初始隐藏（禅定模式淡入）
+    if (STAR_LOG) { try { console.log('[star] create: begin'); } catch(_){} }
+    if (STAR_LOG) { try { console.info('[star] factory type:', typeof createStarfield); } catch(_){} }
+    try {
+      starfield = createStarfield(THREE);
+      if (starfield) {
+        starfield.renderOrder = -1; starfield.visible = false; scene.add(starfield);
+        try {
+          const cnt = starfield.geometry?.attributes?.position?.count ?? 0;
+          const uniforms = starfield.material?.uniforms || {};
+          if (STAR_LOG) { try { console.log('[star] created:', { count: cnt, hasTime: !!uniforms.time, hasOpacity: !!uniforms.uOpacity }); } catch(_){} }
+          // 创建后同步 normal 模式的星点大小与亮度增益（配置化）
+          const ncfg = LIGHT_CFG?.normal || {};
+          if (uniforms.uSizeScale && typeof ncfg.starSizeScale === 'number') {
+            uniforms.uSizeScale.value = ncfg.starSizeScale;
+          }
+          if (uniforms.uBrightnessGain && typeof ncfg.starBrightnessGain === 'number') {
+            uniforms.uBrightnessGain.value = ncfg.starBrightnessGain;
+          }
+          if (uniforms.uBreathSpeed && typeof ncfg.starBreathSpeed === 'number') {
+            uniforms.uBreathSpeed.value = ncfg.starBreathSpeed;
+          }
+          if (uniforms.uBreathStrength && typeof ncfg.starBreathStrength === 'number') {
+            uniforms.uBreathStrength.value = ncfg.starBreathStrength;
+          }
+          if (STAR_LOG) { try { console.info('[star] uniforms:init', { sizeScale: uniforms.uSizeScale?.value, gain: uniforms.uBrightnessGain?.value }); } catch(_){} }
+        } catch(_){}
+      } else {
+        if (STAR_LOG) { try { console.info('[star] factory return:', starfield); } catch(_){} }
+      }
+    } catch(e){ try { if (STAR_LOG) console.error('[star] create: error', e?.message || e); } catch(_){} }
+
+    // 初始目标透明度：使用普通模式配置（便于在非禅模式下也看到极弱星空）
+          try { __starTargetOpacity = (LIGHT_CFG?.normal?.starOpacity ?? 0.0); if (STAR_LOG) console.log('[star] init target from config:', __starTargetOpacity); } catch(_){}
+    // 启动后：开启 12 秒的星呼吸诊断窗口
+    try { __breathDiagUntil = Date.now() + 12000; } catch(_){}
 
     // 控制台缩放方法（便于在 PC/DevTools 验证）
     const setZoom = (z) => {
@@ -163,8 +280,77 @@ export function boot(page) {
       if (!grp) return;
       grp.traverse(o => { o.geometry?.dispose?.(); o.material?.dispose?.(); });
     };
+    // 自动取消选中：记录当前高亮的国家特征，并在渲染循环中基于“前半球可见比例”做判定
+    let __highlightFeature = null;
+    let __lastAutoClearCheck = 0;
+    let __belowThresholdCount = 0;
+    const __estimateFeatureFrontRatio = (f) => {
+      if (!f || !globeGroup || !camera) return 1.0;
+      try {
+        const center = new THREE.Vector3();
+        globeGroup.getWorldPosition(center);
+        const camPos = camera.position.clone();
+        let total = 0, front = 0;
+        const addPoint = (lon, lat) => {
+          const v = convertLatLonToVec3(lon, lat, RADIUS + 0.001);
+          const p = new THREE.Vector3(v.x, v.y, v.z);
+          try { p.applyQuaternion(globeGroup.quaternion); } catch(_){ }
+          const worldP = p.add(center);
+          const normal = worldP.clone().sub(center).normalize();
+          const viewDir = camPos.clone().sub(worldP).normalize();
+          const dot = normal.dot(viewDir);
+          if (dot > 0) front++;
+          total++;
+        };
+        const cs = f.coords || [];
+        if (f.type === 'Polygon') {
+          for (let i = 0; i < cs.length; i++) {
+            const ring = cs[i] || [];
+            for (let j = 0; j < ring.length; j++) {
+              const p = ring[j]; if (!p || p.length < 2) continue;
+              addPoint(p[0], p[1]);
+            }
+          }
+        } else if (f.type === 'MultiPolygon') {
+          for (let k = 0; k < cs.length; k++) {
+            const poly = cs[k] || [];
+            for (let i = 0; i < poly.length; i++) {
+              const ring = poly[i] || [];
+              for (let j = 0; j < ring.length; j++) {
+                const p = ring[j]; if (!p || p.length < 2) continue;
+                addPoint(p[0], p[1]);
+              }
+            }
+          }
+        }
+        return (total > 0) ? (front / total) : 1.0;
+      } catch(_){ return 1.0; }
+    };
+    // 高亮淡出管理（避免“闪消失”）
+    let __highlightFadingGroup = null;
+    let __highlightFadeEnd = 0;
     const setHighlight = (f) => {
-      if (HIGHLIGHT_GROUP) { disposeGroup(HIGHLIGHT_GROUP); globeGroup.remove(HIGHLIGHT_GROUP); HIGHLIGHT_GROUP = null; }
+      // 若存在当前高亮且即将清除，先触发淡出动画
+      if (HIGHLIGHT_GROUP && !f) {
+        try {
+          const fadeMs = Math.max(0, Number(APP_CFG?.highlight?.fadeOutMs || 500));
+          __highlightFadingGroup = HIGHLIGHT_GROUP;
+          __highlightFadeEnd = Date.now() + fadeMs;
+          // 准备材质为可透明并记录初始不透明度
+          __highlightFadingGroup.traverse(obj => {
+            const m = obj?.material; if (!m) return;
+            try {
+              m.transparent = true; m.opacity = (typeof m.opacity === 'number') ? m.opacity : 1.0; m.needsUpdate = true;
+            } catch(_){ }
+          });
+        } catch(_){ }
+        HIGHLIGHT_GROUP = null; // 允许下一次高亮立即创建
+      } else if (HIGHLIGHT_GROUP) {
+        // 没有淡出需求（例如替换为另一个高亮），直接清除旧组
+        disposeGroup(HIGHLIGHT_GROUP); globeGroup.remove(HIGHLIGHT_GROUP); HIGHLIGHT_GROUP = null;
+      }
+      __highlightFeature = f || null;
+      __belowThresholdCount = 0;
       if (!f) return;
       HIGHLIGHT_GROUP = highlightLayer(THREE, globeGroup, f);
     };
@@ -233,6 +419,8 @@ export function boot(page) {
     const loader = new THREE.TextureLoader();
     // 预取临时 URL，提升首帧稳定性（失败不影响）
     try { prefetchTextureUrls(); } catch(_){}
+    // 首次加载时尝试离线持久化纹理（不影响正常加载）
+    try { ensureOfflineTextures(); } catch(_){}
     // 调试：在控制台标注贴图来源（云端临时链接 or 本地兜底）
     const logSrc = (name, url, fallback, phase = 'load') => {
       try {
@@ -245,40 +433,30 @@ export function boot(page) {
       .then(({ url, fallback }) => {
         logSrc('earth_day', url, fallback, 'start');
           loader.load(url, (tex) => {
-            tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; earthDayTex = tex;
+            tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} } earthDayTex = tex; dumpTextureInfo('earth_day', earthDayTex);
           earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ map: earthDayTex, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
           earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
           // 普通模式装饰：赤道与南北回归线（淡金色）
           try { if (!TROPIC_GROUP) TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); } catch(_){}
 
-          // 预加载夜景纹理（云端优先，失败回本地）
+          // 预加载夜景纹理（云端-only，失败不再回本地）
           getTextureUrl('earth_night').then(({ url: nightUrl, fallback: nightFb }) => {
             logSrc('earth_night', nightUrl, nightFb, 'start');
             loader.load(nightUrl, (night) => {
-              night.minFilter = THREE.LinearFilter; night.magFilter = THREE.LinearFilter; earthNightTex = night;
-            }, undefined, () => {
-              try {
-                const local = '/assets/textures/earth_night.webp';
-                logSrc('earth_night', local, local, 'fallback');
-                loader.load(local, t => { earthNightTex = t; });
-              } catch(_){}
-            });
+              night.minFilter = THREE.LinearFilter; night.magFilter = THREE.LinearFilter; try { night.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { night.encoding = THREE.sRGBEncoding; } catch(__){} } earthNightTex = night; dumpTextureInfo('earth_night', earthNightTex);
+            }, undefined, () => { try { console.warn('[texture] 夜景贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
           });
-          // 预创建云层球（默认隐藏；云端优先，失败回本地）
+          // 预创建云层球（默认隐藏；云端-only，失败不再回本地）
           getTextureUrl('cloud').then(({ url: cloudUrl, fallback: cloudFb }) => {
             logSrc('cloud', cloudUrl, cloudFb, 'start');
             loader.load(cloudUrl, (cloudTex) => {
               cloudTex.minFilter = THREE.LinearFilter; cloudTex.magFilter = THREE.LinearFilter;
+              try { cloudTex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { cloudTex.encoding = THREE.sRGBEncoding; } catch(__){} }
               const cloudMat = new THREE.MeshPhongMaterial({ map: cloudTex, transparent: true, opacity: 0.42, depthWrite: false });
               cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat);
               cloudMesh.name = 'CLOUD'; cloudMesh.visible = false; globeGroup.add(cloudMesh);
-            }, undefined, () => {
-              try {
-                const local = '/assets/textures/cloud.webp';
-                logSrc('cloud', local, local, 'fallback');
-                loader.load(local, tex => { const cloudMat = new THREE.MeshPhongMaterial({ map: tex, transparent: true, opacity: 0.42, depthWrite: false }); cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat); cloudMesh.name = 'CLOUD'; cloudMesh.visible = false; globeGroup.add(cloudMesh); });
-              } catch(_){}
-            });
+              dumpTextureInfo('cloud', cloudTex);
+            }, undefined, () => { try { console.warn('[texture] 云层贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
           });
 
           loadCountries().then((features) => {
@@ -289,38 +467,14 @@ export function boot(page) {
             try { page?.onCountriesLoaded?.(features); } catch (e) { /* noop */ }
           });
         }, undefined, () => {
+          // 云端加载失败：保持云端-only，不再使用本地图片；以占位材质降级
           try {
-            const local = '/assets/textures/earth.jpg';
-            logSrc('earth_day', local, local, 'fallback');
-            loader.load(local, (tex) => {
-              tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; earthDayTex = tex;
-              earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ map: earthDayTex, shininess: 8 }));
-              earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
-              try { if (!TROPIC_GROUP) TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); } catch(_){}
-              // 回退路径：同样加载国家特征并通知页面，保证标签重建
-              try {
-                loadCountries().then((features) => {
-                  COUNTRY_FEATURES = features;
-                  BORDER_GROUP = makeBorder(THREE, globeGroup, COUNTRY_FEATURES);
-                  search = buildIndex(features);
-                  try { page?.onCountriesLoaded?.(features); } catch (e) { /* noop */ }
-                });
-              } catch(_){ }
-            });
-          } catch(_){}
-        });
-      })
-      .catch(() => {
-        // getTextureUrl 失败时的兜底（本地）
-        try {
-          const local = '/assets/textures/earth.jpg';
-          logSrc('earth_day', local, local, 'fallback');
-          loader.load(local, (tex) => {
-            tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; earthDayTex = tex;
-            earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ map: earthDayTex, shininess: 8 }));
+            console.warn('[texture] 地球白天贴图云端加载失败（云端-only）——使用占位材质，功能可用但无贴图');
+            earthDayTex = null;
+            earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ color: 0x888888, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
             earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
             try { if (!TROPIC_GROUP) TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); } catch(_){}
-            // 兜底路径也加载国家特征，保持与正常路径一致
+            // 继续加载国家数据，保证其他功能正常
             try {
               loadCountries().then((features) => {
                 COUNTRY_FEATURES = features;
@@ -329,8 +483,27 @@ export function boot(page) {
                 try { page?.onCountriesLoaded?.(features); } catch (e) { /* noop */ }
               });
             } catch(_){ }
-          });
-        } catch(_) {}
+          } catch(_){}
+        });
+      })
+      .catch(() => {
+        // getTextureUrl 失败：保持云端-only，不使用本地兜底；以占位材质降级
+        try {
+          console.warn('[texture] getTextureUrl(earth) 失败（云端-only）——使用占位材质，功能可用但无贴图');
+          earthDayTex = null;
+          earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ color: 0x888888, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
+          earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
+          try { if (!TROPIC_GROUP) TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); } catch(_){}
+          // 保持其他功能可用：继续加载国家特征并通知页面
+          try {
+            loadCountries().then((features) => {
+              COUNTRY_FEATURES = features;
+              BORDER_GROUP = makeBorder(THREE, globeGroup, COUNTRY_FEATURES);
+              search = buildIndex(features);
+              try { page?.onCountriesLoaded?.(features); } catch (e) { /* noop */ }
+            });
+          } catch(_){ }
+        } catch(_){ }
       });
 
     // 触控事件
@@ -550,6 +723,8 @@ export function boot(page) {
           try { page.updateTopOffsets && page.updateTopOffsets(); } catch(_){}
           const now = Date.now();
           page.lastTimeUpdate = now;
+          // 禅定模式：强制清空 hover 文本，避免出现时区胶囊
+          try { if (page?.data?.zenMode) { page.setData({ hoverText: '' }); } } catch(_){ }
           const timeStr = page.formatTime(new Date(now), tzName);
           if (timeStr && timeStr !== page.data.currentTime) {
             page.setData({ currentTime: timeStr });
@@ -582,12 +757,58 @@ export function boot(page) {
     // 诊断：在飞行期间限速打印中心经纬，帮助定位偏差
     let __flyProbeUntil = 0;
     let __flyProbeLast = 0;
+    // 星呼吸诊断窗口：进入/切换模式后 15 秒内每 1.5 秒采样一次
+    let __breathDiagUntil = 0;
+    let __breathLogNext = 0;
       const render = () => {
         if (__paused) return; // 暂停时不继续渲染与调度
         const now = Date.now();
         const dtSec = __prevRenderTime ? Math.max(0, Math.min(0.12, (now - __prevRenderTime) / 1000)) : 0;
         // 暴露飞行状态给标签系统（用于控制脉冲动画的启动时机）
         try { if (state) state.isFlying = !!__fly; } catch(_){}
+
+        // 星空背景：更新时间与淡入淡出（柔和不抢眼）
+        try {
+          if (starfield && starfield.material) {
+            const mat = starfield.material;
+            if ((!mat.uniforms || !mat.uniforms.uOpacity) && !__starUniformWarned && STAR_LOG) {
+              __starUniformWarned = true;
+          if (STAR_LOG) { try { console.warn('[star] warn: uOpacity uniform missing on material'); } catch(_){} }
+            }
+            if (mat.uniforms && mat.uniforms.time) { mat.uniforms.time.value = now * 0.001; }
+            const target = __starTargetOpacity;
+            const cur = (mat.uniforms && mat.uniforms.uOpacity) ? (mat.uniforms.uOpacity.value || 0.0) : 0.0;
+            const lerpK = Math.min(1.0, dtSec * 2.8);
+            const next = cur + (target - cur) * lerpK;
+            // 提升上限到 1.0，并降低可见阈值，强调可见性
+            if (mat.uniforms && mat.uniforms.uOpacity) mat.uniforms.uOpacity.value = Math.max(0.0, Math.min(1.0, next));
+            starfield.visible = next > 0.01;
+            if (now >= __starLogNext) {
+              __starLogNext = now + 1000;
+              if (STAR_LOG) { try { console.log('[star] tick:', { target: target.toFixed(3), cur: next.toFixed(3), visible: starfield.visible }); } catch(_){} }
+            }
+            // 诊断：在窗口期内采样“呼吸乘子”，确认是否随时间波动
+            if (now <= __breathDiagUntil && now >= __breathLogNext) {
+              __breathLogNext = now + 1500;
+              try {
+                const speed = mat.uniforms?.uBreathSpeed?.value ?? 0;
+                const strength = mat.uniforms?.uBreathStrength?.value ?? 0;
+                const t = mat.uniforms?.time?.value ?? 0;
+                const breathMul = 1.0 + strength * Math.sin(t * speed);
+                console.info('[star breath]', {
+                  speed: Number(speed).toFixed(3), strength: Number(strength).toFixed(3),
+                  time: Number(t).toFixed(3), mul: Number(breathMul).toFixed(3), opacity: Number(mat.uniforms?.uOpacity?.value ?? 0).toFixed(3),
+                  visible: !!starfield.visible,
+                });
+              } catch(_){}
+            }
+          } else {
+            if (STAR_LOG && now >= __starLogNextMiss) {
+              __starLogNextMiss = now + 2000;
+              if (STAR_LOG) { try { console.warn('[star] not ready:', { hasObj: !!starfield, hasMat: !!(starfield && starfield.material) }); } catch(_){} }
+            }
+          }
+        } catch(_){}
 
       // 每帧计算当前应显示的时区：优先选中国家；否则使用屏幕中央经线时区（带稳定门槛）
       let activeTZ = page.selectedTimezone ?? null;
@@ -688,6 +909,11 @@ export function boot(page) {
           tiltZ = from.tiltZ + (to.tiltZ - from.tiltZ) * k;
           const nx = from.rotX + (to.rotX - from.rotX) * k;
           const nzm = from.zoom + (to.zoom - from.zoom) * k;
+          // 禅定位移：按补间推进 Y 位置
+          if (globeGroup && from.posY !== undefined && to.posY !== undefined) {
+            const ny = from.posY + (to.posY - from.posY) * k;
+            globeGroup.position.y = ny;
+          }
           touch.rotX = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, nx));
           const newZoom = clampZoom(nzm);
           if (Math.abs(newZoom - zoom) > 1e-6) { zoom = newZoom; updateCamDist(camera, baseDist, zoom); }
@@ -788,9 +1014,54 @@ export function boot(page) {
             if (__dayNightMat.uniforms.uDaySideGain && typeof cfg.daySideGain === 'number') {
               __dayNightMat.uniforms.uDaySideGain.value = Math.min(3.0, Math.max(0.7, cfg.daySideGain));
             }
+            if (__dayNightMat.uniforms.uHighlightsRoll && typeof cfg.highlightsRoll === 'number') {
+              __dayNightMat.uniforms.uHighlightsRoll.value = Math.max(0.0, Math.min(1.0, cfg.highlightsRoll));
+            }
           } catch(_){}
         }
       } catch(_){}
+      try { poetry3d?.update?.(now); } catch(_){}
+      // 高亮淡出动画（0.5s）：逐帧降低不透明度，到期后移除并释放资源
+      try {
+        if (__highlightFadingGroup) {
+          const fadeMs = Math.max(0, Number(APP_CFG?.highlight?.fadeOutMs || 500));
+          const rest = Math.max(0, __highlightFadeEnd - now);
+          const t = fadeMs > 0 ? (rest / fadeMs) : 0;
+          __highlightFadingGroup.traverse(obj => {
+            const m = obj?.material; if (!m) return;
+            try {
+              m.transparent = true;
+              const base = (typeof m.opacity === 'number') ? m.opacity : 1.0;
+              m.opacity = Math.max(0, Math.min(1, t * base));
+              m.needsUpdate = true;
+            } catch(_){ }
+          });
+          if (rest <= 0) {
+            try { globeGroup.remove(__highlightFadingGroup); disposeGroup(__highlightFadingGroup); } catch(_){ }
+            __highlightFadingGroup = null;
+            __highlightFadeEnd = 0;
+          }
+        }
+      } catch(_){ }
+      // 自动取消选中：当选中国家在背面（前半球可见比例低于阈值）时，取消选中以避免穿模
+      try {
+        const ac = (APP_CFG?.highlight?.autoClearOnBackside || {});
+        const enabled = !!ac.enabled;
+        const interval = Math.max(200, Number(ac.checkIntervalMs || 500));
+        const minVisible = Math.max(0.0, Math.min(1.0, Number(ac.minVisibleRatio || 0.10))); // 10% 可见 => 90% 背面
+        if (enabled && __highlightFeature) {
+          if ((now - __lastAutoClearCheck) >= interval) {
+            __lastAutoClearCheck = now;
+            const ratio = __estimateFeatureFrontRatio(__highlightFeature);
+            if (ratio <= minVisible) { __belowThresholdCount++; } else { __belowThresholdCount = 0; }
+            const requireStreak = Math.max(1, Number(ac.requireConsecutive || 2));
+            if (__belowThresholdCount >= requireStreak) {
+              setHighlight(null);
+              try { page?.onCountryPicked?.(null); } catch(_){}
+            }
+          }
+        }
+      } catch(_){ }
       renderer.render(scene, camera);
       try { page?.onRenderTick?.() } catch (e) {}
       __prevRenderTime = now;
@@ -813,12 +1084,37 @@ export function boot(page) {
         const next = !!on;
         if (next === zenActive) return;
         if (next) {
-          __restore = { rotX: touch.rotX, rotY: touch.rotY, zoom };
+          __restore = { rotX: touch.rotX, rotY: touch.rotY, zoom, posY: globeGroup?.position?.y || 0 };
           __fly = null; // 关闭飞行动画以避免冲突
-          __zenAnim = { t0: Date.now(), dur: 1000, from: { rotX: touch.rotX, zoom, tiltZ }, to: { rotX: 0, zoom: ZEN_ZOOM, tiltZ: ZEN_TILT_RAD } };
+          // 目标 Y：在当前基础位置上叠加配置的向下偏移（比例相对 RADIUS）
+          const offR = (LIGHT_CFG?.zen?.globeYOffsetR ?? -0.35);
+          const targetY = (__restore.posY || 0) + (offR * RADIUS);
+          __zenAnim = { t0: Date.now(), dur: 1000, from: { rotX: touch.rotX, zoom, tiltZ, posY: __restore.posY }, to: { rotX: 0, zoom: ZEN_ZOOM, tiltZ: ZEN_TILT_RAD, posY: targetY } };
           // 确保“先倾斜再按赤道旋转”：进入时切换旋转顺序为 ZXY
           try { globeGroup.rotation.order = 'ZXY'; } catch(_){}
           zenActive = true;
+          // 禅定进入：启用 3D 诗句层（被地球遮挡）
+          try {
+            if (!poetry3d && earthMesh) {
+              poetry3d = createPoetry3D(THREE, scene, camera, earthMesh, width, height, APP_CFG?.poetry || {});
+            }
+            poetry3d?.setEnabled?.(true);
+          } catch(_){}
+          // 禅定进入：星空淡入目标透明度（可在配置 LIGHT_CFG.zen.starOpacity 调整）
+          try { __starTargetOpacity = (LIGHT_CFG?.zen?.starOpacity ?? 0.18); } catch(_){ __starTargetOpacity = 0.18; }
+          if (STAR_LOG) { try { console.log('[star] zen enter: target', __starTargetOpacity); } catch(_){} }
+          // 禅定：同步星点大小与亮度增益
+          try {
+            const zcfg = LIGHT_CFG?.zen || {};
+            const u = starfield?.material?.uniforms || {};
+            if (u.uSizeScale && typeof zcfg.starSizeScale === 'number') u.uSizeScale.value = zcfg.starSizeScale;
+            if (u.uBrightnessGain && typeof zcfg.starBrightnessGain === 'number') u.uBrightnessGain.value = zcfg.starBrightnessGain;
+            if (u.uBreathSpeed && typeof zcfg.starBreathSpeed === 'number') u.uBreathSpeed.value = zcfg.starBreathSpeed;
+            if (u.uBreathStrength && typeof zcfg.starBreathStrength === 'number') u.uBreathStrength.value = zcfg.starBreathStrength;
+            if (STAR_LOG) { try { console.info('[star] uniforms:zen', { sizeScale: u.uSizeScale?.value, gain: u.uBrightnessGain?.value }); } catch(_){} }
+          } catch(_){}
+          // 开启 15 秒的星呼吸诊断窗口（更容易观察禅模式下是否在呼吸）
+          try { __breathDiagUntil = Date.now() + 15000; __breathLogNext = 0; } catch(_){}
           // 禅模式降低环境光以增强夜侧对比：如果想更强对比，把 0.4 改为 0.3
           // 禅模式强度：使用集中配置
           try { if (ambientLight) ambientLight.intensity = LIGHT_CFG.zen.ambientIntensity; } catch(_){}
@@ -895,6 +1191,10 @@ export function boot(page) {
                       ? Math.min(2.5, Math.max(0.7, cfgExposure))
                       : fallbackExposure;
                   }
+                  // 高光压缩：初始化设置（避免右侧“冲白”）；0 表示关闭
+                  if (__dayNightMat.uniforms.uHighlightsRoll) {
+                    __dayNightMat.uniforms.uHighlightsRoll.value = Math.max(0.0, Math.min(1.0, (LIGHT_CFG.zen?.highlightsRoll ?? 0.0)));
+                  }
                   // 诊断：输出关键 uniform 值与材质类型，确认是否为 ShaderMaterial 且参数生效
                   try {
                     const u = __dayNightMat.uniforms || {};
@@ -905,7 +1205,14 @@ export function boot(page) {
                       daySideGain: Number(u.uDaySideGain?.value || 0).toFixed(3),
                       nightDarkness: Number(u.uNightDarkness?.value || 0).toFixed(3),
                       dayContrast: Number(u.uDayContrast?.value || 0).toFixed(3),
+                      highlightsRoll: Number(u.uHighlightsRoll?.value || 0).toFixed(3),
+                      dayNightContrast: Number(u.uDayNightContrast?.value || 0).toFixed(3),
                     });
+                    console.info('[ZEN lights]', {
+                      dirLightIntensity: Number(dirLight?.intensity ?? NaN).toFixed(3),
+                      ambientLightIntensity: Number(ambientLight?.intensity ?? NaN).toFixed(3),
+                    });
+                    dumpRendererInfo();
                   } catch(_){}
                 }
               } catch(_){}
@@ -919,19 +1226,37 @@ export function boot(page) {
                   exposure: Number(__dayNightMat?.uniforms?.uExposure?.value || 0).toFixed(3),
                   daySideGain: Number(__dayNightMat?.uniforms?.uDaySideGain?.value || 0).toFixed(3),
                 });
+                console.info('[ZEN lights:postSwitch]', {
+                  dirLightIntensity: Number(dirLight?.intensity ?? NaN).toFixed(3),
+                  ambientLightIntensity: Number(ambientLight?.intensity ?? NaN).toFixed(3),
+                });
+                dumpRendererInfo();
               } catch(_){}
             }
           } catch(_){}
         } else {
+          // 禅定退出：星空淡出目标透明度
+          try { __starTargetOpacity = (LIGHT_CFG?.normal?.starOpacity ?? 0.0); } catch(_){}
+          if (STAR_LOG) { try { console.log('[star] zen exit: target', __starTargetOpacity); } catch(_){} }
+          // 退出禅定：恢复 normal 配置下的星点大小与亮度增益
+          try {
+            const ncfg = LIGHT_CFG?.normal || {};
+            const u = starfield?.material?.uniforms || {};
+            if (u.uSizeScale && typeof ncfg.starSizeScale === 'number') u.uSizeScale.value = ncfg.starSizeScale;
+            if (u.uBrightnessGain && typeof ncfg.starBrightnessGain === 'number') u.uBrightnessGain.value = ncfg.starBrightnessGain;
+            if (u.uBreathSpeed && typeof ncfg.starBreathSpeed === 'number') u.uBreathSpeed.value = ncfg.starBreathSpeed;
+            if (u.uBreathStrength && typeof ncfg.starBreathStrength === 'number') u.uBreathStrength.value = ncfg.starBreathStrength;
+            if (STAR_LOG) { try { console.info('[star] uniforms:normal', { sizeScale: u.uSizeScale?.value, gain: u.uBrightnessGain?.value }); } catch(_){} }
+          } catch(_){}
           // 退出禅模式分两段：先缩回默认（保持倾斜），再把倾斜回正
           __zenAnim = {
             t0: Date.now(), dur: 500,
-            from: { rotX: touch.rotX, zoom, tiltZ },
-            to:   { rotX: 0,          zoom: 1.0, tiltZ },
+            from: { rotX: touch.rotX, zoom, tiltZ, posY: globeGroup?.position?.y || 0 },
+            to:   { rotX: 0,          zoom: 1.0, tiltZ, posY: (__restore?.posY || 0) },
             next: {
               dur: 700,
-              from: { rotX: 0, zoom: 1.0, tiltZ },
-              to:   { rotX: 0, zoom: 1.0, tiltZ: 0 },
+              from: { rotX: 0, zoom: 1.0, tiltZ, posY: (__restore?.posY || 0) },
+              to:   { rotX: 0, zoom: 1.0, tiltZ: 0, posY: (__restore?.posY || 0) },
               after: () => {
                 // 恢复普通模式旋转顺序与环境光
                 try { globeGroup.rotation.order = 'XYZ'; } catch(_){}
@@ -967,6 +1292,8 @@ export function boot(page) {
           };
           // 退出后恢复自由旋转（立即解除禅限制）
           zenActive = false;
+          // 禅定退出：关闭 3D 诗句层
+          try { poetry3d?.setEnabled?.(false); poetry3d?.stop?.(); } catch(_){}
           try { if (TROPIC_GROUP) TROPIC_GROUP.visible = true; } catch(_){}
         }
       };
@@ -1074,7 +1401,18 @@ export function boot(page) {
     };
     try { wx.onWindowResize(onWinResize); } catch(_){ }
 
-      state = { THREE, scene, renderer, globeGroup, camera, dirLight, earthMesh, COUNTRY_FEATURES, search, width, height, handlers: { onTouchStart, onTouchMove, onTouchEnd, setZoom, setNightMode, setCloudVisible, setPaused, flyTo, nudgeCenter, setZenMode }, page, wheelHandlers, onWinResizeCb: onWinResize, __cancelRaf: () => { try { canvas.cancelAnimationFrame(__rafId); } catch(_){ } __rafId = 0; }, __pauseFlagRef: () => __paused, __setHighlight: setHighlight };
+    const startPoetry3D = (lines, conf) => {
+      try {
+        if (!poetry3d && earthMesh) {
+          poetry3d = createPoetry3D(THREE, scene, camera, earthMesh, width, height, APP_CFG?.poetry || {});
+        }
+        poetry3d?.setEnabled?.(true);
+        poetry3d?.start?.(lines, conf || (APP_CFG?.poetry || {}));
+      } catch(_){}
+    };
+    const stopPoetry3D = () => { try { poetry3d?.stop?.(); poetry3d?.setEnabled?.(false); } catch(_){} };
+
+      state = { THREE, scene, renderer, globeGroup, camera, dirLight, earthMesh, COUNTRY_FEATURES, search, width, height, handlers: { onTouchStart, onTouchMove, onTouchEnd, setZoom, setNightMode, setCloudVisible, setPaused, flyTo, nudgeCenter, setZenMode, startPoetry3D, stopPoetry3D }, page, wheelHandlers, onWinResizeCb: onWinResize, __cancelRaf: () => { try { canvas.cancelAnimationFrame(__rafId); } catch(_){ } __rafId = 0; }, __pauseFlagRef: () => __paused, __setHighlight: setHighlight };
   });
 }
 
@@ -1102,6 +1440,8 @@ export function setCloudVisible(on){ state?.handlers?.setCloudVisible?.(on); }
 export function setPaused(on){ state?.handlers?.setPaused?.(on); }
 export function flyTo(lat, lon, duration){ state?.handlers?.flyTo?.(lat, lon, duration); }
 export function setZenMode(on){ state?.handlers?.setZenMode?.(on); }
+export function startPoetry3D(lines, conf){ try { state?.handlers?.startPoetry3D?.(lines, conf); } catch(_){} }
+export function stopPoetry3D(){ try { state?.handlers?.stopPoetry3D?.(); } catch(_){} }
 export function setDebugFlags(flags){ try { Object.assign(DEBUG, flags||{}); } catch(_){ } }
 // 直接推动中心：页面层可调用（无动画，立即生效）
 export function nudgeCenter(latDeg, lonDeg){ try { state?.handlers?.nudgeCenter?.(latDeg, lonDeg); } catch(_){ } }

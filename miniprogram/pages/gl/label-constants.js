@@ -20,6 +20,10 @@ export const DYNAMIC_FONT_BY_DISTANCE = true; // 根据相机距离动态缩放�
 
 // 新增：透明度平滑跟随系数（与 labels.js 逻辑对齐）
 export const OPACITY_FOLLOW = 0.25;          // 0~1，越大跟随越快
+
+// 新增：统一调试日志开关（收敛控制台输出）
+export const LABELS_DEBUG_LOG = false;       // 标签系统日志开关
+export const INTERACTION_DEBUG_LOG = false;  // 交互与搜索相关日志开关
 // 新增：像素级边缘淡出边距（四边最小像素距离）
 export const EDGE_FADE_PX = 28;              // 与 labels.js 使用保持一致
 
@@ -56,5 +60,6 @@ export const FONT_MIN_SCREEN_PX_COUNTRY = 26;  // 国家标签最小像素高度
 export const FONT_MIN_SCREEN_PX_CITY    = 20;  // 城市标签最小像素高度（+2px）
 
 // 新增：调试日志总开关（降低控制台噪音）
-export const LABEL_DEBUG_LOG = true;          // 临时开启：真机诊断候选/预算；验证后可改回 false
-export const INTERACTION_DEBUG_LOG = true;    // 交互层日志开关（选择/点击等）
+// deprecated: 使用统一的 LABELS_DEBUG_LOG / INTERACTION_DEBUG_LOG；避免重复导出产生冲突
+// export const LABEL_DEBUG_LOG = false;
+// export const INTERACTION_DEBUG_LOG = false;
