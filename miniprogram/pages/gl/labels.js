@@ -18,6 +18,9 @@ export function setLabelsBudget(n){
   const v = Number(n);
   if (!isNaN(v) && v >= 0) LABELS_BUDGET = v;
 }
+// 新增：性能模式（拖动中）开关，仅影响本模块内部预算与降频，易回滚
+let __perfDrag = false;
+export function setPerfMode(on){ __perfDrag = !!on; }
 const SCORE_THRESHOLD  = _const?.SCORE_THRESHOLD  ?? 0.0;   // 过滤低分项（保守取 0）
 const LABEL_CUTOFF     = _const?.LABEL_CUTOFF     ?? 0.00;  // 前半球淡入阈值（点积）
 const LABEL_FADEIN     = _const?.LABEL_FADEIN     ?? 0.35;  // 从 CUTOFF->FADEIN 线性淡入
@@ -453,7 +456,9 @@ export function updateLabels(){
 
   const winners = new Set();
   let used = 0;
-  const countryBudget = Math.min(LABELS_BUDGET, COUNTRY_MIN_WINNERS);
+  // 拖动中动态缩减预算（不改变外部设置），降低排序与网格冲突的压力
+  const __budgetEff = __perfDrag ? Math.max(12, Math.round(LABELS_BUDGET * (_const?.PERF_DRAG_LABEL_BUDGET_SCALE ?? 0.7))) : LABELS_BUDGET;
+  const countryBudget = Math.min(__budgetEff, COUNTRY_MIN_WINNERS);
   // 2.1 先放国家
   for (const c of countryCands) {
     if (used >= countryBudget) break;
@@ -512,7 +517,7 @@ export function updateLabels(){
       const now = Date.now();
       const last = updateLabels.__lastDebug || 0;
       if (now - last >= 1500) {
-        console.debug('[labels:update] candidates=', candidates.length, 'winners=', winners.size, 'budget=', LABELS_BUDGET);
+        console.debug('[labels:update] candidates=', candidates.length, 'winners=', winners.size, 'budget=', __budgetEff, 'drag=', __perfDrag);
         updateLabels.__lastDebug = now;
       }
     }

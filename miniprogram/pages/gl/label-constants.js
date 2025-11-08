@@ -23,7 +23,7 @@ export const OPACITY_FOLLOW = 0.25;          // 0~1，越大跟随越快
 
 // 新增：统一调试日志开关（收敛控制台输出）
 export const LABELS_DEBUG_LOG = false;       // 标签系统日志开关
-export const INTERACTION_DEBUG_LOG = false;  // 交互与搜索相关日志开关
+export const INTERACTION_DEBUG_LOG = true;   // 交互与搜索相关日志开关（临时开启用于惯性诊断）
 // 新增：像素级边缘淡出边距（四边最小像素距离）
 export const EDGE_FADE_PX = 28;              // 与 labels.js 使用保持一致
 
@@ -44,6 +44,30 @@ export const LOD_CITIES_ALL_APPEAR   = 5.5;   // 更近时显示更多级别城�
 
 // 新增：远距行为配置
 export const FAR_FONT_STABLE_DIST      = 8.0;  // 超过该距离字体不再继续变小（稳定为 1.0）
+
+// —— 新增：性能模式开关（拖动时临时降级，静止后恢复），均为安全默认值
+export const PERF_DRAG_LABEL_BUDGET_SCALE = 0.7; // 拖动中标签预算缩放比例（0.7 约降至 16）
+export const PERF_DRAG_RESTORE_IDLE_MS = 500;    // 触摸结束后等待多少毫秒再恢复
+export const PERF_HIDE_MARKERS_ON_DRAG = true;   // 拖动时隐藏城市光点
+export const PERF_HIDE_STAR_ON_DRAG = true;      // 拖动时隐藏星空背景
+// 兼容旧名（避免 main.js 现有导入报错）
+export const PERF_HIDE_STAR_ON_ON_DRAG = PERF_HIDE_STAR_ON_DRAG;
+
+// —— 新增：惯性映射配置（便于快速回滚/调参）
+// 惯性映射与日志配置（集中常量，便于调参）
+export const INERTIA_NONLINEAR = true;        // 非线性映射：增强中高档位差异
+export const INERTIA_POWER = 3.0;             // 指数（>1 更陡，3.0：低档位明显更“刹”）
+export const INERTIA_DAMP_MIN = 0.90;         // 阻尼下限（低档位更易停）
+export const INERTIA_DAMP_MAX = 0.9997;       // 阻尼上限（高档位更“滑”）
+export const INERTIA_SPEED_MIN = 0.06;        // 单帧最大角速度下限
+export const INERTIA_SPEED_MAX = 0.40;        // 单帧最大角速度上限（提高 100 档上限）
+export const INERTIA_GAIN_BASE = 0.20;        // 拖动速度增益基数
+export const INERTIA_GAIN_SCALE = 3.0;        // 拖动速度增益缩放
+
+// 诊断日志节流：避免刷屏
+export const INERTIA_LOG_DETAIL = true;       // 开启详细日志
+export const INERTIA_LOG_THROTTLE_MS = 120;   // 拖动日志节流间隔
+export const INERTIA_APPLY_LOG_THROTTLE_MS = 250; // 惯性渲染日志节流间隔
 export const FAR_COUNTRY_ONLY_DIST     = 7.8;  // 超过该距离仅显示中心国家标签
 export const FAR_CENTER_WEIGHT_MIN     = 0.70; // 远距时中心权重最低要求（越靠屏幕中心越容易显示）
 // 补充：以初始相机距离为参考的远距比例阈值（适配不同屏幕纵横比）

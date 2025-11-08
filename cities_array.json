@@ -1,13 +1,11 @@
-export const cities = [
+[
   {
     "name_en": "Beijing",
     "name_zh": "北京",
     "lat": 39.9042,
     "lon": 116.4074,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "beijing",
-    "pinyin_initial": "bj"
+    "importance": 2
   },
   {
     "name_en": "Shanghai",
@@ -15,9 +13,7 @@ export const cities = [
     "lat": 31.2304,
     "lon": 121.4737,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "shanghai",
-    "pinyin_initial": "sh"
+    "importance": 2
   },
   {
     "name_en": "Guangzhou",
@@ -25,9 +21,7 @@ export const cities = [
     "lat": 23.1291,
     "lon": 113.2644,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "guangzhou",
-    "pinyin_initial": "gz"
+    "importance": 2
   },
   {
     "name_en": "Shenzhen",
@@ -35,9 +29,7 @@ export const cities = [
     "lat": 22.5431,
     "lon": 114.0579,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "shenzhen",
-    "pinyin_initial": "sz"
+    "importance": 2
   },
   {
     "name_en": "Chengdu",
@@ -45,9 +37,7 @@ export const cities = [
     "lat": 30.5728,
     "lon": 104.0668,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "chengdu",
-    "pinyin_initial": "cd"
+    "importance": 2
   },
   {
     "name_en": "Chongqing",
@@ -55,9 +45,7 @@ export const cities = [
     "lat": 29.563,
     "lon": 106.5516,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "chongqing",
-    "pinyin_initial": "cq"
+    "importance": 2
   },
   {
     "name_en": "Wuhan",
@@ -65,9 +53,7 @@ export const cities = [
     "lat": 30.6622,
     "lon": 114.3055,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "wuhan",
-    "pinyin_initial": "wh"
+    "importance": 2
   },
   {
     "name_en": "Xi'an",
@@ -75,9 +61,7 @@ export const cities = [
     "lat": 34.3416,
     "lon": 108.9402,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "xian",
-    "pinyin_initial": "xa"
+    "importance": 2
   },
   {
     "name_en": "Hangzhou",
@@ -85,9 +69,7 @@ export const cities = [
     "lat": 30.2741,
     "lon": 120.1551,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "hangzhou",
-    "pinyin_initial": "hz"
+    "importance": 2
   },
   {
     "name_en": "Lhasa",
@@ -95,9 +77,7 @@ export const cities = [
     "lat": 29.6456,
     "lon": 91.1402,
     "country_code": "CHN",
-    "importance": 2,
-    "pinyin_full": "lasa",
-    "pinyin_initial": "ls"
+    "importance": 2
   },
   {
     "name_en": "New York",
@@ -105,9 +85,7 @@ export const cities = [
     "lat": 40.7128,
     "lon": -74.006,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "niuyue",
-    "pinyin_initial": "ny"
+    "importance": 2
   },
   {
     "name_en": "Chicago",
@@ -115,9 +93,7 @@ export const cities = [
     "lat": 41.8781,
     "lon": -87.6298,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "zhijiage",
-    "pinyin_initial": "zjg"
+    "importance": 2
   },
   {
     "name_en": "Denver",
@@ -125,9 +101,7 @@ export const cities = [
     "lat": 39.7392,
     "lon": -104.9903,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "danfo",
-    "pinyin_initial": "df"
+    "importance": 2
   },
   {
     "name_en": "Los Angeles",
@@ -135,9 +109,7 @@ export const cities = [
     "lat": 34.0522,
     "lon": -118.2437,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "luoshanji",
-    "pinyin_initial": "lsj"
+    "importance": 2
   },
   {
     "name_en": "Anchorage",
@@ -145,9 +117,7 @@ export const cities = [
     "lat": 61.2181,
     "lon": -149.9003,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "ankeleiqi",
-    "pinyin_initial": "aklq"
+    "importance": 2
   },
   {
     "name_en": "Honolulu",
@@ -155,9 +125,7 @@ export const cities = [
     "lat": 21.3069,
     "lon": -157.8583,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "tanxiangshan",
-    "pinyin_initial": "txs"
+    "importance": 2
   },
   {
     "name_en": "Washington D.C.",
@@ -165,9 +133,7 @@ export const cities = [
     "lat": 38.9072,
     "lon": -77.0369,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "huashengdun",
-    "pinyin_initial": "hsd"
+    "importance": 2
   },
   {
     "name_en": "Houston",
@@ -175,9 +141,7 @@ export const cities = [
     "lat": 29.7604,
     "lon": -95.3698,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "xiusidun",
-    "pinyin_initial": "xsd"
+    "importance": 2
   },
   {
     "name_en": "Seattle",
@@ -185,9 +149,7 @@ export const cities = [
     "lat": 47.6062,
     "lon": -122.3321,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "xiyatu",
-    "pinyin_initial": "xyt"
+    "importance": 2
   },
   {
     "name_en": "Miami",
@@ -195,9 +157,7 @@ export const cities = [
     "lat": 25.7617,
     "lon": -80.1918,
     "country_code": "USA",
-    "importance": 2,
-    "pinyin_full": "maiami",
-    "pinyin_initial": "mam"
+    "importance": 2
   },
   {
     "name_en": "Moscow",
@@ -205,9 +165,7 @@ export const cities = [
     "lat": 55.7558,
     "lon": 37.6173,
     "country_code": "RUS",
-    "importance": 2,
-    "pinyin_full": "mosike",
-    "pinyin_initial": "msk"
+    "importance": 2
   },
   {
     "name_en": "St. Petersburg",
@@ -215,9 +173,7 @@ export const cities = [
     "lat": 59.9343,
     "lon": 30.3351,
     "country_code": "RUS",
-    "importance": 2,
-    "pinyin_full": "shengbidebao",
-    "pinyin_initial": "sbdb"
+    "importance": 2
   },
   {
     "name_en": "Yekaterinburg",
@@ -225,9 +181,7 @@ export const cities = [
     "lat": 56.8389,
     "lon": 60.6057,
     "country_code": "RUS",
-    "importance": 2,
-    "pinyin_full": "yekajielinbao",
-    "pinyin_initial": "ykjlb"
+    "importance": 2
   },
   {
     "name_en": "Novosibirsk",
@@ -235,9 +189,7 @@ export const cities = [
     "lat": 55.0084,
     "lon": 82.9357,
     "country_code": "RUS",
-    "importance": 2,
-    "pinyin_full": "xinxiboliya",
-    "pinyin_initial": "xxbly"
+    "importance": 2
   },
   {
     "name_en": "Vladivostok",
@@ -245,9 +197,7 @@ export const cities = [
     "lat": 43.1198,
     "lon": 131.8869,
     "country_code": "RUS",
-    "importance": 2,
-    "pinyin_full": "fuladiwosituoke",
-    "pinyin_initial": "fldwstk"
+    "importance": 2
   },
   {
     "name_en": "Ottawa",
@@ -255,9 +205,7 @@ export const cities = [
     "lat": 45.4215,
     "lon": -75.6997,
     "country_code": "CAN",
-    "importance": 1,
-    "pinyin_full": "wotaihua",
-    "pinyin_initial": "wth"
+    "importance": 1
   },
   {
     "name_en": "Toronto",
@@ -265,9 +213,7 @@ export const cities = [
     "lat": 43.651,
     "lon": -79.347,
     "country_code": "CAN",
-    "importance": 1,
-    "pinyin_full": "duolunduo",
-    "pinyin_initial": "dld"
+    "importance": 1
   },
   {
     "name_en": "Montreal",
@@ -275,9 +221,7 @@ export const cities = [
     "lat": 45.5017,
     "lon": -73.5673,
     "country_code": "CAN",
-    "importance": 1,
-    "pinyin_full": "mengtelier",
-    "pinyin_initial": "mtle"
+    "importance": 1
   },
   {
     "name_en": "Winnipeg",
@@ -285,9 +229,7 @@ export const cities = [
     "lat": 49.8951,
     "lon": -97.1384,
     "country_code": "CAN",
-    "importance": 1,
-    "pinyin_full": "wennibo",
-    "pinyin_initial": "wnb"
+    "importance": 1
   },
   {
     "name_en": "Calgary",
@@ -295,9 +237,7 @@ export const cities = [
     "lat": 51.0447,
     "lon": -114.0719,
     "country_code": "CAN",
-    "importance": 1,
-    "pinyin_full": "kaerjiali",
-    "pinyin_initial": "kejl"
+    "importance": 1
   },
   {
     "name_en": "Vancouver",
@@ -305,9 +245,7 @@ export const cities = [
     "lat": 49.2827,
     "lon": -123.1207,
     "country_code": "CAN",
-    "importance": 1,
-    "pinyin_full": "wengehua",
-    "pinyin_initial": "wgh"
+    "importance": 1
   },
   {
     "name_en": "New Delhi",
@@ -315,9 +253,7 @@ export const cities = [
     "lat": 28.6139,
     "lon": 77.209,
     "country_code": "IND",
-    "importance": 2,
-    "pinyin_full": "xindeli",
-    "pinyin_initial": "xdl"
+    "importance": 2
   },
   {
     "name_en": "Mumbai",
@@ -325,9 +261,7 @@ export const cities = [
     "lat": 19.076,
     "lon": 72.8777,
     "country_code": "IND",
-    "importance": 2,
-    "pinyin_full": "mengmai",
-    "pinyin_initial": "mm"
+    "importance": 2
   },
   {
     "name_en": "Bangalore",
@@ -335,9 +269,7 @@ export const cities = [
     "lat": 12.9716,
     "lon": 77.5946,
     "country_code": "IND",
-    "importance": 2,
-    "pinyin_full": "banjialuoer",
-    "pinyin_initial": "bjle"
+    "importance": 2
   },
   {
     "name_en": "Kolkata",
@@ -345,9 +277,7 @@ export const cities = [
     "lat": 22.5726,
     "lon": 88.3639,
     "country_code": "IND",
-    "importance": 2,
-    "pinyin_full": "jiaergeda",
-    "pinyin_initial": "jegd"
+    "importance": 2
   },
   {
     "name_en": "Sydney",
@@ -355,9 +285,7 @@ export const cities = [
     "lat": -33.8688,
     "lon": 151.2093,
     "country_code": "AUS",
-    "importance": 2,
-    "pinyin_full": "xini",
-    "pinyin_initial": "xn"
+    "importance": 2
   },
   {
     "name_en": "Melbourne",
@@ -365,9 +293,7 @@ export const cities = [
     "lat": -37.8136,
     "lon": 144.9631,
     "country_code": "AUS",
-    "importance": 2,
-    "pinyin_full": "moerben",
-    "pinyin_initial": "meb"
+    "importance": 2
   },
   {
     "name_en": "Brisbane",
@@ -375,9 +301,7 @@ export const cities = [
     "lat": -27.4698,
     "lon": 153.0251,
     "country_code": "AUS",
-    "importance": 2,
-    "pinyin_full": "bulisiban",
-    "pinyin_initial": "blsb"
+    "importance": 2
   },
   {
     "name_en": "Perth",
@@ -385,9 +309,7 @@ export const cities = [
     "lat": -31.9505,
     "lon": 115.8605,
     "country_code": "AUS",
-    "importance": 2,
-    "pinyin_full": "posi",
-    "pinyin_initial": "ps"
+    "importance": 2
   },
   {
     "name_en": "Guam",
@@ -395,9 +317,7 @@ export const cities = [
     "lat": 13.4443,
     "lon": 144.7937,
     "country_code": "GUM",
-    "importance": 2,
-    "pinyin_full": "guandao",
-    "pinyin_initial": "gd"
+    "importance": 2
   },
   {
     "name_en": "Puerto Rico",
@@ -405,9 +325,7 @@ export const cities = [
     "lat": 18.2208,
     "lon": -66.5901,
     "country_code": "PRI",
-    "importance": 2,
-    "pinyin_full": "boduolige",
-    "pinyin_initial": "bdlg"
+    "importance": 2
   },
   {
     "name_en": "Nuuk",
@@ -415,9 +333,7 @@ export const cities = [
     "lat": 64.1836,
     "lon": -51.7216,
     "country_code": "GRL",
-    "importance": 1,
-    "pinyin_full": "nuke",
-    "pinyin_initial": "nk"
+    "importance": 1
   },
   {
     "name_en": "Nouméa",
@@ -425,9 +341,7 @@ export const cities = [
     "lat": -21.2078,
     "lon": 165.289,
     "country_code": "NCL",
-    "importance": 1,
-    "pinyin_full": "numeia",
-    "pinyin_initial": "nma"
+    "importance": 1
   },
   {
     "name_en": "Stanley",
@@ -435,9 +349,7 @@ export const cities = [
     "lat": -51.7,
     "lon": -57.85,
     "country_code": "FLK",
-    "importance": 1,
-    "pinyin_full": "sitanli",
-    "pinyin_initial": "stl"
+    "importance": 1
   },
   {
     "name_en": "Saint-Denis",
@@ -445,9 +357,7 @@ export const cities = [
     "lat": -20.8823,
     "lon": 55.4504,
     "country_code": "REU",
-    "importance": 1,
-    "pinyin_full": "shengdanni",
-    "pinyin_initial": "sdn"
+    "importance": 1
   },
   {
     "name_en": "Fort-de-France",
@@ -455,9 +365,7 @@ export const cities = [
     "lat": 14.6049,
     "lon": -61.0718,
     "country_code": "MTQ",
-    "importance": 1,
-    "pinyin_full": "falanxibao",
-    "pinyin_initial": "flxb"
+    "importance": 1
   },
   {
     "name_en": "Tórshavn",
@@ -465,9 +373,7 @@ export const cities = [
     "lat": 62.0097,
     "lon": -6.7726,
     "country_code": "FRO",
-    "importance": 1,
-    "pinyin_full": "tuoersigang",
-    "pinyin_initial": "tesg"
+    "importance": 1
   },
   {
     "name_en": "Saipan",
@@ -475,9 +381,7 @@ export const cities = [
     "lat": 15.214,
     "lon": 145.756,
     "country_code": "MNP",
-    "importance": 1,
-    "pinyin_full": "saiban",
-    "pinyin_initial": "sb"
+    "importance": 1
   },
   {
     "name_en": "Charlotte Amalie",
@@ -485,9 +389,7 @@ export const cities = [
     "lat": 18.339,
     "lon": -64.933,
     "country_code": "VIR",
-    "importance": 1,
-    "pinyin_full": "xialuoteamaliya",
-    "pinyin_initial": "xltamly"
+    "importance": 1
   },
   {
     "name_en": "Algiers",
@@ -495,9 +397,7 @@ export const cities = [
     "lat": 36.7528,
     "lon": 3.0422,
     "country_code": "DZA",
-    "importance": 1,
-    "pinyin_full": "aerjier",
-    "pinyin_initial": "aeje"
+    "importance": 1
   },
   {
     "name_en": "Luanda",
@@ -505,9 +405,7 @@ export const cities = [
     "lat": -8.839,
     "lon": 13.2894,
     "country_code": "AGO",
-    "importance": 1,
-    "pinyin_full": "luoanda",
-    "pinyin_initial": "lad"
+    "importance": 1
   },
   {
     "name_en": "Porto-Novo",
@@ -515,9 +413,7 @@ export const cities = [
     "lat": 6.4969,
     "lon": 2.6289,
     "country_code": "BEN",
-    "importance": 1,
-    "pinyin_full": "boduonuofu",
-    "pinyin_initial": "bdnf"
+    "importance": 1
   },
   {
     "name_en": "Gaborone",
@@ -525,9 +421,7 @@ export const cities = [
     "lat": -24.6581,
     "lon": 25.9122,
     "country_code": "BWA",
-    "importance": 1,
-    "pinyin_full": "haboluonei",
-    "pinyin_initial": "hbln"
+    "importance": 1
   },
   {
     "name_en": "Ouagadougou",
@@ -535,9 +429,7 @@ export const cities = [
     "lat": 12.3642,
     "lon": -1.5383,
     "country_code": "BFA",
-    "importance": 1,
-    "pinyin_full": "wajiadugu",
-    "pinyin_initial": "wjdg"
+    "importance": 1
   },
   {
     "name_en": "Gitega",
@@ -545,9 +437,7 @@ export const cities = [
     "lat": -3.4264,
     "lon": 29.9256,
     "country_code": "BDI",
-    "importance": 1,
-    "pinyin_full": "jitejia",
-    "pinyin_initial": "jtj"
+    "importance": 1
   },
   {
     "name_en": "Yaoundé",
@@ -555,9 +445,7 @@ export const cities = [
     "lat": 3.848,
     "lon": 11.5021,
     "country_code": "CMR",
-    "importance": 1,
-    "pinyin_full": "yawende",
-    "pinyin_initial": "ywd"
+    "importance": 1
   },
   {
     "name_en": "Praia",
@@ -565,9 +453,7 @@ export const cities = [
     "lat": 14.9331,
     "lon": -23.5133,
     "country_code": "CPV",
-    "importance": 1,
-    "pinyin_full": "pulaya",
-    "pinyin_initial": "ply"
+    "importance": 1
   },
   {
     "name_en": "Bangui",
@@ -575,9 +461,7 @@ export const cities = [
     "lat": 4.3947,
     "lon": 18.5582,
     "country_code": "CAF",
-    "importance": 1,
-    "pinyin_full": "banji",
-    "pinyin_initial": "bj"
+    "importance": 1
   },
   {
     "name_en": "N'Djamena",
@@ -585,9 +469,7 @@ export const cities = [
     "lat": 12.1348,
     "lon": 15.0557,
     "country_code": "TCD",
-    "importance": 1,
-    "pinyin_full": "enjiameina",
-    "pinyin_initial": "ejmn"
+    "importance": 1
   },
   {
     "name_en": "Moroni",
@@ -595,9 +477,7 @@ export const cities = [
     "lat": -11.6982,
     "lon": 43.2536,
     "country_code": "COM",
-    "importance": 1,
-    "pinyin_full": "moluoni",
-    "pinyin_initial": "mln"
+    "importance": 1
   },
   {
     "name_en": "Kinshasa",
@@ -605,9 +485,7 @@ export const cities = [
     "lat": -4.325,
     "lon": 15.3222,
     "country_code": "COD",
-    "importance": 1,
-    "pinyin_full": "jinshasa",
-    "pinyin_initial": "jss"
+    "importance": 1
   },
   {
     "name_en": "Brazzaville",
@@ -615,9 +493,7 @@ export const cities = [
     "lat": -4.2634,
     "lon": 15.2429,
     "country_code": "COG",
-    "importance": 1,
-    "pinyin_full": "bulachaiweier",
-    "pinyin_initial": "blcwe"
+    "importance": 1
   },
   {
     "name_en": "Djibouti",
@@ -625,9 +501,7 @@ export const cities = [
     "lat": 11.589,
     "lon": 43.145,
     "country_code": "DJI",
-    "importance": 1,
-    "pinyin_full": "jibuti",
-    "pinyin_initial": "jbt"
+    "importance": 1
   },
   {
     "name_en": "Cairo",
@@ -635,9 +509,7 @@ export const cities = [
     "lat": 30.0444,
     "lon": 31.2357,
     "country_code": "EGY",
-    "importance": 1,
-    "pinyin_full": "kailuo",
-    "pinyin_initial": "kl"
+    "importance": 1
   },
   {
     "name_en": "Malabo",
@@ -645,9 +517,7 @@ export const cities = [
     "lat": 3.75,
     "lon": 8.7833,
     "country_code": "GNQ",
-    "importance": 1,
-    "pinyin_full": "malabo",
-    "pinyin_initial": "mlb"
+    "importance": 1
   },
   {
     "name_en": "Asmara",
@@ -655,9 +525,7 @@ export const cities = [
     "lat": 15.3333,
     "lon": 38.9333,
     "country_code": "ERI",
-    "importance": 1,
-    "pinyin_full": "asimala",
-    "pinyin_initial": "asml"
+    "importance": 1
   },
   {
     "name_en": "Mbabane",
@@ -665,9 +533,7 @@ export const cities = [
     "lat": -26.3054,
     "lon": 31.1367,
     "country_code": "SWZ",
-    "importance": 1,
-    "pinyin_full": "mubabanei",
-    "pinyin_initial": "mbbn"
+    "importance": 1
   },
   {
     "name_en": "Addis Ababa",
@@ -675,9 +541,7 @@ export const cities = [
     "lat": 9.03,
     "lon": 38.74,
     "country_code": "ETH",
-    "importance": 1,
-    "pinyin_full": "yadesiyabeiba",
-    "pinyin_initial": "ydsybb"
+    "importance": 1
   },
   {
     "name_en": "Libreville",
@@ -685,9 +549,7 @@ export const cities = [
     "lat": 0.3901,
     "lon": 9.4544,
     "country_code": "GAB",
-    "importance": 1,
-    "pinyin_full": "liboweier",
-    "pinyin_initial": "lbwe"
+    "importance": 1
   },
   {
     "name_en": "Banjul",
@@ -695,9 +557,7 @@ export const cities = [
     "lat": 13.4549,
     "lon": -16.579,
     "country_code": "GMB",
-    "importance": 1,
-    "pinyin_full": "banzhuer",
-    "pinyin_initial": "bze"
+    "importance": 1
   },
   {
     "name_en": "Conakry",
@@ -705,9 +565,7 @@ export const cities = [
     "lat": 9.6412,
     "lon": -13.5784,
     "country_code": "GIN",
-    "importance": 1,
-    "pinyin_full": "kenakeli",
-    "pinyin_initial": "knkl"
+    "importance": 1
   },
   {
     "name_en": "Bissau",
@@ -715,9 +573,7 @@ export const cities = [
     "lat": 11.8636,
     "lon": -15.5977,
     "country_code": "GNB",
-    "importance": 1,
-    "pinyin_full": "bishao",
-    "pinyin_initial": "bs"
+    "importance": 1
   },
   {
     "name_en": "Monrovia",
@@ -725,9 +581,7 @@ export const cities = [
     "lat": 6.3133,
     "lon": -10.8014,
     "country_code": "LBR",
-    "importance": 1,
-    "pinyin_full": "mengluoweiya",
-    "pinyin_initial": "mlwy"
+    "importance": 1
   },
   {
     "name_en": "Tripoli",
@@ -735,9 +589,7 @@ export const cities = [
     "lat": 32.8872,
     "lon": 13.1913,
     "country_code": "LBY",
-    "importance": 1,
-    "pinyin_full": "deliboli",
-    "pinyin_initial": "dlbl"
+    "importance": 1
   },
   {
     "name_en": "Antananarivo",
@@ -745,9 +597,7 @@ export const cities = [
     "lat": -18.8792,
     "lon": 47.5079,
     "country_code": "MDG",
-    "importance": 1,
-    "pinyin_full": "tananalifo",
-    "pinyin_initial": "tnnlf"
+    "importance": 1
   },
   {
     "name_en": "Lilongwe",
@@ -755,9 +605,7 @@ export const cities = [
     "lat": -13.9626,
     "lon": 33.7741,
     "country_code": "MWI",
-    "importance": 1,
-    "pinyin_full": "lilonggui",
-    "pinyin_initial": "llg"
+    "importance": 1
   },
   {
     "name_en": "Bamako",
@@ -765,9 +613,7 @@ export const cities = [
     "lat": 12.6392,
     "lon": -8.0029,
     "country_code": "MLI",
-    "importance": 1,
-    "pinyin_full": "bamake",
-    "pinyin_initial": "bmk"
+    "importance": 1
   },
   {
     "name_en": "Nouakchott",
@@ -775,9 +621,7 @@ export const cities = [
     "lat": 18.0783,
     "lon": -15.9744,
     "country_code": "MRT",
-    "importance": 1,
-    "pinyin_full": "nuwakexiaote",
-    "pinyin_initial": "nwkxt"
+    "importance": 1
   },
   {
     "name_en": "Port Louis",
@@ -785,9 +629,7 @@ export const cities = [
     "lat": -20.1609,
     "lon": 57.5012,
     "country_code": "MUS",
-    "importance": 1,
-    "pinyin_full": "luyigang",
-    "pinyin_initial": "lyg"
+    "importance": 1
   },
   {
     "name_en": "Maputo",
@@ -795,9 +637,7 @@ export const cities = [
     "lat": -25.9692,
     "lon": 32.5732,
     "country_code": "MOZ",
-    "importance": 1,
-    "pinyin_full": "maputuo",
-    "pinyin_initial": "mpt"
+    "importance": 1
   },
   {
     "name_en": "Windhoek",
@@ -805,9 +645,7 @@ export const cities = [
     "lat": -22.5597,
     "lon": 17.0832,
     "country_code": "NAM",
-    "importance": 1,
-    "pinyin_full": "wendeheke",
-    "pinyin_initial": "wdhk"
+    "importance": 1
   },
   {
     "name_en": "Niamey",
@@ -815,9 +653,7 @@ export const cities = [
     "lat": 13.5128,
     "lon": 2.1126,
     "country_code": "NER",
-    "importance": 1,
-    "pinyin_full": "niyamei",
-    "pinyin_initial": "nym"
+    "importance": 1
   },
   {
     "name_en": "Abuja",
@@ -825,9 +661,7 @@ export const cities = [
     "lat": 9.0579,
     "lon": 7.4951,
     "country_code": "NGA",
-    "importance": 1,
-    "pinyin_full": "abujia",
-    "pinyin_initial": "abj"
+    "importance": 1
   },
   {
     "name_en": "Nairobi",
@@ -835,9 +669,7 @@ export const cities = [
     "lat": -1.2921,
     "lon": 36.8219,
     "country_code": "KEN",
-    "importance": 1,
-    "pinyin_full": "neiluobi",
-    "pinyin_initial": "nlb"
+    "importance": 1
   },
   {
     "name_en": "Maseru",
@@ -845,9 +677,7 @@ export const cities = [
     "lat": -29.3158,
     "lon": 27.4854,
     "country_code": "LSO",
-    "importance": 1,
-    "pinyin_full": "masailu",
-    "pinyin_initial": "msl"
+    "importance": 1
   },
   {
     "name_en": "Rabat",
@@ -855,9 +685,7 @@ export const cities = [
     "lat": 34.0209,
     "lon": -6.8416,
     "country_code": "MAR",
-    "importance": 1,
-    "pinyin_full": "labate",
-    "pinyin_initial": "lbt"
+    "importance": 1
   },
   {
     "name_en": "Kigali",
@@ -865,9 +693,7 @@ export const cities = [
     "lat": -2.154,
     "lon": 30.535,
     "country_code": "RWA",
-    "importance": 1,
-    "pinyin_full": "jijiali",
-    "pinyin_initial": "jjl"
+    "importance": 1
   },
   {
     "name_en": "Sao Tome",
@@ -875,9 +701,7 @@ export const cities = [
     "lat": 0.3365,
     "lon": 6.7273,
     "country_code": "STP",
-    "importance": 1,
-    "pinyin_full": "shengduomei",
-    "pinyin_initial": "sdm"
+    "importance": 1
   },
   {
     "name_en": "Dakar",
@@ -885,9 +709,7 @@ export const cities = [
     "lat": 14.6928,
     "lon": -17.4467,
     "country_code": "SEN",
-    "importance": 1,
-    "pinyin_full": "dakaer",
-    "pinyin_initial": "dke"
+    "importance": 1
   },
   {
     "name_en": "Victoria",
@@ -895,9 +717,7 @@ export const cities = [
     "lat": -4.6191,
     "lon": 55.4513,
     "country_code": "SYC",
-    "importance": 1,
-    "pinyin_full": "weiduoliya",
-    "pinyin_initial": "wdly"
+    "importance": 1
   },
   {
     "name_en": "Freetown",
@@ -905,9 +725,7 @@ export const cities = [
     "lat": 8.4657,
     "lon": -13.2317,
     "country_code": "SLE",
-    "importance": 1,
-    "pinyin_full": "fulidun",
-    "pinyin_initial": "fld"
+    "importance": 1
   },
   {
     "name_en": "Mogadishu",
@@ -915,9 +733,7 @@ export const cities = [
     "lat": 2.0469,
     "lon": 45.3182,
     "country_code": "SOM",
-    "importance": 1,
-    "pinyin_full": "mojiadisha",
-    "pinyin_initial": "mjds"
+    "importance": 1
   },
   {
     "name_en": "Pretoria",
@@ -925,9 +741,7 @@ export const cities = [
     "lat": -25.7461,
     "lon": 28.1881,
     "country_code": "ZAF",
-    "importance": 1,
-    "pinyin_full": "biletuoliya",
-    "pinyin_initial": "bltly"
+    "importance": 1
   },
   {
     "name_en": "Cape Town",
@@ -935,9 +749,7 @@ export const cities = [
     "lat": -33.9258,
     "lon": 18.4232,
     "country_code": "ZAF",
-    "importance": 0.5,
-    "pinyin_full": "kaipudun",
-    "pinyin_initial": "kpd"
+    "importance": 0.5
   },
   {
     "name_en": "Bloemfontein",
@@ -945,9 +757,7 @@ export const cities = [
     "lat": -29.1184,
     "lon": 26.2294,
     "country_code": "ZAF",
-    "importance": 0.5,
-    "pinyin_full": "bulongfangdan",
-    "pinyin_initial": "blfd"
+    "importance": 0.5
   },
   {
     "name_en": "Juba",
@@ -955,9 +765,7 @@ export const cities = [
     "lat": 4.8594,
     "lon": 31.5713,
     "country_code": "SSD",
-    "importance": 1,
-    "pinyin_full": "zhuba",
-    "pinyin_initial": "zb"
+    "importance": 1
   },
   {
     "name_en": "Khartoum",
@@ -965,9 +773,7 @@ export const cities = [
     "lat": 15.5007,
     "lon": 32.5599,
     "country_code": "SDN",
-    "importance": 1,
-    "pinyin_full": "katumu",
-    "pinyin_initial": "ktm"
+    "importance": 1
   },
   {
     "name_en": "Dodoma",
@@ -975,9 +781,7 @@ export const cities = [
     "lat": -6.163,
     "lon": 35.7516,
     "country_code": "TZA",
-    "importance": 1,
-    "pinyin_full": "duoduoma",
-    "pinyin_initial": "ddm"
+    "importance": 1
   },
   {
     "name_en": "Lomé",
@@ -985,9 +789,7 @@ export const cities = [
     "lat": 6.1319,
     "lon": 1.222,
     "country_code": "TGO",
-    "importance": 1,
-    "pinyin_full": "luomei",
-    "pinyin_initial": "lm"
+    "importance": 1
   },
   {
     "name_en": "Tunis",
@@ -995,9 +797,7 @@ export const cities = [
     "lat": 36.8065,
     "lon": 10.1815,
     "country_code": "TUN",
-    "importance": 1,
-    "pinyin_full": "tunisi",
-    "pinyin_initial": "tns"
+    "importance": 1
   },
   {
     "name_en": "Kampala",
@@ -1005,9 +805,7 @@ export const cities = [
     "lat": 0.3476,
     "lon": 32.5825,
     "country_code": "UGA",
-    "importance": 1,
-    "pinyin_full": "kanpala",
-    "pinyin_initial": "kpl"
+    "importance": 1
   },
   {
     "name_en": "Lusaka",
@@ -1015,9 +813,7 @@ export const cities = [
     "lat": -15.4167,
     "lon": 28.2833,
     "country_code": "ZMB",
-    "importance": 1,
-    "pinyin_full": "lusaka",
-    "pinyin_initial": "lsk"
+    "importance": 1
   },
   {
     "name_en": "Harare",
@@ -1025,9 +821,7 @@ export const cities = [
     "lat": -17.8292,
     "lon": 31.0522,
     "country_code": "ZWE",
-    "importance": 1,
-    "pinyin_full": "halalei",
-    "pinyin_initial": "hll"
+    "importance": 1
   },
   {
     "name_en": "Yamoussoukro",
@@ -1035,9 +829,7 @@ export const cities = [
     "lat": 7.546,
     "lon": -5.5471,
     "country_code": "CIV",
-    "importance": 1,
-    "pinyin_full": "yamusukeluo",
-    "pinyin_initial": "ymskl"
+    "importance": 1
   },
   {
     "name_en": "Accra",
@@ -1045,9 +837,7 @@ export const cities = [
     "lat": 5.6037,
     "lon": -0.187,
     "country_code": "GHA",
-    "importance": 1,
-    "pinyin_full": "akela",
-    "pinyin_initial": "akl"
+    "importance": 1
   },
   {
     "name_en": "Kabul",
@@ -1055,9 +845,7 @@ export const cities = [
     "lat": 34.5553,
     "lon": 69.2075,
     "country_code": "AFG",
-    "importance": 1,
-    "pinyin_full": "kabuer",
-    "pinyin_initial": "kbe"
+    "importance": 1
   },
   {
     "name_en": "Yerevan",
@@ -1065,9 +853,7 @@ export const cities = [
     "lat": 40.1792,
     "lon": 44.4991,
     "country_code": "ARM",
-    "importance": 1,
-    "pinyin_full": "ailiwen",
-    "pinyin_initial": "alw"
+    "importance": 1
   },
   {
     "name_en": "Baku",
@@ -1075,9 +861,7 @@ export const cities = [
     "lat": 40.4093,
     "lon": 49.8671,
     "country_code": "AZE",
-    "importance": 1,
-    "pinyin_full": "baku",
-    "pinyin_initial": "bk"
+    "importance": 1
   },
   {
     "name_en": "Manama",
@@ -1085,9 +869,7 @@ export const cities = [
     "lat": 26.2285,
     "lon": 50.586,
     "country_code": "BHR",
-    "importance": 1,
-    "pinyin_full": "mainamai",
-    "pinyin_initial": "mnm"
+    "importance": 1
   },
   {
     "name_en": "Dhaka",
@@ -1095,9 +877,7 @@ export const cities = [
     "lat": 23.8103,
     "lon": 90.4125,
     "country_code": "BGD",
-    "importance": 1,
-    "pinyin_full": "daka",
-    "pinyin_initial": "dk"
+    "importance": 1
   },
   {
     "name_en": "Thimphu",
@@ -1105,9 +885,7 @@ export const cities = [
     "lat": 27.4728,
     "lon": 89.639,
     "country_code": "BTN",
-    "importance": 1,
-    "pinyin_full": "tingbu",
-    "pinyin_initial": "tb"
+    "importance": 1
   },
   {
     "name_en": "Bandar Seri Begawan",
@@ -1115,9 +893,7 @@ export const cities = [
     "lat": 4.9031,
     "lon": 114.9398,
     "country_code": "BRN",
-    "importance": 1,
-    "pinyin_full": "silibajiawanshi",
-    "pinyin_initial": "slbjws"
+    "importance": 1
   },
   {
     "name_en": "Phnom Penh",
@@ -1125,9 +901,7 @@ export const cities = [
     "lat": 12.5657,
     "lon": 104.991,
     "country_code": "KHM",
-    "importance": 1,
-    "pinyin_full": "jinbian",
-    "pinyin_initial": "jb"
+    "importance": 1
   },
   {
     "name_en": "Nicosia",
@@ -1135,9 +909,7 @@ export const cities = [
     "lat": 35.1796,
     "lon": 33.3823,
     "country_code": "CYP",
-    "importance": 1,
-    "pinyin_full": "nikexiya",
-    "pinyin_initial": "nkxy"
+    "importance": 1
   },
   {
     "name_en": "Tbilisi",
@@ -1145,9 +917,7 @@ export const cities = [
     "lat": 41.7151,
     "lon": 44.8271,
     "country_code": "GEO",
-    "importance": 1,
-    "pinyin_full": "dibilisi",
-    "pinyin_initial": "dbls"
+    "importance": 1
   },
   {
     "name_en": "New Delhi",
@@ -1155,9 +925,7 @@ export const cities = [
     "lat": 28.6139,
     "lon": 77.209,
     "country_code": "IND",
-    "importance": 1,
-    "pinyin_full": "xindeli",
-    "pinyin_initial": "xdl"
+    "importance": 1
   },
   {
     "name_en": "Jakarta",
@@ -1165,9 +933,7 @@ export const cities = [
     "lat": -6.2088,
     "lon": 106.8456,
     "country_code": "IDN",
-    "importance": 1,
-    "pinyin_full": "yajiada",
-    "pinyin_initial": "yjd"
+    "importance": 1
   },
   {
     "name_en": "Tehran",
@@ -1175,9 +941,7 @@ export const cities = [
     "lat": 35.6892,
     "lon": 51.389,
     "country_code": "IRN",
-    "importance": 1,
-    "pinyin_full": "deheilan",
-    "pinyin_initial": "dhl"
+    "importance": 1
   },
   {
     "name_en": "Baghdad",
@@ -1185,9 +949,7 @@ export const cities = [
     "lat": 33.3152,
     "lon": 44.3661,
     "country_code": "IRQ",
-    "importance": 1,
-    "pinyin_full": "bageda",
-    "pinyin_initial": "bgd"
+    "importance": 1
   },
   {
     "name_en": "Jerusalem",
@@ -1195,9 +957,7 @@ export const cities = [
     "lat": 31.7683,
     "lon": 35.2137,
     "country_code": "ISR",
-    "importance": 1,
-    "pinyin_full": "yelusaleng",
-    "pinyin_initial": "ylsl"
+    "importance": 1
   },
   {
     "name_en": "Tokyo",
@@ -1205,9 +965,7 @@ export const cities = [
     "lat": 35.6895,
     "lon": 139.6917,
     "country_code": "JPN",
-    "importance": 1,
-    "pinyin_full": "dongjing",
-    "pinyin_initial": "dj"
+    "importance": 1
   },
   {
     "name_en": "Amman",
@@ -1215,9 +973,7 @@ export const cities = [
     "lat": 31.9632,
     "lon": 35.9304,
     "country_code": "JOR",
-    "importance": 1,
-    "pinyin_full": "anman",
-    "pinyin_initial": "am"
+    "importance": 1
   },
   {
     "name_en": "Astana",
@@ -1225,9 +981,7 @@ export const cities = [
     "lat": 51.1694,
     "lon": 71.4491,
     "country_code": "KAZ",
-    "importance": 1,
-    "pinyin_full": "asitana",
-    "pinyin_initial": "astn"
+    "importance": 1
   },
   {
     "name_en": "Kuwait City",
@@ -1235,9 +989,7 @@ export const cities = [
     "lat": 29.3759,
     "lon": 47.9774,
     "country_code": "KWT",
-    "importance": 1,
-    "pinyin_full": "keweitecheng",
-    "pinyin_initial": "kwtc"
+    "importance": 1
   },
   {
     "name_en": "Bishkek",
@@ -1245,9 +997,7 @@ export const cities = [
     "lat": 42.8746,
     "lon": 74.6122,
     "country_code": "KGZ",
-    "importance": 1,
-    "pinyin_full": "bishenkaike",
-    "pinyin_initial": "bskk"
+    "importance": 1
   },
   {
     "name_en": "Vientiane",
@@ -1255,9 +1005,7 @@ export const cities = [
     "lat": 17.9757,
     "lon": 102.6331,
     "country_code": "LAO",
-    "importance": 1,
-    "pinyin_full": "wanxiang",
-    "pinyin_initial": "wx"
+    "importance": 1
   },
   {
     "name_en": "Beirut",
@@ -1265,9 +1013,7 @@ export const cities = [
     "lat": 33.8938,
     "lon": 35.5018,
     "country_code": "LBN",
-    "importance": 1,
-    "pinyin_full": "beilute",
-    "pinyin_initial": "blt"
+    "importance": 1
   },
   {
     "name_en": "Kuala Lumpur",
@@ -1275,9 +1021,7 @@ export const cities = [
     "lat": 3.139,
     "lon": 101.6869,
     "country_code": "MYS",
-    "importance": 1,
-    "pinyin_full": "jilongpo",
-    "pinyin_initial": "jlp"
+    "importance": 1
   },
   {
     "name_en": "Malé",
@@ -1285,9 +1029,7 @@ export const cities = [
     "lat": 4.1755,
     "lon": 73.5093,
     "country_code": "MDV",
-    "importance": 1,
-    "pinyin_full": "malei",
-    "pinyin_initial": "ml"
+    "importance": 1
   },
   {
     "name_en": "Ulaanbaatar",
@@ -1295,9 +1037,7 @@ export const cities = [
     "lat": 47.8864,
     "lon": 106.9057,
     "country_code": "MNG",
-    "importance": 1,
-    "pinyin_full": "wulanbatuo",
-    "pinyin_initial": "wlbt"
+    "importance": 1
   },
   {
     "name_en": "Naypyidaw",
@@ -1305,9 +1045,7 @@ export const cities = [
     "lat": 21.9162,
     "lon": 95.956,
     "country_code": "MMR",
-    "importance": 1,
-    "pinyin_full": "neibidou",
-    "pinyin_initial": "nbd"
+    "importance": 1
   },
   {
     "name_en": "Kathmandu",
@@ -1315,9 +1053,7 @@ export const cities = [
     "lat": 27.7172,
     "lon": 85.324,
     "country_code": "NPL",
-    "importance": 1,
-    "pinyin_full": "jiademandou",
-    "pinyin_initial": "jdmd"
+    "importance": 1
   },
   {
     "name_en": "Pyongyang",
@@ -1325,9 +1061,7 @@ export const cities = [
     "lat": 39.0392,
     "lon": 125.7625,
     "country_code": "PRK",
-    "importance": 1,
-    "pinyin_full": "pingrang",
-    "pinyin_initial": "pr"
+    "importance": 1
   },
   {
     "name_en": "Seoul",
@@ -1335,9 +1069,7 @@ export const cities = [
     "lat": 37.5665,
     "lon": 126.978,
     "country_code": "KOR",
-    "importance": 1,
-    "pinyin_full": "shouer",
-    "pinyin_initial": "se"
+    "importance": 1
   },
   {
     "name_en": "Muscat",
@@ -1345,9 +1077,7 @@ export const cities = [
     "lat": 23.6139,
     "lon": 58.5922,
     "country_code": "OMN",
-    "importance": 1,
-    "pinyin_full": "masikate",
-    "pinyin_initial": "mskt"
+    "importance": 1
   },
   {
     "name_en": "Islamabad",
@@ -1355,9 +1085,7 @@ export const cities = [
     "lat": 33.6844,
     "lon": 73.0479,
     "country_code": "PAK",
-    "importance": 1,
-    "pinyin_full": "yisilanbao",
-    "pinyin_initial": "yslb"
+    "importance": 1
   },
   {
     "name_en": "Manila",
@@ -1365,9 +1093,7 @@ export const cities = [
     "lat": 14.5995,
     "lon": 120.9842,
     "country_code": "PHL",
-    "importance": 1,
-    "pinyin_full": "manila",
-    "pinyin_initial": "mnl"
+    "importance": 1
   },
   {
     "name_en": "Doha",
@@ -1375,9 +1101,7 @@ export const cities = [
     "lat": 25.2854,
     "lon": 51.531,
     "country_code": "QAT",
-    "importance": 1,
-    "pinyin_full": "duoha",
-    "pinyin_initial": "dh"
+    "importance": 1
   },
   {
     "name_en": "Riyadh",
@@ -1385,9 +1109,7 @@ export const cities = [
     "lat": 24.7136,
     "lon": 46.6753,
     "country_code": "SAU",
-    "importance": 1,
-    "pinyin_full": "liyade",
-    "pinyin_initial": "lyd"
+    "importance": 1
   },
   {
     "name_en": "Singapore",
@@ -1395,9 +1117,7 @@ export const cities = [
     "lat": 1.3521,
     "lon": 103.8198,
     "country_code": "SGP",
-    "importance": 1,
-    "pinyin_full": "xinjiapo",
-    "pinyin_initial": "xjp"
+    "importance": 1
   },
   {
     "name_en": "Colombo",
@@ -1405,9 +1125,7 @@ export const cities = [
     "lat": 6.9271,
     "lon": 79.8612,
     "country_code": "LKA",
-    "importance": 1,
-    "pinyin_full": "kelunpo",
-    "pinyin_initial": "klp"
+    "importance": 1
   },
   {
     "name_en": "Damascus",
@@ -1415,9 +1133,7 @@ export const cities = [
     "lat": 33.5138,
     "lon": 36.2765,
     "country_code": "SYR",
-    "importance": 1,
-    "pinyin_full": "damashige",
-    "pinyin_initial": "dmsg"
+    "importance": 1
   },
   {
     "name_en": "Taipei",
@@ -1425,9 +1141,7 @@ export const cities = [
     "lat": 24.1477,
     "lon": 120.6736,
     "country_code": "TWN",
-    "importance": 1,
-    "pinyin_full": "taibei",
-    "pinyin_initial": "tb"
+    "importance": 1
   },
   {
     "name_en": "Dushanbe",
@@ -1435,9 +1149,7 @@ export const cities = [
     "lat": 38.5598,
     "lon": 68.787,
     "country_code": "TJK",
-    "importance": 1,
-    "pinyin_full": "dushangbie",
-    "pinyin_initial": "dsb"
+    "importance": 1
   },
   {
     "name_en": "Bangkok",
@@ -1445,9 +1157,7 @@ export const cities = [
     "lat": 13.7563,
     "lon": 100.5018,
     "country_code": "THA",
-    "importance": 1,
-    "pinyin_full": "mangu",
-    "pinyin_initial": "mg"
+    "importance": 1
   },
   {
     "name_en": "Dili",
@@ -1455,9 +1165,7 @@ export const cities = [
     "lat": -8.5569,
     "lon": 125.5603,
     "country_code": "TLS",
-    "importance": 1,
-    "pinyin_full": "dili",
-    "pinyin_initial": "dl"
+    "importance": 1
   },
   {
     "name_en": "Ankara",
@@ -1465,9 +1173,7 @@ export const cities = [
     "lat": 39.9334,
     "lon": 32.8597,
     "country_code": "TUR",
-    "importance": 1,
-    "pinyin_full": "ankala",
-    "pinyin_initial": "akl"
+    "importance": 1
   },
   {
     "name_en": "Ashgabat",
@@ -1475,9 +1181,7 @@ export const cities = [
     "lat": 37.9601,
     "lon": 58.3261,
     "country_code": "TKM",
-    "importance": 1,
-    "pinyin_full": "ashenhabade",
-    "pinyin_initial": "ashbd"
+    "importance": 1
   },
   {
     "name_en": "Abu Dhabi",
@@ -1485,9 +1189,7 @@ export const cities = [
     "lat": 24.4539,
     "lon": 54.3773,
     "country_code": "ARE",
-    "importance": 1,
-    "pinyin_full": "abuzhabi",
-    "pinyin_initial": "abzb"
+    "importance": 1
   },
   {
     "name_en": "Tashkent",
@@ -1495,9 +1197,7 @@ export const cities = [
     "lat": 41.2995,
     "lon": 69.2401,
     "country_code": "UZB",
-    "importance": 1,
-    "pinyin_full": "tashigan",
-    "pinyin_initial": "tsg"
+    "importance": 1
   },
   {
     "name_en": "Hanoi",
@@ -1505,9 +1205,7 @@ export const cities = [
     "lat": 21.0285,
     "lon": 105.8542,
     "country_code": "VNM",
-    "importance": 1,
-    "pinyin_full": "henei",
-    "pinyin_initial": "hn"
+    "importance": 1
   },
   {
     "name_en": "Sana'a",
@@ -1515,9 +1213,7 @@ export const cities = [
     "lat": 15.3694,
     "lon": 44.191,
     "country_code": "YEM",
-    "importance": 1,
-    "pinyin_full": "sana",
-    "pinyin_initial": "sn"
+    "importance": 1
   },
   {
     "name_en": "Moscow",
@@ -1525,9 +1221,7 @@ export const cities = [
     "lat": 55.7558,
     "lon": 37.6173,
     "country_code": "RUS",
-    "importance": 1,
-    "pinyin_full": "mosike",
-    "pinyin_initial": "msk"
+    "importance": 1
   },
   {
     "name_en": "Port Moresby",
@@ -1535,9 +1229,7 @@ export const cities = [
     "lat": -9.4438,
     "lon": 147.1803,
     "country_code": "PNG",
-    "importance": 1,
-    "pinyin_full": "moerzibigang",
-    "pinyin_initial": "mezbg"
+    "importance": 1
   },
   {
     "name_en": "Funafuti",
@@ -1545,9 +1237,7 @@ export const cities = [
     "lat": -8.5188,
     "lon": 179.1983,
     "country_code": "TUV",
-    "importance": 1,
-    "pinyin_full": "funafuti",
-    "pinyin_initial": "fnft"
+    "importance": 1
   },
   {
     "name_en": "Apia",
@@ -1555,9 +1245,7 @@ export const cities = [
     "lat": -13.8333,
     "lon": -171.7667,
     "country_code": "WSM",
-    "importance": 1,
-    "pinyin_full": "apiya",
-    "pinyin_initial": "apy"
+    "importance": 1
   },
   {
     "name_en": "Nuku'alofa",
@@ -1565,9 +1253,7 @@ export const cities = [
     "lat": -21.2078,
     "lon": -175.1982,
     "country_code": "TON",
-    "importance": 1,
-    "pinyin_full": "nukualuofa",
-    "pinyin_initial": "nkalf"
+    "importance": 1
   },
   {
     "name_en": "Palikir",
@@ -1575,9 +1261,7 @@ export const cities = [
     "lat": 7.4255,
     "lon": 151.85,
     "country_code": "FSM",
-    "importance": 1,
-    "pinyin_full": "palijier",
-    "pinyin_initial": "plje"
+    "importance": 1
   },
   {
     "name_en": "Honiara",
@@ -1585,9 +1269,7 @@ export const cities = [
     "lat": -9.531,
     "lon": 159.95,
     "country_code": "SLB",
-    "importance": 1,
-    "pinyin_full": "huoniyala",
-    "pinyin_initial": "hnyl"
+    "importance": 1
   },
   {
     "name_en": "Port Vila",
@@ -1595,9 +1277,7 @@ export const cities = [
     "lat": -15.483,
     "lon": 166.95,
     "country_code": "VUT",
-    "importance": 1,
-    "pinyin_full": "weilagang",
-    "pinyin_initial": "wlg"
+    "importance": 1
   },
   {
     "name_en": "Majuro",
@@ -1605,9 +1285,7 @@ export const cities = [
     "lat": 7.116,
     "lon": 171.383,
     "country_code": "MHL",
-    "importance": 1,
-    "pinyin_full": "mazhuluo",
-    "pinyin_initial": "mzl"
+    "importance": 1
   },
   {
     "name_en": "Yaren",
@@ -1615,9 +1293,7 @@ export const cities = [
     "lat": 0.522,
     "lon": 166.931,
     "country_code": "NRU",
-    "importance": 1,
-    "pinyin_full": "yalun",
-    "pinyin_initial": "yl"
+    "importance": 1
   },
   {
     "name_en": "South Tarawa",
@@ -1625,9 +1301,7 @@ export const cities = [
     "lat": -0.216,
     "lon": 173.15,
     "country_code": "KIR",
-    "importance": 1,
-    "pinyin_full": "nantalawa",
-    "pinyin_initial": "ntlw"
+    "importance": 1
   },
   {
     "name_en": "Ngerulmud",
@@ -1635,9 +1309,7 @@ export const cities = [
     "lat": 7.4255,
     "lon": 134.475,
     "country_code": "PLW",
-    "importance": 1,
-    "pinyin_full": "enjilumude",
-    "pinyin_initial": "ejlmd"
+    "importance": 1
   },
   {
     "name_en": "Tirana",
@@ -1645,9 +1317,7 @@ export const cities = [
     "lat": 41.3275,
     "lon": 19.8187,
     "country_code": "ALB",
-    "importance": 1,
-    "pinyin_full": "dilana",
-    "pinyin_initial": "dln"
+    "importance": 1
   },
   {
     "name_en": "Pristina",
@@ -1655,9 +1325,7 @@ export const cities = [
     "lat": 42.6629,
     "lon": 21.1655,
     "country_code": "KOS",
-    "importance": 1,
-    "pinyin_full": "pulishendina",
-    "pinyin_initial": "plsdn"
+    "importance": 1
   },
   {
     "name_en": "Vienna",
@@ -1665,9 +1333,7 @@ export const cities = [
     "lat": 48.2082,
     "lon": 16.3738,
     "country_code": "AUT",
-    "importance": 1,
-    "pinyin_full": "weiyena",
-    "pinyin_initial": "wyn"
+    "importance": 1
   },
   {
     "name_en": "Minsk",
@@ -1675,9 +1341,7 @@ export const cities = [
     "lat": 53.9045,
     "lon": 27.5615,
     "country_code": "BLR",
-    "importance": 1,
-    "pinyin_full": "mingsike",
-    "pinyin_initial": "msk"
+    "importance": 1
   },
   {
     "name_en": "Sarajevo",
@@ -1685,9 +1349,7 @@ export const cities = [
     "lat": 43.8563,
     "lon": 18.4131,
     "country_code": "BIH",
-    "importance": 1,
-    "pinyin_full": "salarewo",
-    "pinyin_initial": "slrw"
+    "importance": 1
   },
   {
     "name_en": "Sofia",
@@ -1695,9 +1357,7 @@ export const cities = [
     "lat": 42.6977,
     "lon": 23.3219,
     "country_code": "BGR",
-    "importance": 1,
-    "pinyin_full": "suofeiya",
-    "pinyin_initial": "sfy"
+    "importance": 1
   },
   {
     "name_en": "Zagreb",
@@ -1705,9 +1365,7 @@ export const cities = [
     "lat": 45.815,
     "lon": 15.9819,
     "country_code": "HRV",
-    "importance": 1,
-    "pinyin_full": "sagelebu",
-    "pinyin_initial": "sglb"
+    "importance": 1
   },
   {
     "name_en": "Prague",
@@ -1715,9 +1373,7 @@ export const cities = [
     "lat": 50.0755,
     "lon": 14.4378,
     "country_code": "CZE",
-    "importance": 1,
-    "pinyin_full": "bulage",
-    "pinyin_initial": "blg"
+    "importance": 1
   },
   {
     "name_en": "Copenhagen",
@@ -1725,9 +1381,7 @@ export const cities = [
     "lat": 55.6761,
     "lon": 12.5683,
     "country_code": "DNK",
-    "importance": 1,
-    "pinyin_full": "gebenhagen",
-    "pinyin_initial": "gbhg"
+    "importance": 1
   },
   {
     "name_en": "Tallinn",
@@ -1735,9 +1389,7 @@ export const cities = [
     "lat": 59.437,
     "lon": 24.7536,
     "country_code": "EST",
-    "importance": 1,
-    "pinyin_full": "talin",
-    "pinyin_initial": "tl"
+    "importance": 1
   },
   {
     "name_en": "Helsinki",
@@ -1745,9 +1397,7 @@ export const cities = [
     "lat": 60.1699,
     "lon": 24.9384,
     "country_code": "FIN",
-    "importance": 1,
-    "pinyin_full": "heerxinji",
-    "pinyin_initial": "hexj"
+    "importance": 1
   },
   {
     "name_en": "Athens",
@@ -1755,9 +1405,7 @@ export const cities = [
     "lat": 37.9838,
     "lon": 23.7275,
     "country_code": "GRC",
-    "importance": 1,
-    "pinyin_full": "yadian",
-    "pinyin_initial": "yd"
+    "importance": 1
   },
   {
     "name_en": "Reykjavik",
@@ -1765,9 +1413,7 @@ export const cities = [
     "lat": 64.1466,
     "lon": -21.9426,
     "country_code": "ISL",
-    "importance": 1,
-    "pinyin_full": "leikeyaweike",
-    "pinyin_initial": "lkywk"
+    "importance": 1
   },
   {
     "name_en": "Riga",
@@ -1775,9 +1421,7 @@ export const cities = [
     "lat": 56.9496,
     "lon": 24.1052,
     "country_code": "LVA",
-    "importance": 1,
-    "pinyin_full": "lijia",
-    "pinyin_initial": "lj"
+    "importance": 1
   },
   {
     "name_en": "Vaduz",
@@ -1785,9 +1429,7 @@ export const cities = [
     "lat": 47.0169,
     "lon": 9.5228,
     "country_code": "LIE",
-    "importance": 1,
-    "pinyin_full": "waduzi",
-    "pinyin_initial": "wdz"
+    "importance": 1
   },
   {
     "name_en": "Vilnius",
@@ -1795,9 +1437,7 @@ export const cities = [
     "lat": 54.6872,
     "lon": 25.2797,
     "country_code": "LTU",
-    "importance": 1,
-    "pinyin_full": "weierniusi",
-    "pinyin_initial": "wens"
+    "importance": 1
   },
   {
     "name_en": "Luxembourg",
@@ -1805,9 +1445,7 @@ export const cities = [
     "lat": 49.6116,
     "lon": 6.1319,
     "country_code": "LUX",
-    "importance": 1,
-    "pinyin_full": "lusenbao",
-    "pinyin_initial": "lsb"
+    "importance": 1
   },
   {
     "name_en": "Valletta",
@@ -1815,9 +1453,7 @@ export const cities = [
     "lat": 35.8989,
     "lon": 14.5146,
     "country_code": "MLT",
-    "importance": 1,
-    "pinyin_full": "walaita",
-    "pinyin_initial": "wlt"
+    "importance": 1
   },
   {
     "name_en": "Chișinău",
@@ -1825,9 +1461,7 @@ export const cities = [
     "lat": 47.0707,
     "lon": 28.8638,
     "country_code": "MDA",
-    "importance": 1,
-    "pinyin_full": "jixinewu",
-    "pinyin_initial": "jxnw"
+    "importance": 1
   },
   {
     "name_en": "Podgorica",
@@ -1835,9 +1469,7 @@ export const cities = [
     "lat": 43.1777,
     "lon": 19.263,
     "country_code": "MNE",
-    "importance": 1,
-    "pinyin_full": "bodegelicha",
-    "pinyin_initial": "bdglc"
+    "importance": 1
   },
   {
     "name_en": "Skopje",
@@ -1845,9 +1477,7 @@ export const cities = [
     "lat": 42.0983,
     "lon": 21.4314,
     "country_code": "MKD",
-    "importance": 1,
-    "pinyin_full": "sikepuli",
-    "pinyin_initial": "skpl"
+    "importance": 1
   },
   {
     "name_en": "Oslo",
@@ -1855,9 +1485,7 @@ export const cities = [
     "lat": 59.9139,
     "lon": 10.7522,
     "country_code": "NOR",
-    "importance": 1,
-    "pinyin_full": "aosilu",
-    "pinyin_initial": "asl"
+    "importance": 1
   },
   {
     "name_en": "Lisbon",
@@ -1865,9 +1493,7 @@ export const cities = [
     "lat": 38.7223,
     "lon": -9.1393,
     "country_code": "PRT",
-    "importance": 1,
-    "pinyin_full": "lisiben",
-    "pinyin_initial": "lsb"
+    "importance": 1
   },
   {
     "name_en": "Belgrade",
@@ -1875,9 +1501,7 @@ export const cities = [
     "lat": 44.7866,
     "lon": 20.4489,
     "country_code": "SRB",
-    "importance": 1,
-    "pinyin_full": "beiergelaide",
-    "pinyin_initial": "begld"
+    "importance": 1
   },
   {
     "name_en": "Ljubljana",
@@ -1885,9 +1509,7 @@ export const cities = [
     "lat": 46.0569,
     "lon": 14.5058,
     "country_code": "SVN",
-    "importance": 1,
-    "pinyin_full": "lubueryana",
-    "pinyin_initial": "lbeyn"
+    "importance": 1
   },
   {
     "name_en": "Stockholm",
@@ -1895,9 +1517,7 @@ export const cities = [
     "lat": 59.3293,
     "lon": 18.0686,
     "country_code": "SWE",
-    "importance": 1,
-    "pinyin_full": "sidegeermo",
-    "pinyin_initial": "sdgem"
+    "importance": 1
   },
   {
     "name_en": "Andorra la Vella",
@@ -1905,9 +1525,7 @@ export const cities = [
     "lat": 42.5063,
     "lon": 1.5218,
     "country_code": "AND",
-    "importance": 1,
-    "pinyin_full": "andaoercheng",
-    "pinyin_initial": "adec"
+    "importance": 1
   },
   {
     "name_en": "Brussels",
@@ -1915,9 +1533,7 @@ export const cities = [
     "lat": 50.8503,
     "lon": 4.3517,
     "country_code": "BEL",
-    "importance": 1,
-    "pinyin_full": "bulusaier",
-    "pinyin_initial": "blse"
+    "importance": 1
   },
   {
     "name_en": "Nicosia",
@@ -1925,9 +1541,7 @@ export const cities = [
     "lat": 35.1796,
     "lon": 33.3823,
     "country_code": "CYP",
-    "importance": 1,
-    "pinyin_full": "nikexiya",
-    "pinyin_initial": "nkxy"
+    "importance": 1
   },
   {
     "name_en": "Paris",
@@ -1935,9 +1549,7 @@ export const cities = [
     "lat": 48.8566,
     "lon": 2.3522,
     "country_code": "FRA",
-    "importance": 1,
-    "pinyin_full": "bali",
-    "pinyin_initial": "bl"
+    "importance": 1
   },
   {
     "name_en": "Berlin",
@@ -1945,9 +1557,7 @@ export const cities = [
     "lat": 52.52,
     "lon": 13.405,
     "country_code": "DEU",
-    "importance": 1,
-    "pinyin_full": "bolin",
-    "pinyin_initial": "bl"
+    "importance": 1
   },
   {
     "name_en": "Budapest",
@@ -1955,9 +1565,7 @@ export const cities = [
     "lat": 47.4979,
     "lon": 19.0402,
     "country_code": "HUN",
-    "importance": 1,
-    "pinyin_full": "budapeisi",
-    "pinyin_initial": "bdps"
+    "importance": 1
   },
   {
     "name_en": "Dublin",
@@ -1965,9 +1573,7 @@ export const cities = [
     "lat": 53.3498,
     "lon": -6.2603,
     "country_code": "IRL",
-    "importance": 1,
-    "pinyin_full": "doubolin",
-    "pinyin_initial": "dbl"
+    "importance": 1
   },
   {
     "name_en": "Rome",
@@ -1975,9 +1581,7 @@ export const cities = [
     "lat": 41.9028,
     "lon": 12.4964,
     "country_code": "ITA",
-    "importance": 1,
-    "pinyin_full": "luoma",
-    "pinyin_initial": "lm"
+    "importance": 1
   },
   {
     "name_en": "Monaco",
@@ -1985,9 +1589,7 @@ export const cities = [
     "lat": 43.7384,
     "lon": 7.4246,
     "country_code": "MCO",
-    "importance": 1,
-    "pinyin_full": "monage",
-    "pinyin_initial": "mng"
+    "importance": 1
   },
   {
     "name_en": "Amsterdam",
@@ -1995,9 +1597,7 @@ export const cities = [
     "lat": 52.3676,
     "lon": 4.9041,
     "country_code": "NLD",
-    "importance": 1,
-    "pinyin_full": "amusitedan",
-    "pinyin_initial": "amstd"
+    "importance": 1
   },
   {
     "name_en": "Warsaw",
@@ -2005,9 +1605,7 @@ export const cities = [
     "lat": 52.2297,
     "lon": 21.0122,
     "country_code": "POL",
-    "importance": 1,
-    "pinyin_full": "huasha",
-    "pinyin_initial": "hs"
+    "importance": 1
   },
   {
     "name_en": "Bucharest",
@@ -2015,9 +1613,7 @@ export const cities = [
     "lat": 44.4268,
     "lon": 26.1025,
     "country_code": "ROU",
-    "importance": 1,
-    "pinyin_full": "bujialesite",
-    "pinyin_initial": "bjlst"
+    "importance": 1
   },
   {
     "name_en": "San Marino",
@@ -2025,9 +1621,7 @@ export const cities = [
     "lat": 43.9356,
     "lon": 12.4473,
     "country_code": "SMR",
-    "importance": 1,
-    "pinyin_full": "shengmalinuo",
-    "pinyin_initial": "smln"
+    "importance": 1
   },
   {
     "name_en": "Bratislava",
@@ -2035,9 +1629,7 @@ export const cities = [
     "lat": 48.1486,
     "lon": 17.1077,
     "country_code": "SVK",
-    "importance": 1,
-    "pinyin_full": "buladisilafa",
-    "pinyin_initial": "bldslf"
+    "importance": 1
   },
   {
     "name_en": "Madrid",
@@ -2045,9 +1637,7 @@ export const cities = [
     "lat": 40.4168,
     "lon": -3.7038,
     "country_code": "ESP",
-    "importance": 1,
-    "pinyin_full": "madeli",
-    "pinyin_initial": "mdl"
+    "importance": 1
   },
   {
     "name_en": "Bern",
@@ -2055,9 +1645,7 @@ export const cities = [
     "lat": 46.948,
     "lon": 7.4474,
     "country_code": "CHE",
-    "importance": 1,
-    "pinyin_full": "boerni",
-    "pinyin_initial": "ben"
+    "importance": 1
   },
   {
     "name_en": "Kyiv",
@@ -2065,9 +1653,7 @@ export const cities = [
     "lat": 50.4501,
     "lon": 30.5234,
     "country_code": "UKR",
-    "importance": 1,
-    "pinyin_full": "jifu",
-    "pinyin_initial": "jf"
+    "importance": 1
   },
   {
     "name_en": "London",
@@ -2075,9 +1661,7 @@ export const cities = [
     "lat": 51.5072,
     "lon": -0.1276,
     "country_code": "GBR",
-    "importance": 1,
-    "pinyin_full": "lundun",
-    "pinyin_initial": "ld"
+    "importance": 1
   },
   {
     "name_en": "Vatican City",
@@ -2085,9 +1669,7 @@ export const cities = [
     "lat": 41.9029,
     "lon": 12.4534,
     "country_code": "VAT",
-    "importance": 1,
-    "pinyin_full": "fandigangcheng",
-    "pinyin_initial": "fdgc"
+    "importance": 1
   },
   {
     "name_en": "Marseille",
@@ -2095,9 +1677,7 @@ export const cities = [
     "lat": 43.2965,
     "lon": 5.3698,
     "country_code": "FRA",
-    "importance": 2,
-    "pinyin_full": "masai",
-    "pinyin_initial": "ms"
+    "importance": 2
   },
   {
     "name_en": "Lyon",
@@ -2105,9 +1685,7 @@ export const cities = [
     "lat": 45.764,
     "lon": 4.8357,
     "country_code": "FRA",
-    "importance": 2,
-    "pinyin_full": "liang",
-    "pinyin_initial": "la"
+    "importance": 2
   },
   {
     "name_en": "Nice",
@@ -2115,9 +1693,7 @@ export const cities = [
     "lat": 43.7102,
     "lon": 7.262,
     "country_code": "FRA",
-    "importance": 2,
-    "pinyin_full": "nisi",
-    "pinyin_initial": "ns"
+    "importance": 2
   },
   {
     "name_en": "Hamburg",
@@ -2125,9 +1701,7 @@ export const cities = [
     "lat": 53.5511,
     "lon": 9.9937,
     "country_code": "DEU",
-    "importance": 2,
-    "pinyin_full": "hanbao",
-    "pinyin_initial": "hb"
+    "importance": 2
   },
   {
     "name_en": "Munich",
@@ -2135,9 +1709,7 @@ export const cities = [
     "lat": 48.1351,
     "lon": 11.582,
     "country_code": "DEU",
-    "importance": 2,
-    "pinyin_full": "munihei",
-    "pinyin_initial": "mnh"
+    "importance": 2
   },
   {
     "name_en": "Frankfurt",
@@ -2145,9 +1717,7 @@ export const cities = [
     "lat": 50.1109,
     "lon": 8.6821,
     "country_code": "DEU",
-    "importance": 2,
-    "pinyin_full": "falankefu",
-    "pinyin_initial": "flkf"
+    "importance": 2
   },
   {
     "name_en": "Manchester",
@@ -2155,9 +1725,7 @@ export const cities = [
     "lat": 53.4808,
     "lon": -2.2426,
     "country_code": "GBR",
-    "importance": 2,
-    "pinyin_full": "manchesite",
-    "pinyin_initial": "mcst"
+    "importance": 2
   },
   {
     "name_en": "Edinburgh",
@@ -2165,9 +1733,7 @@ export const cities = [
     "lat": 55.9533,
     "lon": -3.1883,
     "country_code": "GBR",
-    "importance": 2,
-    "pinyin_full": "aidingbao",
-    "pinyin_initial": "adb"
+    "importance": 2
   },
   {
     "name_en": "Cardiff",
@@ -2175,9 +1741,7 @@ export const cities = [
     "lat": 51.4816,
     "lon": -3.1791,
     "country_code": "GBR",
-    "importance": 2,
-    "pinyin_full": "jiadefu",
-    "pinyin_initial": "jdf"
+    "importance": 2
   },
   {
     "name_en": "St. John's",
@@ -2185,9 +1749,7 @@ export const cities = [
     "lat": 17.1167,
     "lon": -61.85,
     "country_code": "ATG",
-    "importance": 1,
-    "pinyin_full": "shengyuehan",
-    "pinyin_initial": "syh"
+    "importance": 1
   },
   {
     "name_en": "Bridgetown",
@@ -2195,9 +1757,7 @@ export const cities = [
     "lat": 13.1058,
     "lon": -59.6132,
     "country_code": "BRB",
-    "importance": 1,
-    "pinyin_full": "buliqidun",
-    "pinyin_initial": "blqd"
+    "importance": 1
   },
   {
     "name_en": "Belmopan",
@@ -2205,9 +1765,7 @@ export const cities = [
     "lat": 17.4975,
     "lon": -88.1978,
     "country_code": "BLZ",
-    "importance": 1,
-    "pinyin_full": "beiermopan",
-    "pinyin_initial": "bemp"
+    "importance": 1
   },
   {
     "name_en": "San José",
@@ -2215,9 +1773,7 @@ export const cities = [
     "lat": 9.9281,
     "lon": -84.0907,
     "country_code": "CRI",
-    "importance": 1,
-    "pinyin_full": "shenghesai",
-    "pinyin_initial": "shs"
+    "importance": 1
   },
   {
     "name_en": "Havana",
@@ -2225,9 +1781,7 @@ export const cities = [
     "lat": 23.1136,
     "lon": -82.3666,
     "country_code": "CUB",
-    "importance": 1,
-    "pinyin_full": "hawana",
-    "pinyin_initial": "hwn"
+    "importance": 1
   },
   {
     "name_en": "Roseau",
@@ -2235,9 +1789,7 @@ export const cities = [
     "lat": 15.2833,
     "lon": -61.3833,
     "country_code": "DMA",
-    "importance": 1,
-    "pinyin_full": "luosuo",
-    "pinyin_initial": "ls"
+    "importance": 1
   },
   {
     "name_en": "Santo Domingo",
@@ -2245,9 +1797,7 @@ export const cities = [
     "lat": 18.4861,
     "lon": -69.9312,
     "country_code": "DOM",
-    "importance": 1,
-    "pinyin_full": "shengduomingge",
-    "pinyin_initial": "sdmg"
+    "importance": 1
   },
   {
     "name_en": "San Salvador",
@@ -2255,9 +1805,7 @@ export const cities = [
     "lat": 13.7942,
     "lon": -88.8967,
     "country_code": "SLV",
-    "importance": 1,
-    "pinyin_full": "shengsaerwaduo",
-    "pinyin_initial": "ssewd"
+    "importance": 1
   },
   {
     "name_en": "St. George's",
@@ -2265,9 +1813,7 @@ export const cities = [
     "lat": 12.05,
     "lon": -61.75,
     "country_code": "GRD",
-    "importance": 1,
-    "pinyin_full": "shengqiaozhi",
-    "pinyin_initial": "sqz"
+    "importance": 1
   },
   {
     "name_en": "Guatemala City",
@@ -2275,9 +1821,7 @@ export const cities = [
     "lat": 14.6349,
     "lon": -90.5069,
     "country_code": "GTM",
-    "importance": 1,
-    "pinyin_full": "weidimalacheng",
-    "pinyin_initial": "wdmlc"
+    "importance": 1
   },
   {
     "name_en": "Tegucigalpa",
@@ -2285,9 +1829,7 @@ export const cities = [
     "lat": 14.4974,
     "lon": -89.6239,
     "country_code": "HND",
-    "importance": 1,
-    "pinyin_full": "teguxijiaerba",
-    "pinyin_initial": "tgxjeb"
+    "importance": 1
   },
   {
     "name_en": "Kingston",
@@ -2295,9 +1837,7 @@ export const cities = [
     "lat": 17.975,
     "lon": -76.794,
     "country_code": "JAM",
-    "importance": 1,
-    "pinyin_full": "jinsidun",
-    "pinyin_initial": "jsd"
+    "importance": 1
   },
   {
     "name_en": "Managua",
@@ -2305,9 +1845,7 @@ export const cities = [
     "lat": 12.1522,
     "lon": -86.2683,
     "country_code": "NIC",
-    "importance": 1,
-    "pinyin_full": "managua",
-    "pinyin_initial": "mng"
+    "importance": 1
   },
   {
     "name_en": "Panama City",
@@ -2315,9 +1853,7 @@ export const cities = [
     "lat": 8.9824,
     "lon": -79.5199,
     "country_code": "PAN",
-    "importance": 1,
-    "pinyin_full": "banamacheng",
-    "pinyin_initial": "bnmc"
+    "importance": 1
   },
   {
     "name_en": "Basseterre",
@@ -2325,9 +1861,7 @@ export const cities = [
     "lat": 17.2903,
     "lon": -62.7237,
     "country_code": "KNA",
-    "importance": 1,
-    "pinyin_full": "basiteer",
-    "pinyin_initial": "bste"
+    "importance": 1
   },
   {
     "name_en": "Castries",
@@ -2335,9 +1869,7 @@ export const cities = [
     "lat": 14.0101,
     "lon": -60.987,
     "country_code": "LCA",
-    "importance": 1,
-    "pinyin_full": "kasiteli",
-    "pinyin_initial": "kstl"
+    "importance": 1
   },
   {
     "name_en": "Kingstown",
@@ -2345,9 +1877,7 @@ export const cities = [
     "lat": 13.156,
     "lon": -59.617,
     "country_code": "VCT",
-    "importance": 1,
-    "pinyin_full": "jinsidun",
-    "pinyin_initial": "jsd"
+    "importance": 1
   },
   {
     "name_en": "Port of Spain",
@@ -2355,9 +1885,7 @@ export const cities = [
     "lat": 10.643,
     "lon": -61.398,
     "country_code": "TTO",
-    "importance": 1,
-    "pinyin_full": "xibanyagang",
-    "pinyin_initial": "xbyg"
+    "importance": 1
   },
   {
     "name_en": "Buenos Aires",
@@ -2365,9 +1893,7 @@ export const cities = [
     "lat": -34.6037,
     "lon": -58.3816,
     "country_code": "ARG",
-    "importance": 1,
-    "pinyin_full": "buyinuosiailisi",
-    "pinyin_initial": "bynsals"
+    "importance": 1
   },
   {
     "name_en": "La Paz / Sucre",
@@ -2375,9 +1901,7 @@ export const cities = [
     "lat": -16.5,
     "lon": -68.15,
     "country_code": "BOL",
-    "importance": 1,
-    "pinyin_full": "labasi/sukelei",
-    "pinyin_initial": "lbs/skl"
+    "importance": 1
   },
   {
     "name_en": "Brasília",
@@ -2385,9 +1909,7 @@ export const cities = [
     "lat": -15.7942,
     "lon": -47.8825,
     "country_code": "BRA",
-    "importance": 1,
-    "pinyin_full": "baxiliya",
-    "pinyin_initial": "bxly"
+    "importance": 1
   },
   {
     "name_en": "Santiago",
@@ -2395,9 +1917,7 @@ export const cities = [
     "lat": -33.4489,
     "lon": -70.6693,
     "country_code": "CHL",
-    "importance": 1,
-    "pinyin_full": "shengdiyage",
-    "pinyin_initial": "sdyg"
+    "importance": 1
   },
   {
     "name_en": "Bogotá",
@@ -2405,9 +1925,7 @@ export const cities = [
     "lat": 4.711,
     "lon": -74.0721,
     "country_code": "COL",
-    "importance": 1,
-    "pinyin_full": "bogeda",
-    "pinyin_initial": "bgd"
+    "importance": 1
   },
   {
     "name_en": "Quito",
@@ -2415,9 +1933,7 @@ export const cities = [
     "lat": -2.1894,
     "lon": -79.889,
     "country_code": "ECU",
-    "importance": 1,
-    "pinyin_full": "jiduo",
-    "pinyin_initial": "jd"
+    "importance": 1
   },
   {
     "name_en": "Georgetown",
@@ -2425,9 +1941,7 @@ export const cities = [
     "lat": 4.86,
     "lon": -58.93,
     "country_code": "GUY",
-    "importance": 1,
-    "pinyin_full": "qiaozhidun",
-    "pinyin_initial": "qzd"
+    "importance": 1
   },
   {
     "name_en": "Asunción",
@@ -2435,9 +1949,7 @@ export const cities = [
     "lat": -25.2637,
     "lon": -57.5759,
     "country_code": "PRY",
-    "importance": 1,
-    "pinyin_full": "yasongsen",
-    "pinyin_initial": "yss"
+    "importance": 1
   },
   {
     "name_en": "Lima",
@@ -2445,9 +1957,7 @@ export const cities = [
     "lat": -12.0464,
     "lon": -77.0428,
     "country_code": "PER",
-    "importance": 1,
-    "pinyin_full": "lima",
-    "pinyin_initial": "lm"
+    "importance": 1
   },
   {
     "name_en": "Paramaribo",
@@ -2455,9 +1965,7 @@ export const cities = [
     "lat": 3.864,
     "lon": -55.203,
     "country_code": "SUR",
-    "importance": 1,
-    "pinyin_full": "palamalibo",
-    "pinyin_initial": "plmlb"
+    "importance": 1
   },
   {
     "name_en": "Montevideo",
@@ -2465,9 +1973,7 @@ export const cities = [
     "lat": -34.9011,
     "lon": -56.1645,
     "country_code": "URY",
-    "importance": 1,
-    "pinyin_full": "mengdeweidiya",
-    "pinyin_initial": "mdwdy"
+    "importance": 1
   },
   {
     "name_en": "Caracas",
@@ -2475,9 +1981,7 @@ export const cities = [
     "lat": 10.4806,
     "lon": -66.9036,
     "country_code": "VEN",
-    "importance": 1,
-    "pinyin_full": "jialajiasi",
-    "pinyin_initial": "jljs"
+    "importance": 1
   },
   {
     "name_en": "Cayenne",
@@ -2485,9 +1989,7 @@ export const cities = [
     "lat": 4.9382,
     "lon": -52.33,
     "country_code": "GUF",
-    "importance": 1,
-    "pinyin_full": "kayan",
-    "pinyin_initial": "ky"
+    "importance": 1
   },
   {
     "name_en": "Kingstown",
@@ -2495,9 +1997,7 @@ export const cities = [
     "lat": 12.305,
     "lon": -61.478,
     "country_code": "VCT",
-    "importance": 1,
-    "pinyin_full": "jinsidun",
-    "pinyin_initial": "jsd"
+    "importance": 1
   },
   {
     "name_en": "Andorra la Vella",
@@ -2505,9 +2005,7 @@ export const cities = [
     "lat": 42.5063,
     "lon": 1.5218,
     "country_code": "AND",
-    "importance": 1,
-    "pinyin_full": "andaoercheng",
-    "pinyin_initial": "adec"
+    "importance": 1
   },
   {
     "name_en": "Monaco",
@@ -2515,9 +2013,7 @@ export const cities = [
     "lat": 43.7384,
     "lon": 7.4246,
     "country_code": "MCO",
-    "importance": 1,
-    "pinyin_full": "monage",
-    "pinyin_initial": "mng"
+    "importance": 1
   },
   {
     "name_en": "San Marino",
@@ -2525,9 +2021,7 @@ export const cities = [
     "lat": 43.9356,
     "lon": 12.4473,
     "country_code": "SMR",
-    "importance": 1,
-    "pinyin_full": "shengmalinuo",
-    "pinyin_initial": "smln"
+    "importance": 1
   },
   {
     "name_en": "Vatican City",
@@ -2535,9 +2029,7 @@ export const cities = [
     "lat": 41.9029,
     "lon": 12.4534,
     "country_code": "VAT",
-    "importance": 1,
-    "pinyin_full": "fandigangcheng",
-    "pinyin_initial": "fdgc"
+    "importance": 1
   },
   {
     "name_en": "Mexico City",
@@ -2545,9 +2037,7 @@ export const cities = [
     "lat": 19.4326,
     "lon": -99.1332,
     "country_code": "MEX",
-    "importance": 1,
-    "pinyin_full": "moxigecheng",
-    "pinyin_initial": "mxgc"
+    "importance": 1
   },
   {
     "name_en": "Warsaw",
@@ -2555,9 +2045,7 @@ export const cities = [
     "lat": 52.2297,
     "lon": 21.0122,
     "country_code": "POL",
-    "importance": 1,
-    "pinyin_full": "huasha",
-    "pinyin_initial": "hs"
+    "importance": 1
   },
   {
     "name_en": "Kyiv",
@@ -2565,8 +2053,6 @@ export const cities = [
     "lat": 50.4501,
     "lon": 30.5234,
     "country_code": "UKR",
-    "importance": 1,
-    "pinyin_full": "jifu",
-    "pinyin_initial": "jf"
+    "importance": 1
   }
 ]

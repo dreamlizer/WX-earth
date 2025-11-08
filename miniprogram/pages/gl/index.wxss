@@ -2,18 +2,19 @@
 page { background: #000; }
 
 .wrap {
-  width: 100vw;
-  height: 100vh;      /* 全屏高 */
+  /* 改为固定填充视口，避免 Android 上 vw/vh 偶发计算偏差导致横向拉伸 */
+  position: fixed;
+  left: 0; right: 0; top: 0; bottom: 0;
   background: #000;
   overflow: hidden;
-  position: relative; /* 便于定位缩放控件 */
 }
 
 canvas {
   width: 100%;
   /* 预留非 canvas 区域给底部缩放条，避免被原生 canvas 盖住且事件穿透 */
   /* 如需更薄/更厚，调整下方 48px 即可，例如 40px/56px */
-  height: calc(100vh - 48px);
+  /* 避免使用 vh：改为相对容器高度，并用 rpx 预留底部缩放条 */
+  height: calc(100% - 96rpx);
   display: block;
 }
 
@@ -24,17 +25,20 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: 40px auto 40px; /* 两侧按钮统一 40px */
-  column-gap: 10px;
+  /* 统一使用 rpx，避免在部分安卓 WebView 中 px 与 rpx 混用引起的列宽计算误差 */
+  grid-template-columns: 80rpx minmax(0, 1fr) 80rpx; /* 中列可收缩，防止内容把按钮挤出屏幕 */
+  column-gap: 20rpx; /* 改为 rpx，避免 px/rpx 混用导致宽度漂移 */
   row-gap: 8px; /* 新增：上下行留间距，避免“禅”与“设定”重叠 */
   align-items: center;
-  width: min(92vw, 420px);
+  /* 改为百分比 + 最大宽度，确保在极窄设备上不溢出 */
+  width: 92%;
+  max-width: 690rpx; /* 约等于原 min(92vw, 420px) 的视觉效果 */
   /* 提升层级：确保顶部时区提示位于国家面板和遮罩之上 */
   z-index: 1200;
 }
 .top-icon-btn {
-  width: 40px;  /* 与右侧齿轮统一尺寸 */
-  height: 40px;
+  width: 80rpx;  /* 与右侧齿轮统一尺寸（约 40px） */
+  height: 80rpx;
   /* 统一与时间胶囊的竖向视觉：改为 flex 居中 */
   display: flex;
   align-items: center;
@@ -43,42 +47,45 @@ canvas {
   color: #e8f6ff;
   background: rgba(24,40,58,0.92);
   border: 2px solid rgba(120,170,220,0.55); /* 勾边粗细与时间胶囊一致 */
-  border-radius: 14px; /* 圆角风格与时间胶囊一致 */
+  border-radius: 28rpx; /* 圆角风格与时间胶囊一致 */
   font-weight: 700;
   box-sizing: border-box;
   /* 禅模式切换时的淡入淡出 */
   transition: opacity var(--ui-fade-ms, 320ms) ease;
 }
 /* 放大齿轮按钮尺寸与字号 */
-.settings-btn {
-  /* 使用 .top-icon-btn 的统一尺寸与边框，仅调整字号 */
-  font-size: 20px;
-}
+.settings-btn { font-size: 36rpx; }
 .time-pill {
-  height: 40px;
-  line-height: 40px;
+  height: 80rpx;
+  line-height: 80rpx;
   padding: 0 14px;
   color: #e8f6ff;
   background: rgba(10,22,36,0.85);
   border: 2px solid rgba(120,170,220,0.55);
-  border-radius: 14px;
+  border-radius: 28rpx;
   box-sizing: border-box;
   font-family: Consolas, 'Courier New', Courier, monospace;
-  font-size: 18px; /* +2px */
+  font-size: 36rpx; /* 约 18px */
   font-weight: 700;
   text-shadow: 0 0 10px rgba(200,235,255,0.95), 0 0 18px rgba(120,170,220,0.6);
   box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 0 12px rgba(120,170,220,0.15);
   text-align: center;
   /* 禅模式切换时的淡入淡出 */
   transition: opacity var(--ui-fade-ms, 320ms) ease;
+  /* 关键：允许在 Grid 的 auto 列中“收缩”，避免把两侧按钮挤出屏幕 */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .top-tip {
   /* 改为固定定位：占据“搜索输入框”的位置与宽度 */
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: calc(env(safe-area-inset-top) + 8px + 40px + 6px);
-  width: calc(min(92vw, 420px) - 40px - 40px - 20px);
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
+  /* 替换 vw/vh：两侧按钮 40px→80rpx，列间距 10px*2→20px→40rpx */
+  width: calc(690rpx - 80rpx - 80rpx - 40rpx);
   z-index: 1200; /* 始终在面板/遮罩之上 */
 
   background: rgba(10,22,36,0.9);
@@ -157,7 +164,6 @@ canvas {
   backface-visibility: hidden;
 }
 .poetry-text { display: inline-block; writing-mode: inherit; text-orientation: inherit; color: inherit; }
-.poetry-trail { position: absolute; left: 0; top: 0; pointer-events: none; }
 .poetry-item.visible { opacity: 1; }
 
 /* 已移除 PC 预览缩放控件 */
@@ -173,10 +179,12 @@ canvas {
 /* 设置面板：固定定位，完整显示且避开时间条 */
 .settings-panel {
   position: fixed;
-  right: calc(4vw);
+  /* 避免 vw：统一右侧边距为 rpx */
+  right: 30rpx;
   top: calc(env(safe-area-inset-top) + 56px); /* 紧随工具栏下方，考虑安全区 */
-  width: 300px;
-  max-width: min(90vw, 320px);
+  /* 300px≈600rpx；最大宽度 320px≈640rpx */
+  width: 600rpx;
+  max-width: 640rpx;
   background: rgba(10,22,36,0.88);
   border: 1px solid rgba(120,170,220,0.45);
   border-radius: 12px;
@@ -202,6 +210,10 @@ canvas {
 .settings-row { display: flex; justify-content: space-between; align-items: center; color: #cfe7ff; padding: 4px 0; gap: 8px; }
 .settings-row text:first-child { white-space: nowrap; flex: 0 0 72px; }
 .settings-row .qty-group { flex: 1 1 auto; justify-content: flex-start; overflow: hidden; }
+
+/* 惯性滑条：更小的滑块，明确的滑轨颜色与间距 */
+.inertia-row .qty-group { padding: 8rpx 6rpx; }
+.inertia-slider { margin: 0 8rpx; width: 100%; }
 .toggle-group { display: flex; gap: 4px; }
 .toggle-btn { min-width: 36px; height: 26px; line-height: 26px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; }
 .toggle-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
@@ -215,7 +227,8 @@ canvas {
   left: 50%;
   bottom: calc(env(safe-area-inset-bottom) + 1px); /* 紧贴底部 */
   transform: translateX(-50%);
-  width: min(92vw, 540px);
+  /* 统一 rpx 宽度 */
+  width: 690rpx;
   padding: 0px 8px; /* 厚度由 padding 与 block-size 决定 */
   background: rgba(10,22,36,0.88);
   border: 2px solid rgba(120,170,220,0.55);
@@ -244,8 +257,8 @@ canvas {
   /* top 改为由页面数据驱动（index.wxml 内联样式），此处保留回退为自动 */
   top: auto;
   transform: translateX(-50%);
-  /* 与顶部时间胶囊一致：top-bar(三列)总宽 - 左(40) - 右(44) - 2个列间距(10*2) */
-  width: calc(min(92vw, 420px) - 40px - 44px - 20px);
+  /* 与顶部时间胶囊一致：690rpx - 左(40px→80rpx) - 右(44px→88rpx) - 2个列间距(10px*2→20px→40rpx) */
+  width: calc(690rpx - 80rpx - 88rpx - 40rpx);
   background: rgba(16,28,44,0.96);
   border: 2px solid rgba(120,170,220,0.55);
   border-radius: 14px;
@@ -264,7 +277,7 @@ canvas {
 }
 .country-row {
   display: grid;
-  grid-template-columns: 62px auto;
+  grid-template-columns: 62px minmax(0, 1fr);
   align-items: center;
   column-gap: 4px; /* 标签与值间距缩小约 50% */
   margin: 2px 0;   /* 行距缩小约 60% → 更紧凑 */
@@ -293,9 +306,9 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   /* 与时间胶囊的正下方对齐（时间胶囊高度 40px，向下留 6px 间距） */
-  top: calc(env(safe-area-inset-top) + 8px + 40px + 6px);
-  /* 与时间胶囊同宽：顶栏总宽 - 两侧按钮(40/40) - 两个列间距(10*2) */
-  width: calc(min(92vw, 420px) - 40px - 40px - 20px);
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
+  /* 与时间胶囊同宽：690rpx - 两侧按钮(40px→80rpx) - 两个列间距(10px*2→20px→40rpx) */
+  width: calc(690rpx - 80rpx - 80rpx - 40rpx);
   background: transparent; /* 外框完全隐身 */
   border: none;            /* 去掉边框勾线 */
   border-radius: 0;        /* 取消圆角轮廓 */

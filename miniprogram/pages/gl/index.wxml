@@ -18,16 +18,9 @@
 <!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
 <view wx:if="{{zenMode}}" class="poetry-layer">
   <view id="poetryA" class="poetry-item {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
-    <!-- 多层残影：不依赖 text-shadow，在微信小程序更稳定 -->
-    <block wx:for="{{poetryTrailLayers}}" wx:key="index">
-      <text class="poetry-text poetry-trail" style="opacity: {{item.alpha}}; transform: translate3d(0px, {{item.offset}}px, 0);">{{poetryA.text}}</text>
-    </block>
     <text class="poetry-text">{{poetryA.text}}</text>
   </view>
   <view id="poetryB" class="poetry-item {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
-    <block wx:for="{{poetryTrailLayers}}" wx:key="index">
-      <text class="poetry-text poetry-trail" style="opacity: {{item.alpha}}; transform: translate3d(0px, {{item.offset}}px, 0);">{{poetryB.text}}</text>
-    </block>
     <text class="poetry-text">{{poetryB.text}}</text>
   </view>
 </view>
@@ -81,6 +74,13 @@
       <view class="qty-btn {{labelQty==='few'?'active':''}}" data-val="few" bindtap="onSetLabelQty" role="button">少</view>
       <view class="qty-btn {{labelQty==='default'?'active':''}}" data-val="default" bindtap="onSetLabelQty" role="button">默认</view>
       <view class="qty-btn {{labelQty==='many'?'active':''}}" data-val="many" bindtap="onSetLabelQty" role="button">多</view>
+    </view>
+  </view>
+  <view class="settings-row inertia-row">
+    <text>惯性</text>
+    <view class="qty-group">
+      <!-- 原生 slider：隐藏数值、小巧白色圆点、带前景/背景滑轨 -->
+<slider class="inertia-slider" min="0" max="100" step="1" value="{{inertiaPct}}" show-value="false" block-size="18" block-color="#ffffff" activeColor="#64b5ff" backgroundColor="#223447" bindchanging="onInertiaChanging" bindchange="onSetInertia"></slider>
     </view>
   </view>
 </view>

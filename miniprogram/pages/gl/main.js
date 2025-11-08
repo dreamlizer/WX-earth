@@ -9,8 +9,8 @@ import {
 } from './geography.js';
 import { loadCountries, buildIndex, gatherCandidates } from './geoindex.js';
 import { getTextureUrl, prefetchTextureUrls, ensureOfflineTextures } from './texture-source.js';
-import { createScene, makeBorder, makeEquatorAndTropics, highlight as highlightLayer, updateCameraDistance as updateCamDist } from './layers.js';
-import { INTERACTION_DEBUG_LOG } from './label-constants.js';
+import { createScene, makeBorder, makeEquatorAndTropics, highlight as highlightLayer, updateCameraDistance as updateCamDist, makeCountryColliders } from './layers.js';
+import { INTERACTION_DEBUG_LOG, PERF_HIDE_STAR_ON_ON_DRAG, INERTIA_NONLINEAR, INERTIA_POWER, INERTIA_DAMP_MIN, INERTIA_DAMP_MAX, INERTIA_SPEED_MIN, INERTIA_SPEED_MAX, INERTIA_GAIN_BASE, INERTIA_GAIN_SCALE, INERTIA_LOG_DETAIL, INERTIA_LOG_THROTTLE_MS, INERTIA_APPLY_LOG_THROTTLE_MS } from './label-constants.js';
 import { createDayNightMaterial } from './shaders/dayNightMix.glsl.js';
 import { APP_CFG } from './config.js';
 import { createStarfield } from './starfield.glsl.js';
@@ -39,7 +39,9 @@ export function boot(page) {
     if (!hit || !hit.node) { console.error('[FAIL] canvas 节点未取到'); return; }
 
     const canvas = hit.node;
-    const width = hit.width, height = hit.height;
+    // 初始化时使用系统窗口尺寸进行限幅，避免某些安卓设备上 vw/vh 误差导致初始宽高异常
+    const width = Math.max(1, Math.min(hit.width, sys.windowWidth || hit.width));
+    const height = Math.max(1, Math.min(hit.height, sys.windowHeight || hit.height));
     const dpr = sys.pixelRatio;
 
     // 创建场景/渲染器/相机/光照/球组
@@ -60,8 +62,11 @@ export function boot(page) {
     let zenActive = false;            // 当前是否处于禅定模式
     let tiltZ = 0;                    // 地球绕 Z 轴的倾斜角（弧度）
     let __zenAnim = null;             // { t0, dur, from:{rotX,zoom,tiltZ}, to:{rotX,zoom,tiltZ} }
-    const ZEN_TILT_RAD = 23 * Math.PI / 180;  // 北极向左倾斜约 23°
-    const ZEN_ZOOM = 0.74;                    // 更明显的 zoom-out（可按需微调）
+    let __zenBrake = null;            // 进入禅定前的“平滑刹车”阶段：{ t0, dur }
+    let __zenDelayEnter = false;      // 刹车结束后自动进入禅定
+    // 禅定倾角与缩放来源统一到配置（提供默认值，避免魔法数散落）
+    const ZEN_TILT_RAD = ((APP_CFG?.zen?.tiltDeg ?? 23) * Math.PI / 180);
+    const ZEN_ZOOM = (APP_CFG?.zen?.zoom ?? 0.74);
     let __restore = { rotX: 0, rotY: 0, zoom: 1.0 }; // 退出禅定时恢复的视角
     // 应用集中配置的普通模式强度，并以此作为恢复基线
     try { if (ambientLight) ambientLight.intensity = LIGHT_CFG.normal.ambientIntensity; } catch(_){}
@@ -73,6 +78,7 @@ export function boot(page) {
     let __prevRenderTime = 0;
     // 星空：目标透明度与实例对象（渲染循环中平滑逼近）
     let __starTargetOpacity = 0.0;
+    let __perfDrag = false; // 新增：性能模式标记（拖动中）
     let starfield = null;
     let __starLogNext = 0;
     let __starLogNextMiss = 0;
@@ -185,6 +191,12 @@ export function boot(page) {
       velY: 0,
       damping: 0.92, // 阻尼系数（0.85~0.95 区间可调）
       maxSpeed: 0.06, // 单帧最大角速度，避免过快
+      inertiaGain: 0, // 惯性增益（0-1.5），高惯性时提高速度敏感度
+      // 诊断辅助：记录松手瞬间速度与时间，用于计算衰减“年龄”
+      releaseVelX: 0,
+      releaseVelY: 0,
+      releaseAt: 0,
+      __lastDragLogAt: 0,
       isDragging: false,
       lastX: 0,
       lastY: 0,
@@ -272,6 +284,7 @@ export function boot(page) {
     let __dayNightMat = null; // 昼夜混合 ShaderMaterial 引用（每帧更新 uniform）
     let COUNTRY_FEATURES = null;
     let BORDER_GROUP = null;
+    let COLLIDER_GROUP = null;
     let HIGHLIGHT_GROUP = null;
     let TROPIC_GROUP = null;
     let search = null; // { grid, cellSize, lonBuckets, latBuckets }
@@ -462,6 +475,8 @@ export function boot(page) {
           loadCountries().then((features) => {
             COUNTRY_FEATURES = features;
             BORDER_GROUP = makeBorder(THREE, globeGroup, COUNTRY_FEATURES);
+            // 构建不可见的国家碰撞网格，稳定点击命中
+            try { COLLIDER_GROUP = makeCountryColliders(THREE, globeGroup, COUNTRY_FEATURES); } catch(_){ COLLIDER_GROUP = null; }
             search = buildIndex(features);
             // 通知页面国家数据已加载，便于构建标签基础数据
             try { page?.onCountriesLoaded?.(features); } catch (e) { /* noop */ }
@@ -499,6 +514,7 @@ export function boot(page) {
             loadCountries().then((features) => {
               COUNTRY_FEATURES = features;
               BORDER_GROUP = makeBorder(THREE, globeGroup, COUNTRY_FEATURES);
+              try { COLLIDER_GROUP = makeCountryColliders(THREE, globeGroup, COUNTRY_FEATURES); } catch(_){ COLLIDER_GROUP = null; }
               search = buildIndex(features);
               try { page?.onCountriesLoaded?.(features); } catch (e) { /* noop */ }
             });
@@ -522,6 +538,14 @@ export function boot(page) {
       if (!t || typeof t.x !== 'number' || typeof t.y !== 'number' || !isFinite(t.x) || !isFinite(t.y)) {
         return;
       }
+      // 触碰即暂停（优化）：若当前存在惯性旋转，单指再次触碰立即清零速度
+      try {
+        const moving = (Math.abs(touch.velX) > 0.0002) || (Math.abs(touch.velY) > 0.0002);
+        if (moving && !touch.pinch) {
+          touch.velX = 0; touch.velY = 0;
+          if (INTERACTION_DEBUG_LOG) console.log('[inertia:stop-by-touch]');
+        }
+      } catch(_){}
       touch.isDragging = true; touch.lastX = t.x; touch.lastY = t.y; touch.downX = t.x; touch.downY = t.y; touch.downTime = Date.now();
     };
 
@@ -556,17 +580,58 @@ export function boot(page) {
         touch.rotX += stepX;
       }
       // 记录当前瞬时速度，并做一点低通滤波，减抖动
-      touch.velY = Math.max(-touch.maxSpeed, Math.min(touch.maxSpeed, touch.velY * 0.8 + stepY * 0.2));
-      touch.velX = Math.max(-touch.maxSpeed, Math.min(touch.maxSpeed, zenActive ? 0 : (touch.velX * 0.8 + stepX * 0.2)));
+      const gain = 1 + (touch.inertiaGain || 0);
+      touch.velY = Math.max(-touch.maxSpeed, Math.min(touch.maxSpeed, touch.velY * 0.8 + stepY * 0.2 * gain));
+      touch.velX = Math.max(-touch.maxSpeed, Math.min(touch.maxSpeed, zenActive ? 0 : (touch.velX * 0.8 + stepX * 0.2 * gain)));
       touch.rotX = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, zenActive ? 0 : touch.rotX));
+      // 诊断日志：拖动阶段的步长/速度/限幅/增益/缩放（节流）
+      try {
+        if (INTERACTION_DEBUG_LOG && INERTIA_LOG_DETAIL) {
+          const now = Date.now();
+          if (!touch.__lastDragLogAt || (now - touch.__lastDragLogAt) > (INERTIA_LOG_THROTTLE_MS || 120)) {
+            console.log('[inertia:drag]', {
+              dx: Number(dx.toFixed(2)), dy: Number(dy.toFixed(2)),
+              stepX: Number(stepX.toFixed(5)), stepY: Number(stepY.toFixed(5)),
+              velX: Number(touch.velX.toFixed(5)), velY: Number(touch.velY.toFixed(5)),
+              gain: Number(gain.toFixed(3)), maxSpeed: Number(touch.maxSpeed.toFixed(3)),
+              damping: Number(touch.damping.toFixed(5)), zoom: Number(zoom.toFixed(3))
+            });
+            touch.__lastDragLogAt = now;
+          }
+        }
+      } catch(_){}
     };
 
     const onTouchEnd = () => {
       if (touch.pinch) { touch.pinch = false; return; }
+      // 记录松手瞬间速度（不论是否点击命中国家，便于后续惯性阶段诊断）
+      try {
+        if (INTERACTION_DEBUG_LOG && INERTIA_LOG_DETAIL) {
+          touch.releaseVelX = touch.velX; touch.releaseVelY = touch.velY; touch.releaseAt = Date.now();
+          console.log('[inertia:release]', {
+            velX: Number(touch.releaseVelX.toFixed(5)), velY: Number(touch.releaseVelY.toFixed(5)),
+            speed: Number(Math.hypot(touch.releaseVelX, touch.releaseVelY).toFixed(5)),
+            damping: Number(touch.damping.toFixed(5)), maxSpeed: Number(touch.maxSpeed.toFixed(3)),
+            gain: Number((1 + (touch.inertiaGain || 0)).toFixed(3)), zoom: Number(zoom.toFixed(3))
+          });
+        }
+      } catch(_){}
       const isTap = (Date.now()-touch.downTime)<=250 && Math.hypot(touch.lastX-touch.downX, touch.lastY-touch.downY)<=6;
       touch.isDragging = false; if (!isTap || !earthMesh || !search) return;
       raycaster.setFromCamera({ x: (touch.downX / width) * 2 - 1, y: -(touch.downY / height) * 2 + 1 }, camera);
-      const inter = raycaster.intersectObject(earthMesh, true)[0];
+      // 优先使用国家碰撞网格命中（只取最近，并剔除明显背面）
+      let inter = null; let interCountry = null;
+      try { if (COLLIDER_GROUP) interCountry = raycaster.intersectObject(COLLIDER_GROUP, true)[0]; } catch(_){ }
+      if (interCountry) {
+        try {
+          const globeCenter = new THREE.Vector3(); globeGroup.getWorldPosition(globeCenter);
+          const normalP = interCountry.point.clone().sub(globeCenter).normalize();
+          const viewP = camera.position.clone().sub(interCountry.point).normalize();
+          const dotP = normalP.dot(viewP);
+          if (dotP > -0.08) inter = interCountry; // 允许轻微边缘
+        } catch(_){ inter = interCountry; }
+      }
+      if (!inter) { inter = raycaster.intersectObject(earthMesh, true)[0]; }
       if (!inter) {
         setHighlight(null);
         // 取消选中，但不清空时间（改为显示中央经线时区）
@@ -590,10 +655,20 @@ export function boot(page) {
       dot.position.set(v.x, v.y, v.z);
       globeGroup.add(dot);
       setTimeout(() => { globeGroup.remove(dot); dot.geometry.dispose(); dot.material.dispose(); }, 800);
+      // Mesh-only 选择：若命中碰撞网格则直接作为候选；若无网格命中则禁用二维回退
+      let meshHit = null;
+      const fidFromCollider = inter?.object?.userData?.fid;
+      const isColliderHit = (typeof fidFromCollider === 'number');
+      if (isColliderHit && COUNTRY_FEATURES && COUNTRY_FEATURES[fidFromCollider]) {
+        const f0 = COUNTRY_FEATURES[fidFromCollider];
+        if (featureContains(lon, lat, f0)) { meshHit = f0; }
+      }
+      const disable2DSearch = !isColliderHit;
 
       const steps = [12, 24, 48, 80];
       let hit = null;
-      for (const k of steps) {
+      if (meshHit) hit = meshHit;
+      if (!hit && !disable2DSearch) { for (const k of steps) {
         const candIds = gatherCandidates(search, lon, lat, k);
         if (INTERACTION_DEBUG_LOG && DEBUG_SELECT) {
           try {
@@ -612,8 +687,18 @@ export function boot(page) {
           if (featureContains(lon, lat, f)) { hit = f; break; }
         }
         if (hit) break;
+      } }
+      // 若碰撞网格已命中，直接映射到对应国家（并用 featureContains 复核洞/边界）
+      if (!hit && !disable2DSearch && interCountry && COUNTRY_FEATURES) {
+        try {
+          const fid = interCountry?.object?.userData?.fid;
+          if (typeof fid === 'number' && COUNTRY_FEATURES[fid]) {
+            const f = COUNTRY_FEATURES[fid];
+            if (featureContains(lon, lat, f)) hit = f; // 洞内会被否决
+          }
+        } catch(_){ }
       }
-      if (!hit) {
+      if (!hit && !disable2DSearch) {
         for (let i = 0; i < COUNTRY_FEATURES.length; i++) {
           const f = COUNTRY_FEATURES[i];
           if (featureContains(lon, lat, f)) { hit = f; break; }
@@ -894,7 +979,11 @@ export function boot(page) {
       // 光照方向：普通模式从相机正面打光；禅模式从屏幕右侧打太阳光
       if (zenActive) {
         const d = camera.position.length();
-        dirLight.position.set(Math.max(1, d), 0, 0); // 禅模式：阳光从屏幕右侧照来（右白左黑）
+        // 关键调整：将光源位置的 Y/Z 锚定到“地球球心”（世界坐标），只在 +X 方向偏移。
+        // 这样 lightDir = dirLight.position - center 的纵向分量为 0，实现“与地心水平一致”。
+        const center = new THREE.Vector3();
+        globeGroup.getWorldPosition(center);
+        dirLight.position.set(center.x + Math.max(1, d), center.y, center.z);
       } else {
         dirLight.position.copy(camera.position); // 普通模式：从相机正面打光
       }
@@ -953,10 +1042,36 @@ export function boot(page) {
               touch.rotY += w * dtSec;
             }
           }
+          // 禅定前刹车（若存在请求）：在 1s 内平滑将速度衰减到 0，再进入禅定
+          if (__zenBrake) {
+            const t = Math.max(0, Math.min(1, (now - __zenBrake.t0) / Math.max(1, __zenBrake.dur)));
+            const easeOut = 1 - Math.pow(1 - t, 3); // easeOutCubic
+            const scale = Math.max(0, 1 - easeOut);
+            touch.velX *= scale; touch.velY *= scale;
+            if (t >= 1) {
+              __zenBrake = null; touch.velX = 0; touch.velY = 0;
+              try { if (INTERACTION_DEBUG_LOG) console.log('[zen] pre-stop done'); } catch(_){}
+              if (__zenDelayEnter) { __zenDelayEnter = false; setZenMode(true); }
+            }
+          }
           if (Math.abs(touch.velX) > 0.0002 || Math.abs(touch.velY) > 0.0002) {
             touch.rotX += zenActive ? 0 : touch.velX; touch.rotY += touch.velY;
             touch.rotX = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, touch.rotX));
             touch.velX *= touch.damping; touch.velY *= touch.damping;
+            // 诊断日志（节流）：观察惯性衰减过程是否执行
+            try {
+              if (INTERACTION_DEBUG_LOG) {
+                if (!render.__lastInertiaLog || (now - render.__lastInertiaLog) > 300) {
+                  console.log('[inertia:apply]', {
+                    velX: Number(touch.velX.toFixed(5)),
+                    velY: Number(touch.velY.toFixed(5)),
+                    damping: Number(touch.damping.toFixed(3)),
+                    maxSpeed: Number(touch.maxSpeed.toFixed(3))
+                  });
+                  render.__lastInertiaLog = now;
+                }
+              }
+            } catch(_){}
           } else {
             // 速度极小时归零，避免长尾抖动
             touch.velX = 0; touch.velY = 0;
@@ -964,6 +1079,13 @@ export function boot(page) {
         }
       }
       globeGroup.rotation.set(touch.rotX, touch.rotY, tiltZ);
+      // 云层独立慢速旋转（可选）：不依赖整体自动旋转
+      try {
+        const spinDegSec = Number(APP_CFG?.cloud?.spinDegPerSec ?? 0);
+        if (cloudMesh && cloudMesh.visible && spinDegSec !== 0) {
+          cloudMesh.rotation.y += (spinDegSec * Math.PI / 180) * dtSec;
+        }
+      } catch(_){ }
       // 更新“飞行轨迹”透明度并在结束后清理（含淡入）
       try {
         if (__pathFx && __pathFx.mesh && __pathFx.mesh.material) {
@@ -1078,28 +1200,68 @@ export function boot(page) {
       } catch(_){}
     };
     const setCloudVisible = (on) => { try { if (cloudMesh) cloudMesh.visible = !!on; } catch(_){} };
+    // 新增：性能模式切换（拖动中/静止）——仅影响星空目标不透明度
+    const setPerfMode = (mode) => {
+      try {
+        const dragging = (mode === 'drag');
+        __perfDrag = dragging;
+        if (dragging) {
+          if (PERF_HIDE_STAR_ON_ON_DRAG) {
+            __starTargetOpacity = 0.0; // 拖动中隐藏星空以减负载
+          }
+        } else {
+          // 恢复普通模式配置中的星空目标透明度
+          try { __starTargetOpacity = (LIGHT_CFG?.normal?.starOpacity ?? 0.0); } catch(_){ __starTargetOpacity = 0.0; }
+        }
+      } catch(_){ }
+    };
 
       // 禅定模式：进入/退出（动画+交互约束）
       const setZenMode = (on) => {
         const next = !!on;
         if (next === zenActive) return;
         if (next) {
+          // 若当前存在惯性旋转，先进行 1s 刹车，再进入禅定
+          const moving = (Math.abs(touch.velX) > 0.0002) || (Math.abs(touch.velY) > 0.0002) || !!touch.isDragging;
+          if (moving && !__zenAnim) {
+            __restore = { rotX: touch.rotX, rotY: touch.rotY, zoom, posY: globeGroup?.position?.y || 0 };
+            __fly = null; // 关闭飞行动画以避免冲突
+            __zenBrake = { t0: (__prevRenderTime || Date.now()), dur: (APP_CFG?.zen?.preStopMs ?? 1000) };
+            __zenDelayEnter = true;
+            try { if (INTERACTION_DEBUG_LOG) console.log('[zen] pre-stop start', __zenBrake.dur, 'ms'); } catch(_){}
+            return;
+          }
           __restore = { rotX: touch.rotX, rotY: touch.rotY, zoom, posY: globeGroup?.position?.y || 0 };
           __fly = null; // 关闭飞行动画以避免冲突
           // 目标 Y：在当前基础位置上叠加配置的向下偏移（比例相对 RADIUS）
           const offR = (LIGHT_CFG?.zen?.globeYOffsetR ?? -0.35);
           const targetY = (__restore.posY || 0) + (offR * RADIUS);
-          __zenAnim = { t0: Date.now(), dur: 1000, from: { rotX: touch.rotX, zoom, tiltZ, posY: __restore.posY }, to: { rotX: 0, zoom: ZEN_ZOOM, tiltZ: ZEN_TILT_RAD, posY: targetY } };
-          // 确保“先倾斜再按赤道旋转”：进入时切换旋转顺序为 ZXY
-          try { globeGroup.rotation.order = 'ZXY'; } catch(_){}
-          zenActive = true;
-          // 禅定进入：启用 3D 诗句层（被地球遮挡）
+          // 使用上帧时间作为动画起点，避免刷新后首次进入因时间戳抖动导致补间跳跃
+          __zenAnim = { t0: (__prevRenderTime || Date.now()), dur: (APP_CFG?.zen?.animMs ?? 1000), from: { rotX: touch.rotX, zoom, tiltZ, posY: __restore.posY }, to: { rotX: 0, zoom: ZEN_ZOOM, tiltZ: ZEN_TILT_RAD, posY: targetY } };
+          // 延后启用 3D 诗句层：在动画结束时进行创建/启用，避免首帧阻塞
           try {
-            if (!poetry3d && earthMesh) {
-              poetry3d = createPoetry3D(THREE, scene, camera, earthMesh, width, height, APP_CFG?.poetry || {});
+            const use3D = !!(APP_CFG?.poetry?.use3D);
+            if (use3D && __zenAnim) {
+              __zenAnim.after = () => {
+                try {
+                  if (!poetry3d && earthMesh) {
+                    poetry3d = createPoetry3D(THREE, scene, camera, earthMesh, width, height, APP_CFG?.poetry || {});
+                  }
+                  poetry3d?.setEnabled?.(true);
+                } catch(_){ }
+              };
             }
-            poetry3d?.setEnabled?.(true);
+          } catch(_){ }
+          // 确保“先倾斜再按赤道旋转”：进入时切换旋转顺序为 ZXY
+          try {
+            globeGroup.rotation.order = 'ZXY';
+            // 旋转顺序切换后，基于当前四元数重建欧拉角，避免首帧“姿态跳变”
+            const q = globeGroup.quaternion.clone();
+            const e = new THREE.Euler().setFromQuaternion(q, 'ZXY');
+            globeGroup.rotation.set(e.x, e.y, e.z);
           } catch(_){}
+          zenActive = true;
+          // 禅定进入：诗句层创建延后到动画完成，避免首帧阻塞（见 __zenAnim.after）
           // 禅定进入：星空淡入目标透明度（可在配置 LIGHT_CFG.zen.starOpacity 调整）
           try { __starTargetOpacity = (LIGHT_CFG?.zen?.starOpacity ?? 0.18); } catch(_){ __starTargetOpacity = 0.18; }
           if (STAR_LOG) { try { console.log('[star] zen enter: target', __starTargetOpacity); } catch(_){} }
@@ -1254,12 +1416,18 @@ export function boot(page) {
             from: { rotX: touch.rotX, zoom, tiltZ, posY: globeGroup?.position?.y || 0 },
             to:   { rotX: 0,          zoom: 1.0, tiltZ, posY: (__restore?.posY || 0) },
             next: {
-              dur: 700,
+              dur: (APP_CFG?.zen?.exitMs ?? 700),
               from: { rotX: 0, zoom: 1.0, tiltZ, posY: (__restore?.posY || 0) },
               to:   { rotX: 0, zoom: 1.0, tiltZ: 0, posY: (__restore?.posY || 0) },
               after: () => {
                 // 恢复普通模式旋转顺序与环境光
-                try { globeGroup.rotation.order = 'XYZ'; } catch(_){}
+                try {
+                  globeGroup.rotation.order = 'XYZ';
+                  // 切回普通顺序时同理保持连续：按当前四元数重建欧拉角
+                  const q = globeGroup.quaternion.clone();
+                  const e = new THREE.Euler().setFromQuaternion(q, 'XYZ');
+                  globeGroup.rotation.set(e.x, e.y, e.z);
+                } catch(_){}
                 try { if (ambientLight) ambientLight.intensity = ambientBase; } catch(_){} // 恢复环境光
                 try { if (dirLight) dirLight.intensity = dirLightBase; } catch(_){} // 恢复太阳光强度
                 // 恢复边境线与赤道/回归线亮度（按进入时记录的原值）
@@ -1389,7 +1557,11 @@ export function boot(page) {
         wx.createSelectorQuery().select('#gl').fields({ size: true }).exec(r => {
           const s = r && r[0];
           if (!s) return;
-          const w = s.width, h = s.height;
+          // 加强健壮性：按系统窗口宽高进行限幅，规避视口单位异常引起的拉伸
+          const sys2 = wx.getSystemInfoSync() || {};
+          const wRaw = s.width, hRaw = s.height;
+          const w = Math.max(1, Math.min(wRaw, sys2.windowWidth || wRaw));
+          const h = Math.max(1, Math.min(hRaw, sys2.windowHeight || hRaw));
           if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
             try { renderer.setSize(w, h); } catch(_){ }
             try { camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix(); } catch(_){ }
@@ -1412,7 +1584,27 @@ export function boot(page) {
     };
     const stopPoetry3D = () => { try { poetry3d?.stop?.(); poetry3d?.setEnabled?.(false); } catch(_){} };
 
-      state = { THREE, scene, renderer, globeGroup, camera, dirLight, earthMesh, COUNTRY_FEATURES, search, width, height, handlers: { onTouchStart, onTouchMove, onTouchEnd, setZoom, setNightMode, setCloudVisible, setPaused, flyTo, nudgeCenter, setZenMode, startPoetry3D, stopPoetry3D }, page, wheelHandlers, onWinResizeCb: onWinResize, __cancelRaf: () => { try { canvas.cancelAnimationFrame(__rafId); } catch(_){ } __rafId = 0; }, __pauseFlagRef: () => __paused, __setHighlight: setHighlight };
+    // 设置：惯性滑条映射（0-100）
+    const setInertia = (pct) => {
+      const v = Math.max(0, Math.min(100, Number(pct) || 0));
+      const norm = v / 100; // 0..1
+      // 非线性映射：增强中高档位差异（可在 label-constants.js 关闭回滚为线性）
+      const useNL = !!INERTIA_NONLINEAR;
+      const t = useNL ? Math.pow(norm, Math.max(1.0, Number(INERTIA_POWER) || 2.2)) : norm;
+      const minD = Number(INERTIA_DAMP_MIN ?? 0.60);
+      const maxD = Number(INERTIA_DAMP_MAX ?? 0.998);
+      touch.damping = minD + (maxD - minD) * t;
+      const minS = Number(INERTIA_SPEED_MIN ?? 0.05);
+      const maxS = Number(INERTIA_SPEED_MAX ?? 0.22);
+      touch.maxSpeed = minS + (maxS - minS) * t;
+      const baseG = Number(INERTIA_GAIN_BASE ?? 0.30);
+      const scaleG = Number(INERTIA_GAIN_SCALE ?? 2.4);
+      touch.inertiaGain = baseG + scaleG * t; // 增益更陡，使 70-90 档更有感
+      // 诊断日志：观察滑条映射是否生效（含非线性 t）
+      try { if (INTERACTION_DEBUG_LOG) console.log('[inertia:set]', { pct: v, norm: Number(norm.toFixed(3)), t: Number(t.toFixed(3)), damping: Number(touch.damping.toFixed(3)), maxSpeed: Number(touch.maxSpeed.toFixed(3)), gain: Number(touch.inertiaGain.toFixed(2)), nonlinear: useNL }); } catch(_){}
+    };
+
+      state = { THREE, scene, renderer, globeGroup, camera, dirLight, earthMesh, COUNTRY_FEATURES, search, width, height, handlers: { onTouchStart, onTouchMove, onTouchEnd, setZoom, setNightMode, setCloudVisible, setPaused, flyTo, nudgeCenter, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode }, page, wheelHandlers, onWinResizeCb: onWinResize, __cancelRaf: () => { try { canvas.cancelAnimationFrame(__rafId); } catch(_){ } __rafId = 0; }, __pauseFlagRef: () => __paused, __setHighlight: setHighlight };
   });
 }
 
@@ -1437,9 +1629,11 @@ export function onTouchEnd(e){ state?.handlers?.onTouchEnd?.(e); }
 export function setZoom(z){ state?.handlers?.setZoom?.(z); }
 export function setNightMode(on){ state?.handlers?.setNightMode?.(on); }
 export function setCloudVisible(on){ state?.handlers?.setCloudVisible?.(on); }
+export function setInertia(pct){ state?.handlers?.setInertia?.(pct); }
 export function setPaused(on){ state?.handlers?.setPaused?.(on); }
 export function flyTo(lat, lon, duration){ state?.handlers?.flyTo?.(lat, lon, duration); }
 export function setZenMode(on){ state?.handlers?.setZenMode?.(on); }
+export function setPerfMode(mode){ try { state?.handlers?.setPerfMode?.(mode); } catch(_){ } }
 export function startPoetry3D(lines, conf){ try { state?.handlers?.startPoetry3D?.(lines, conf); } catch(_){} }
 export function stopPoetry3D(){ try { state?.handlers?.stopPoetry3D?.(); } catch(_){} }
 export function setDebugFlags(flags){ try { Object.assign(DEBUG, flags||{}); } catch(_){ } }

@@ -95,7 +95,7 @@ export const APP_CFG = {
     // 竖排诗句字号（px），用于页面样式绑定
     fontSizePx: 24,
     // 诗句移动速度（px/s）：值越大移动越快
-    movePxPerSec: 36,
+    movePxPerSec: 12,
     // 句间交替时长（毫秒）：上一句淡出与下一句淡入的重叠时间
     crossfadeMs: 800,
     // 屏幕安全边界（px）：与四边保持的最小距离，防止抛出屏幕
@@ -103,7 +103,7 @@ export const APP_CFG = {
     // 下一句首字贴近上一句首字的最大距离（px；越小越贴近）
     nextStartMaxDistancePx: 10,
     // 首句初始位置接近屏幕中心的比例（0–1），如 0.35 表示中心±35%范围内随机
-    initialCenterRatio: 0.35,
+    initialCenterRatio: 0.55,
     // 调试日志（开发阶段打开以观察位置与边界修正）
     debugLog: false,
     // 拖影（禅定模式）：白色渐变拖影，长度与层数可调
@@ -132,17 +132,19 @@ export const APP_CFG = {
   },
   // [云能力] 在本地静态预览时关闭云调用，避免控制台刷屏报错
   cloud: {
-    enabled: false           // 真实小程序环境再改为 true
+    enabled: false,          // 真实小程序环境再改为 true
+    // 云层独立慢速转动（度/秒；0 关闭）。不依赖禅定自动转动。
+    spinDegPerSec: 2.0
   },
   // [国家高亮] 填充透明度（0~1）。提高到 0.8–1.0 可形成“不透明方式”。
   highlight: {
     fillOpacity: 0.75,
     // 高亮消失淡出时长（毫秒）
-    fadeOutMs: 500,
+    fadeOutMs: 1500,
     // 自动取消选中：当选中国家大部分进入背面时清除高亮（避免穿模）
     autoClearOnBackside: {
       enabled: true,          // 开启自动取消背面选中
-      minVisibleRatio: 0.80,  // 前半球可见比例阈值（<=10% 即 90% 在背面）
+      minVisibleRatio: 0.60,  // 前半球可见比例阈值（<=10% 即 90% 在背面）
       checkIntervalMs: 500,   // 检查间隔，毫秒
       requireConsecutive: 2   // 连续判定次数，避免抖动
     }

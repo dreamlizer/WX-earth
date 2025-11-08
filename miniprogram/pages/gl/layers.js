@@ -350,3 +350,107 @@ export function makeEquatorAndTropics(THREE, globeGroup) {
   globeGroup.add(group);
   return group;
 }
+
+// 不可见的国家碰撞网格：用于稳定前半球点击命中（避免“穿模”）
+export function makeCountryColliders(THREE, globeGroup, COUNTRY_FEATURES) {
+  const group = new THREE.Group();
+  group.name = 'COUNTRY_COLLIDERS';
+  // 透明材质，但保持可交互与深度测试；FrontSide 即只用前面三角形参与射线命中
+  const baseMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.001, depthTest: true });
+  baseMat.depthWrite = false; baseMat.side = THREE.FrontSide; baseMat.userData = { ro: 0 };
+
+  const deg2rad = Math.PI / 180;
+  const ensureClosed2D = (arr) => {
+    if (arr.length < 2) return arr;
+    const a = arr[0], b = arr[arr.length - 1];
+    if (a.x !== b.x || a.y !== b.y) arr.push(new THREE.Vector2(a.x, a.y));
+    return arr;
+  };
+  const unwrapRing = (ring, baseLon) => {
+    const out = [];
+    let prev = baseLon;
+    for (let i = 0; i < ring.length; i++) {
+      let lon = ring[i][0], lat = ring[i][1];
+      const n = Math.round((prev - lon) / 360);
+      const adj = lon + n * 360;
+      out.push([adj, lat]);
+      prev = adj;
+    }
+    if (out.length >= 2) {
+      const a = out[0], b = out[out.length - 1];
+      if (a[0] !== b[0] || a[1] !== b[1]) out.push([a[0], a[1]]);
+    }
+    return out;
+  };
+
+  const buildFillMesh = (polyRings, featureIndex) => {
+    if (!polyRings || !polyRings.length || !polyRings[0] || polyRings[0].length < 3) return null;
+    const baseLon = polyRings[0][0][0];
+    const outerUnwrapped = unwrapRing(polyRings[0], baseLon);
+    const meanLat = outerUnwrapped.reduce((s, p) => s + p[1], 0) / outerUnwrapped.length;
+    const lonScale = Math.max(0.2, Math.cos(meanLat * deg2rad));
+
+    const toV2Scaled = ([lon, lat]) => new THREE.Vector2(lon * lonScale, lat);
+    const outer2D = outerUnwrapped.map(toV2Scaled);
+    ensureClosed2D(outer2D);
+
+    const signedArea = (arr) => {
+      let A = 0; for (let i=0;i<arr.length-1;i++){ const a=arr[i], b=arr[i+1]; A += (a.x*b.y - a.y*b.x); } return A*0.5;
+    };
+    if (signedArea(outer2D) < 0) { outer2D.reverse(); ensureClosed2D(outer2D); outerUnwrapped.reverse(); }
+
+    const contour2D = outer2D.slice(0, Math.max(0, outer2D.length - 1));
+    const ALT = 0.001; // 轻微抬升，避免与地球贴图 Z 冲突
+    const flatten3DOpen = outerUnwrapped.slice(0, Math.max(0, outerUnwrapped.length - 1)).map(([lon, lat]) => {
+      let normLon = ((lon + 180) % 360 + 360) % 360 - 180;
+      // 对齐渲染路径：在经纬转 3D 之前应用 warp 校正
+      const [wLon, wLat] = applyWarp(normLon, lat);
+      const v = convertLatLonToVec3(wLon, wLat, RADIUS + ALT);
+      return new THREE.Vector3(v.x, v.y, v.z);
+    });
+
+    const tryTriByThree = (pts) => {
+      if (!(THREE.ShapeUtils && typeof THREE.ShapeUtils.triangulateShape === 'function')) return null;
+      const tris = THREE.ShapeUtils.triangulateShape(pts, []);
+      const valid = Array.isArray(tris) && tris.length >= Math.max(0, pts.length - 2) * 0.5 && tris.every(t => Array.isArray(t) && t.length === 3 && t.every(i => i >= 0 && i < pts.length));
+      return valid ? tris : null;
+    };
+    const earTriangulate = (pts) => {
+      const n = pts.length; const idx = []; for (let i = 0; i < n; i++) idx.push(i);
+      const area = (a,b,c)=> (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x);
+      const isClockwise = () => { let s=0; for (let i=0;i<n;i++){ const a=pts[i], b=pts[(i+1)%n]; s += (b.x-a.x)*(b.y+a.y); } return s>0; };
+      if (isClockwise()) idx.reverse();
+      const pointInTri = (p,a,b,c)=>{ const ab = area(a,b,p), bc = area(b,c,p), ca = area(c,a,p); const hasNeg=(ab<0)||(bc<0)||(ca<0); const hasPos=(ab>0)||(bc>0)||(ca>0); return !(hasNeg && hasPos); };
+      const isEar = (i)=>{ const i0=idx[(i-1+idx.length)%idx.length], i1=idx[i], i2=idx[(i+1)%idx.length]; const a=pts[i0], b=pts[i1], c=pts[i2]; if (area(a,b,c) <= 0) return false; for (let j=0;j<idx.length;j++){ if (j===i || j===(i-1+idx.length)%idx.length || j===(i+1)%idx.length) continue; const p=pts[idx[j]]; if (pointInTri(p,a,b,c)) return false; } return true; };
+      const tris = []; let guard=0; while (idx.length>2 && guard++<10000){ let cut=false; for (let i=0;i<idx.length;i++){ if (isEar(i)){ const i0=idx[(i-1+idx.length)%idx.length], i1=idx[i], i2=idx[(i+1)%idx.length]; tris.push([i0,i1,i2]); idx.splice(i,1); cut=true; break; } } if(!cut){ for(let i=1;i<idx.length-1;i++) tris.push([idx[0],idx[i],idx[i+1]]); break; } } return tris;
+    };
+    const triangles = tryTriByThree(contour2D) || earTriangulate(contour2D);
+
+    const positions = new Float32Array(triangles.length * 9);
+    for (let i = 0; i < triangles.length; i++) {
+      const [a, b, c] = triangles[i];
+      const va = flatten3DOpen[a], vb = flatten3DOpen[b], vc = flatten3DOpen[c];
+      positions.set([va.x, va.y, va.z, vb.x, vb.y, vb.z, vc.x, vc.y, vc.z], i * 9);
+    }
+    const shpGeo = new THREE.BufferGeometry();
+    const PosAttr = THREE.Float32BufferAttribute || THREE.BufferAttribute;
+    if (typeof shpGeo.setAttribute === 'function') shpGeo.setAttribute('position', new PosAttr(positions, 3));
+    else if (typeof shpGeo.addAttribute === 'function') shpGeo.addAttribute('position', new PosAttr(positions, 3));
+    else { shpGeo.attributes = shpGeo.attributes || {}; shpGeo.attributes.position = new PosAttr(positions, 3); }
+
+    const mesh = new THREE.Mesh(shpGeo, baseMat);
+    mesh.userData = { fid: featureIndex };
+    return mesh;
+  };
+
+  for (let i = 0; i < COUNTRY_FEATURES.length; i++) {
+    const f = COUNTRY_FEATURES[i];
+    if (f.type === 'Polygon') {
+      const mesh = buildFillMesh(f.coords, i); if (mesh) group.add(mesh);
+    } else if (f.type === 'MultiPolygon') {
+      f.coords.forEach(poly => { const mesh = buildFillMesh(poly, i); if (mesh) group.add(mesh); });
+    }
+  }
+  globeGroup.add(group);
+  return group;
+}

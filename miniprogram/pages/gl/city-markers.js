@@ -183,3 +183,8 @@ export function getHighlightedWorldPositions() {
   } catch(_){ }
   return res;
 }
+
+// 新增：统一控制城市光点的可见性（拖动时临时隐藏，静止后恢复）
+export function setCityMarkersVisible(on){
+  try { if (markerGroup) markerGroup.visible = !!on; } catch(_){}
+}
