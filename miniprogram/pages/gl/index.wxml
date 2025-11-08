@@ -5,7 +5,7 @@
   <view class="top-icon-btn settings-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSettings" role="button">⚙</view>
   <!-- 第二行：左侧“切”按钮（与右侧“禅”按钮对称） -->
   <!-- 恢复原搜索放大镜；禅模式下隐藏但占位，避免布局跳动 -->
-  <view class="top-icon-btn search-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSearch" role="button"></view>
+  <view class="top-icon-btn search-btn {{zenMode ? 'inert' : ''}} {{settingsOpen ? 'fading-out' : ''}}" bindtap="onToggleSearch" role="button"></view>
   <!-- 第二行：右侧“禅”按钮（位于设置按钮正下方） -->
   <view class="top-icon-btn zen-btn" bindtap="onToggleZenMode" role="button">禅</view>
   <!-- 第一行第三列：“切”按钮常驻，通过 inert 类淡入淡出（禅定下可见） -->
@@ -46,17 +46,15 @@
 <view class="settings-panel {{settingsFading?'fading-out':''}}" wx:if="{{settingsOpen}}">
   <view class="settings-title">设置</view>
   <view class="settings-row">
-    <text>夜间模式</text>
-    <view class="toggle-group">
-      <view class="toggle-btn {{nightMode?'active':''}}" data-key="nightMode" data-val="true" bindtap="onToggleOption" role="button">开</view>
-      <view class="toggle-btn {{!nightMode?'active':''}}" data-key="nightMode" data-val="false" bindtap="onToggleOption" role="button">关</view>
+    <text>主题</text>
+    <view class="qty-group">
+      <view class="qty-btn {{theme==='day8k'?'active':''}}" data-val="daylight" bindtap="onSetTheme" role="button">白昼</view>
+      <view class="qty-btn {{theme==='default'?'active':''}}" data-val="default" bindtap="onSetTheme" role="button">默认</view>
+      <view class="qty-btn {{theme==='night'?'active':''}}" data-val="night" bindtap="onSetTheme" role="button">夜景</view>
     </view>
-  </view>
-  <view class="settings-row">
-    <text>显示云层</text>
+    <!-- 主题行右侧：云层独立开关（默认关闭） -->
     <view class="toggle-group">
-      <view class="toggle-btn {{showCloud?'active':''}}" data-key="showCloud" data-val="true" bindtap="onToggleOption" role="button">开</view>
-      <view class="toggle-btn {{!showCloud?'active':''}}" data-key="showCloud" data-val="false" bindtap="onToggleOption" role="button">关</view>
+      <view class="qty-btn {{showCloud?'active':''}}" bindtap="onTapCloudBtn" role="button">云层</view>
     </view>
   </view>
   <view class="settings-row">
@@ -92,7 +90,6 @@
   enable-passive="true"
   scroll-anchoring="false"
   scroll-top="{{scrollTop}}"
-  bindscroll="onWheelZoom"
 >
   <!-- 工具栏已在页面顶部固定，此处不再重复按钮 -->
   <canvas
@@ -104,13 +101,12 @@
     bindtouchend="onTouchEnd"
     bindtouchcancel="onTouchEnd"
   />
-  <!-- 滚轮触发空间：在 scroll-view 中增加足够高度，确保 bindscroll 能触发（仅 PC 有效） -->
-  <view class="wheel-space" wx:if="{{isPC}}"></view>
+  <!-- 已移除：PC 端滚轮触发空间 -->
   
 </scroll-view>
 
-<!-- 底部缩放条：统一胶囊风格，保留原 slider（事件吃掉，避免冒泡到 canvas） -->
-<view class="zoom-bar {{zenMode ? 'inert' : ''}}" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">
+<!-- 底部缩放条：统一胶囊风格（受 showZoomBar 控制，可见才渲染） -->
+<view wx:if="{{showZoomBar}}" class="zoom-bar {{zenMode ? 'inert' : ''}}" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">
   <slider class="zoom-slider"
           min="{{uiZoomMin}}" max="{{uiZoomMax}}" step="0.01"
           value="{{uiZoom}}"

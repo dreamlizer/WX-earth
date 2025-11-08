@@ -68,11 +68,20 @@ export function boot(page) {
     const ZEN_TILT_RAD = ((APP_CFG?.zen?.tiltDeg ?? 23) * Math.PI / 180);
     const ZEN_ZOOM = (APP_CFG?.zen?.zoom ?? 0.74);
     let __restore = { rotX: 0, rotY: 0, zoom: 1.0 }; // 退出禅定时恢复的视角
-    // 应用集中配置的普通模式强度，并以此作为恢复基线
-    try { if (ambientLight) ambientLight.intensity = LIGHT_CFG.normal.ambientIntensity; } catch(_){}
-    try { if (dirLight) dirLight.intensity = LIGHT_CFG.normal.dirLightIntensity; } catch(_){}
-    const ambientBase = LIGHT_CFG.normal.ambientIntensity; // 退出禅模式时恢复到此值
-    const dirLightBase = LIGHT_CFG.normal.dirLightIntensity; // 退出禅模式时恢复到此值
+    // 应用集中配置的普通模式强度；可选采用“禅定灯光”作为普通模式灯光（仅强度，不引入禅材质）
+    const __useZenLights = !!(APP_CFG?.normal?.useZenLighting);
+    const __clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const __normalAmbient = __useZenLights
+      ? (__clamp(LIGHT_CFG?.zen?.ambientIntensity ?? LIGHT_CFG.normal.ambientIntensity, 0.0, 1.0))
+      : (__clamp(LIGHT_CFG.normal.ambientIntensity, 0.0, 1.0));
+    const __normalDir = __useZenLights
+      ? (__clamp(LIGHT_CFG?.zen?.dirLightIntensityRight ?? LIGHT_CFG.normal.dirLightIntensity, 0.2, 2.4))
+      : (__clamp(LIGHT_CFG.normal.dirLightIntensity, 0.2, 2.4));
+    try { if (ambientLight) ambientLight.intensity = __normalAmbient; } catch(_){}
+    try { if (dirLight) dirLight.intensity = __normalDir; } catch(_){}
+    try { console.info('[lights] normal profile', { useZenLights: __useZenLights, ambient: __normalAmbient, dir: __normalDir }); } catch(_){}
+    const ambientBase = __normalAmbient; // 退出禅模式时恢复到此值（可为禅灯光）
+    const dirLightBase = __normalDir;    // 退出禅模式时恢复到此值（可为禅灯光）
     // 禅定稳定时间戳与上一帧时间（用于自动旋转）
     let zenStableSince = 0;
     let __prevRenderTime = 0;
@@ -81,7 +90,7 @@ export function boot(page) {
     let __perfDrag = false; // 新增：性能模式标记（拖动中）
     let starfield = null;
     let __starLogNext = 0;
-    let __starLogNextMiss = 0;
+  let __starLogNextMiss = 0;
   let __starUniformWarned = false;
 
     // 调试工具：统一输出渲染器与贴图、着色器参数，便于对齐 PC 端
@@ -148,38 +157,9 @@ export function boot(page) {
       } catch(_){}
     };
 
-    // PC 端滚轮缩放（DevTools/Windows/Mac）：优先绑到 canvas；不支持时回退到 document/window
-    const wheelHandlers = [];
-    const attachWheel = (target) => {
-      if (!target || typeof target.addEventListener !== 'function') return false;
-      const onWheel = (e) => {
-        const dy = (typeof e.deltaY === 'number') ? e.deltaY : (typeof e.wheelDelta === 'number' ? -e.wheelDelta : 0);
-        const step = dy > 0 ? -0.08 : 0.08;
-        // 禅定模式下锁定缩放，忽略滚轮
-        if (zenActive) { if (e.preventDefault) e.preventDefault(); return; }
-        const newZoom = clampZoom(zoom + step);
-        if (newZoom !== zoom) { zoom = newZoom; updateCamDist(camera, baseDist, zoom); }
-        // 标记：该次滚轮已在渲染层处理，页面层的 scroll-view 事件应忽略，避免双触发
-        try { page?.__markWheelHandled?.(); } catch(_){}
-        if (e.preventDefault) e.preventDefault();
-      };
-      target.addEventListener('wheel', onWheel, { passive: false });
-      target.addEventListener('mousewheel', onWheel, { passive: false });
-      wheelHandlers.push(() => {
-        try { target.removeEventListener('wheel', onWheel); } catch(_) {}
-        try { target.removeEventListener('mousewheel', onWheel); } catch(_) {}
-      });
-      return true;
-    };
-    let wheelAttached = attachWheel(canvas);
+    // 已移除：PC 端鼠标滚轮缩放绑定（不再支持）
     // 启动后立即输出一次渲染管线配置（色彩空间 / tone mapping / 曝光）
     dumpRendererInfo();
-    if (!wheelAttached) {
-      wheelAttached = attachWheel(globalThis?.document);
-    }
-    if (!wheelAttached) {
-      wheelAttached = attachWheel(globalThis?.window);
-    }
 
     // 触控状态：在 boot 作用域中维护，供渲染与事件逻辑使用
     const touch = {
@@ -207,6 +187,24 @@ export function boot(page) {
       pinchStartDist: 0,
       pinchStartZoom: zoom,
     };
+
+    // 初始视觉中心：根据配置将视角设置到北京（或指定城市）
+    // 公式与 flyTo 的目标角度计算一致，避免符号与校准偏差。
+    try {
+      const init = APP_CFG?.camera?.initialCenterDeg;
+      if (init && typeof init.lat === 'number' && typeof init.lon === 'number') {
+        const rad = Math.PI / 180;
+        const latRad = (init.lat || 0) * rad;
+        const lonRad = (init.lon || 0) * rad;
+        const tLat = DEBUG.invertLat ? -latRad : latRad;
+        const tLon = DEBUG.invertLon ? -lonRad : lonRad;
+        // 保持赤道水平：不引入 X 轴旋转（rotX=0），仅按经度对齐北京
+        const lonRotTarget = (-(tLon) - Math.PI/2) - ((DEBUG.calibLonDeg||0) * rad);
+        touch.rotX = 0; touch.rotY = lonRotTarget;
+        // 退出禅定或恢复时使用相同初始视角
+        __restore.rotX = 0; __restore.rotY = lonRotTarget;
+      }
+    } catch(_){ }
 
     // 创建星空背景：置于场景后方，初始隐藏（禅定模式淡入）
     if (STAR_LOG) { try { console.log('[star] create: begin'); } catch(_){} }
@@ -279,14 +277,18 @@ export function boot(page) {
     let earthMesh = null;
     let cloudMesh = null;
     let earthDayTex = null;
+    let earthDay8kTex = null; // 8K 白昼贴图（webp）
     let earthNightTex = null;
     let __earthOldMat = null; // 禅模式切换材质时记录旧材质，退出恢复
     let __dayNightMat = null; // 昼夜混合 ShaderMaterial 引用（每帧更新 uniform）
+    let __nightThemeActive = false; // 普通模式 Shader 下是否处于“纯夜视图”
+    let __savedDayTexForShader = null; // 纯夜视图进入前的白天纹理（用于回退）
     let COUNTRY_FEATURES = null;
     let BORDER_GROUP = null;
     let COLLIDER_GROUP = null;
     let HIGHLIGHT_GROUP = null;
     let TROPIC_GROUP = null;
+  // 移除：国际日期线（按需可在未来重新引入单独模块）
     let search = null; // { grid, cellSize, lonBuckets, latBuckets }
 
     const disposeGroup = (grp) => {
@@ -455,22 +457,93 @@ export function boot(page) {
           // 预加载夜景纹理（云端-only，失败不再回本地）
           getTextureUrl('earth_night').then(({ url: nightUrl, fallback: nightFb }) => {
             logSrc('earth_night', nightUrl, nightFb, 'start');
-            loader.load(nightUrl, (night) => {
-              night.minFilter = THREE.LinearFilter; night.magFilter = THREE.LinearFilter; try { night.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { night.encoding = THREE.sRGBEncoding; } catch(__){} } earthNightTex = night; dumpTextureInfo('earth_night', earthNightTex);
-            }, undefined, () => { try { console.warn('[texture] 夜景贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
+          loader.load(nightUrl, (night) => {
+            night.minFilter = THREE.LinearFilter; night.magFilter = THREE.LinearFilter; try { night.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { night.encoding = THREE.sRGBEncoding; } catch(__){} } earthNightTex = night; dumpTextureInfo('earth_night', earthNightTex);
+            // 普通模式：可选切换到“禅定材质”（昼夜混合），保持与禅模式一致的观感（不引入倾斜/自动旋转）
+            try {
+              const useZenMat = !!(APP_CFG?.normal?.useZenMaterial);
+              if (useZenMat && !zenActive && earthMesh && earthDayTex) {
+                __earthOldMat = earthMesh.material; // 记录以便必要时回退
+                const softness = (LIGHT_CFG.zen?.mixSoftness ?? 0.20);
+                const gamma = (LIGHT_CFG.zen?.gamma ?? 1.0);
+                // 根据当前主题选择普通模式的“白天纹理”：day8k 优先，否则默认
+                const dayTexForNormal = (currentTheme === 'day8k' && earthDay8kTex) ? earthDay8kTex : earthDayTex;
+                __dayNightMat = createDayNightMaterial(THREE, dayTexForNormal, earthNightTex, softness, gamma);
+                // 同步禅定下的曝光/白天侧增益等参数，以尽可能一致
+                try {
+                  const u = __dayNightMat.uniforms || {};
+                  if (u.uNightDarkness) u.uNightDarkness.value = (LIGHT_CFG.zen?.nightDarkness ?? 0.85);
+                  if (u.uDayContrast) u.uDayContrast.value = (LIGHT_CFG.zen?.dayContrast ?? 1.0);
+                  if (u.uMixPower) u.uMixPower.value = (LIGHT_CFG.zen?.mixPower ?? 1.0);
+                  if (u.uDayNightContrast) u.uDayNightContrast.value = (LIGHT_CFG.zen?.dayNightContrast ?? 1.0);
+                  if (u.uDaySideGain) {
+                    const base = (dirLightBase || 1);
+                    const target = (LIGHT_CFG.zen?.dirLightIntensityRight ?? base);
+                    const fallbackGain = Math.max(1.0, Math.min(3.0, target / base));
+                    const cfgGain = LIGHT_CFG.zen?.daySideGain;
+                    u.uDaySideGain.value = (cfgGain !== undefined) ? Math.min(3.0, Math.max(0.7, cfgGain)) : fallbackGain;
+                  }
+                  if (u.uExposure) {
+                    const base = (dirLightBase || 1);
+                    const target = (LIGHT_CFG.zen?.dirLightIntensityRight ?? base);
+                    const ratio = target / base;
+                    const fallbackExposure = Math.max(1.0, Math.min(2.2, ratio * 1.15));
+                    const cfgExposure = LIGHT_CFG.zen?.exposure;
+                    u.uExposure.value = (cfgExposure !== undefined) ? Math.min(2.5, Math.max(0.7, cfgExposure)) : fallbackExposure;
+                  }
+                  if (u.uHighlightsRoll) u.uHighlightsRoll.value = Math.max(0.0, Math.min(1.0, (LIGHT_CFG.zen?.highlightsRoll ?? 0.0)));
+                  // 高光参数：与禅模式一致
+                  const shininess = (LIGHT_CFG.earthMaterial?.shininess ?? 8);
+                  if (u.uShininess) u.uShininess.value = Math.max(1.0, shininess);
+                  if (u.uSpecularStrength) u.uSpecularStrength.value = Math.max(0.0, Math.min(2.0, (LIGHT_CFG?.zen?.specularStrength ?? 0.95)));
+                  if (u.uSpecularColor) { u.uSpecularColor.value.set(1,1,1); }
+                  if (u.uSpecularUseTex) { u.uSpecularUseTex.value = 0.0; }
+                  // 初始相机位置
+                  if (u.uCameraPosWorld) { u.uCameraPosWorld.value.copy(camera.position); }
+                } catch(_){}
+                earthMesh.material = __dayNightMat;
+                earthMesh.material.needsUpdate = true;
+                try {
+                  console.info('[NORMAL-ZEN uniforms]', {
+                    matType: earthMesh?.material?.type,
+                    isShader: (earthMesh?.material instanceof THREE.ShaderMaterial),
+                    exposure: Number(__dayNightMat?.uniforms?.uExposure?.value || 0).toFixed(3),
+                    daySideGain: Number(__dayNightMat?.uniforms?.uDaySideGain?.value || 0).toFixed(3),
+                  });
+                } catch(_){}
+              }
+            } catch(_){ }
+          }, undefined, () => { try { console.warn('[texture] 夜景贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
           });
-          // 预创建云层球（默认隐藏；云端-only，失败不再回本地）
-          getTextureUrl('cloud').then(({ url: cloudUrl, fallback: cloudFb }) => {
-            logSrc('cloud', cloudUrl, cloudFb, 'start');
-            loader.load(cloudUrl, (cloudTex) => {
-              cloudTex.minFilter = THREE.LinearFilter; cloudTex.magFilter = THREE.LinearFilter;
-              try { cloudTex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { cloudTex.encoding = THREE.sRGBEncoding; } catch(__){} }
-              const cloudMat = new THREE.MeshPhongMaterial({ map: cloudTex, transparent: true, opacity: 0.42, depthWrite: false });
-              cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat);
-              cloudMesh.name = 'CLOUD'; cloudMesh.visible = false; globeGroup.add(cloudMesh);
-              dumpTextureInfo('cloud', cloudTex);
-            }, undefined, () => { try { console.warn('[texture] 云层贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
+          // 预加载 8K 白昼贴图（云端优先，失败回本地）
+          getTextureUrl('earth_day8k').then(({ url: day8kUrl, fallback: day8kFb }) => {
+            logSrc('earth_day8k', day8kUrl, day8kFb, 'start');
+            loader.load(day8kUrl, (day8k) => {
+              day8k.minFilter = THREE.LinearFilter; day8k.magFilter = THREE.LinearFilter; day8k.anisotropy = 1;
+              try { day8k.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { day8k.encoding = THREE.sRGBEncoding; } catch(__){} }
+              earthDay8kTex = day8k; dumpTextureInfo('earth_day8k', earthDay8kTex);
+            }, undefined, () => {
+              try { console.warn('[texture] 8K 白昼贴图加载失败（将保持默认白昼贴图）'); } catch(_){}
+            });
           });
+          // 云层：按配置开关加载（避免不必要的资源与逻辑交叉）
+          const wantCloud = !!(APP_CFG?.cloud?.enabled);
+          if (wantCloud) {
+            getTextureUrl('cloud').then(({ url: cloudUrl, fallback: cloudFb }) => {
+              logSrc('cloud', cloudUrl, cloudFb, 'start');
+              loader.load(cloudUrl, (cloudTex) => {
+                cloudTex.minFilter = THREE.LinearFilter; cloudTex.magFilter = THREE.LinearFilter;
+                try { cloudTex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { cloudTex.encoding = THREE.sRGBEncoding; } catch(__){} }
+                const cloudMat = new THREE.MeshPhongMaterial({ map: cloudTex, transparent: true, opacity: 0.42, depthWrite: false });
+                cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat);
+                cloudMesh.name = 'CLOUD';
+                // 初始可见性：跟随页面数据（默认关闭，但若用户已点“云层”则立即显示）
+                try { cloudMesh.visible = !!(page && page.data && page.data.showCloud); } catch(_){ cloudMesh.visible = false; }
+                globeGroup.add(cloudMesh);
+                dumpTextureInfo('cloud', cloudTex);
+              }, undefined, () => { try { console.warn('[texture] 云层贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
+            });
+          }
 
           loadCountries().then((features) => {
             COUNTRY_FEATURES = features;
@@ -918,9 +991,16 @@ export function boot(page) {
               if (featureContains(clon, clat, f)) { tzByCountry = getCountryOverride(f); break; }
             }
           }
-          const computedTZ = (tzByCountry !== null && tzByCountry !== undefined)
+          let computedTZ = (tzByCountry !== null && tzByCountry !== undefined)
             ? tzByCountry
             : (page.tzlookup?.(clat, clon) ?? null);
+          // 兜底：在大洋等无国家覆盖区域，按经度推导 Etc/GMT±N（保证跨日期线能变化）
+          if (!computedTZ || typeof computedTZ !== 'string') {
+            const off = Math.round(normalizeLon(clon) / 15); // 东经为正，约每15°一小时
+            const sign = off >= 0 ? '-' : '+'; // Etc/GMT-8 表示 GMT+8（Etc 号反向约定）
+            const abs = Math.abs(off);
+            computedTZ = `Etc/GMT${sign}${abs}`;
+          }
           if (computedTZ === centerTZStable.last) {
             centerTZStable.count++;
           } else {
@@ -1127,6 +1207,8 @@ export function boot(page) {
           const center = new THREE.Vector3();
           globeGroup.getWorldPosition(center);
           __dayNightMat.uniforms.uGlobeCenterWorld.value.copy(center);
+          // 同步相机世界坐标，驱动 Shader 中的观察方向 V
+          try { __dayNightMat.uniforms.uCameraPosWorld.value.copy(camera.position); } catch(_){}
           // 诊断：每帧同步 exposure/daySideGain（若在配置中调整，刷新即可观察是否生效）
           try {
             const cfg = LIGHT_CFG.zen || {};
@@ -1191,14 +1273,71 @@ export function boot(page) {
     };
     render();
 
-    const setNightMode = (on) => {
+    // 主题切换：default（默认白昼）/ day8k（8K白昼）/ night（夜景）
+    let currentTheme = 'default';
+    const setTheme = (kind = 'default') => {
       try {
+        currentTheme = (kind === 'day8k' || kind === 'night') ? kind : 'default';
+        // 诊断日志：点击来源与贴图可用性
+        try { console.log('[theme:set]', { kind, zenActive, hasDay: !!earthDayTex, hasDay8k: !!earthDay8kTex, hasNight: !!earthNightTex }); } catch(_){}
+        // 禅模式期间不改变贴图（保持默认），退出后再应用
+        if (zenActive) { try { console.warn('[theme:set] 在禅定模式中，保持默认贴图'); } catch(_){} return; }
+        // 普通模式启用“禅材质”时：更新 Shader 的纹理/参数（含夜景纯夜策略）
+        try {
+          const wantShader = !!(APP_CFG?.normal?.useZenMaterial);
+          const isShader = !!(earthMesh?.material && (earthMesh.material instanceof THREE.ShaderMaterial));
+          if (wantShader && isShader && __dayNightMat && __dayNightMat.uniforms?.uDayTex) {
+            const pureNight = !!(APP_CFG?.normal?.nightThemePure);
+            if (currentTheme === 'night' && pureNight && earthNightTex) {
+              // 进入纯夜视图：两侧都使用夜景纹理；暂存原白天纹理以便回退
+              if (!__savedDayTexForShader) __savedDayTexForShader = __dayNightMat.uniforms.uDayTex.value || earthDayTex || earthDay8kTex;
+              __dayNightMat.uniforms.uDayTex.value = earthNightTex;
+              if (__dayNightMat.uniforms.uNightTex) __dayNightMat.uniforms.uNightTex.value = earthNightTex;
+              // 夜景下曝光/增益微调（可选，避免过暗/过亮）
+              try {
+                const ncfg = APP_CFG?.normal || {};
+                if (__dayNightMat.uniforms.uExposure && typeof ncfg.nightExposure === 'number') {
+                  __dayNightMat.uniforms.uExposure.value = Math.min(2.5, Math.max(0.7, ncfg.nightExposure));
+                }
+                if (__dayNightMat.uniforms.uDaySideGain && typeof ncfg.nightDaySideGain === 'number') {
+                  __dayNightMat.uniforms.uDaySideGain.value = Math.min(3.0, Math.max(0.7, ncfg.nightDaySideGain));
+                }
+              } catch(_){}
+              __nightThemeActive = true;
+              earthMesh.material.needsUpdate = true;
+              try { console.info('[theme:set] shader night (pure)'); } catch(_){}
+              return;
+            }
+            // 非夜景或关闭纯夜：恢复混合逻辑并按主题更新白天纹理
+            const dayTexForTheme = (currentTheme === 'day8k' && earthDay8kTex) ? earthDay8kTex : earthDayTex;
+            if (__nightThemeActive) {
+              // 从纯夜回退：恢复夜景纹理为夜侧，白天纹理回到保存值或当前主题
+              if (__dayNightMat.uniforms.uNightTex) __dayNightMat.uniforms.uNightTex.value = earthNightTex || __dayNightMat.uniforms.uNightTex.value;
+              const restoreDay = dayTexForTheme || __savedDayTexForShader || __dayNightMat.uniforms.uDayTex.value;
+              __dayNightMat.uniforms.uDayTex.value = restoreDay;
+              __nightThemeActive = false;
+              __savedDayTexForShader = null;
+            } else {
+              if (dayTexForTheme) {
+                __dayNightMat.uniforms.uDayTex.value = dayTexForTheme;
+                try { console.info('[theme:set] shader dayTex=', (currentTheme === 'day8k' ? '8k' : 'default')); } catch(_){}
+              } else {
+                try { console.warn('[theme:set] shader dayTex 缺失，保持原值'); } catch(_){}
+              }
+            }
+            earthMesh.material.needsUpdate = true;
+            return;
+          }
+        } catch(_){}
         if (!earthMesh) return; const m = earthMesh.material; if (!m) return;
-        if (on && earthNightTex) { m.map = earthNightTex; }
-        else if (earthDayTex) { m.map = earthDayTex; }
+        if (currentTheme === 'night' && earthNightTex) { m.map = earthNightTex; try { console.log('[theme:set] 使用夜景贴图'); } catch(_){} }
+        else if (currentTheme === 'day8k' && earthDay8kTex) { m.map = earthDay8kTex; try { console.log('[theme:set] 使用 8K 白昼贴图'); } catch(_){} }
+        else if (earthDayTex) { m.map = earthDayTex; try { console.log('[theme:set] 使用默认白昼贴图'); } catch(_){} }
         m.needsUpdate = true;
-      } catch(_){}
+      } catch(err){ try { console.error('[theme:set] 异常', err); } catch(_){} }
     };
+    // 兼容旧接口：保留 setNightMode（映射到主题）
+    const setNightMode = (on) => { try { setTheme(on ? 'night' : 'default'); } catch(_){} };
     const setCloudVisible = (on) => { try { if (cloudMesh) cloudMesh.visible = !!on; } catch(_){} };
     // 新增：性能模式切换（拖动中/静止）——仅影响星空目标不透明度
     const setPerfMode = (mode) => {
@@ -1324,7 +1463,10 @@ export function boot(page) {
               __earthOldMat = earthMesh.material; // 记录旧材质以便退出时恢复
               const softness = (LIGHT_CFG.zen?.mixSoftness ?? 0.20);
               const gamma = (LIGHT_CFG.zen?.gamma ?? 1.0);
-              __dayNightMat = createDayNightMaterial(THREE, earthDayTex, earthNightTex, softness, gamma);
+              // 根据当前主题选择禅模式右侧的“白天纹理”：day8k 优先，否则使用默认
+              const dayTexForZen = (currentTheme === 'day8k' && earthDay8kTex) ? earthDay8kTex : earthDayTex;
+              try { console.info('[zen] dayTexForZen=', (currentTheme === 'day8k' ? '8k' : 'default'), { hasDay: !!earthDayTex, hasDay8k: !!earthDay8kTex }); } catch(_){}
+              __dayNightMat = createDayNightMaterial(THREE, dayTexForZen, earthNightTex, softness, gamma);
               // 进一步设置夜暗度、白天对比与混合曲线
               try {
                 if (__dayNightMat?.uniforms) {
@@ -1357,6 +1499,15 @@ export function boot(page) {
                   if (__dayNightMat.uniforms.uHighlightsRoll) {
                     __dayNightMat.uniforms.uHighlightsRoll.value = Math.max(0.0, Math.min(1.0, (LIGHT_CFG.zen?.highlightsRoll ?? 0.0)));
                   }
+                  // 高光（Blinn-Phong）：同步 shininess/强度/颜色，并初始化相机位置
+                  try {
+                    const shininess = (LIGHT_CFG.earthMaterial?.shininess ?? 8);
+                    if (__dayNightMat.uniforms.uShininess) __dayNightMat.uniforms.uShininess.value = Math.max(1.0, shininess);
+                    if (__dayNightMat.uniforms.uSpecularStrength) __dayNightMat.uniforms.uSpecularStrength.value = Math.max(0.0, Math.min(2.0, (LIGHT_CFG?.zen?.specularStrength ?? 0.95)));
+                    if (__dayNightMat.uniforms.uSpecularColor) { __dayNightMat.uniforms.uSpecularColor.value.set(1,1,1); }
+                    if (__dayNightMat.uniforms.uSpecularUseTex) { __dayNightMat.uniforms.uSpecularUseTex.value = 0.0; }
+                    if (__dayNightMat.uniforms.uCameraPosWorld) { __dayNightMat.uniforms.uCameraPosWorld.value.copy(camera.position); }
+                  } catch(_){ }
                   // 诊断：输出关键 uniform 值与材质类型，确认是否为 ShaderMaterial 且参数生效
                   try {
                     const u = __dayNightMat.uniforms || {};
@@ -1369,6 +1520,8 @@ export function boot(page) {
                       dayContrast: Number(u.uDayContrast?.value || 0).toFixed(3),
                       highlightsRoll: Number(u.uHighlightsRoll?.value || 0).toFixed(3),
                       dayNightContrast: Number(u.uDayNightContrast?.value || 0).toFixed(3),
+                      shininess: Number(u.uShininess?.value || 0).toFixed(3),
+                      specularStrength: Number(u.uSpecularStrength?.value || 0).toFixed(3),
                     });
                     console.info('[ZEN lights]', {
                       dirLightIntensity: Number(dirLight?.intensity ?? NaN).toFixed(3),
@@ -1604,15 +1757,13 @@ export function boot(page) {
       try { if (INTERACTION_DEBUG_LOG) console.log('[inertia:set]', { pct: v, norm: Number(norm.toFixed(3)), t: Number(t.toFixed(3)), damping: Number(touch.damping.toFixed(3)), maxSpeed: Number(touch.maxSpeed.toFixed(3)), gain: Number(touch.inertiaGain.toFixed(2)), nonlinear: useNL }); } catch(_){}
     };
 
-      state = { THREE, scene, renderer, globeGroup, camera, dirLight, earthMesh, COUNTRY_FEATURES, search, width, height, handlers: { onTouchStart, onTouchMove, onTouchEnd, setZoom, setNightMode, setCloudVisible, setPaused, flyTo, nudgeCenter, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode }, page, wheelHandlers, onWinResizeCb: onWinResize, __cancelRaf: () => { try { canvas.cancelAnimationFrame(__rafId); } catch(_){ } __rafId = 0; }, __pauseFlagRef: () => __paused, __setHighlight: setHighlight };
+      state = { THREE, scene, renderer, globeGroup, camera, dirLight, earthMesh, COUNTRY_FEATURES, search, width, height, handlers: { onTouchStart, onTouchMove, onTouchEnd, setZoom, setNightMode, setTheme, setCloudVisible, setPaused, flyTo, nudgeCenter, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode }, page, onWinResizeCb: onWinResize, __cancelRaf: () => { try { canvas.cancelAnimationFrame(__rafId); } catch(_){ } __rafId = 0; }, __pauseFlagRef: () => __paused, __setHighlight: setHighlight };
   });
 }
 
 export function teardown() {
   if (!state) return;
-  // 移除滚轮监听，避免侧栏/页面残留
-  const arr = state.wheelHandlers || [];
-  for (const fn of arr) { try { fn(); } catch(_) {} }
+  // 滚轮逻辑已移除：无需额外清理滚轮监听
   // 取消窗口尺寸监听
   try { if (state.onWinResizeCb) wx.offWindowResize(state.onWinResizeCb); } catch(_){ }
   // 取消 RAF，避免销毁后仍在渲染导致报错或日志刷屏
@@ -1628,6 +1779,7 @@ export function onTouchMove(e){ state?.handlers?.onTouchMove?.(e); }
 export function onTouchEnd(e){ state?.handlers?.onTouchEnd?.(e); }
 export function setZoom(z){ state?.handlers?.setZoom?.(z); }
 export function setNightMode(on){ state?.handlers?.setNightMode?.(on); }
+export function setTheme(kind){ state?.handlers?.setTheme?.(kind); }
 export function setCloudVisible(on){ state?.handlers?.setCloudVisible?.(on); }
 export function setInertia(pct){ state?.handlers?.setInertia?.(pct); }
 export function setPaused(on){ state?.handlers?.setPaused?.(on); }

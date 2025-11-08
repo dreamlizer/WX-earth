@@ -10,6 +10,8 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uLightDirWorld: { value: new THREE.Vector3(1, 0, 0) },
     // 地球球心世界坐标，由外部每帧更新（避免位移导致法线不准确）
     uGlobeCenterWorld: { value: new THREE.Vector3(0, 0, 0) },
+    // 摄像机世界坐标（用于计算观察方向 V）
+    uCameraPosWorld: { value: new THREE.Vector3(0, 0, 5) },
     // 终止线柔和宽度，越大过渡越宽
     uSoftness: { value: softness },
     // Gamma 调整，保持与现有纹理感受一致
@@ -28,6 +30,12 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uExposure: { value: 1.0 },
     // 新增：高光压缩（ToneMap）系数；>0 时压低高亮避免“冲白”
     uHighlightsRoll: { value: 0.0 },
+    // 新增：高光相关参数（可选贴图 + 强度/锐度/颜色）
+    uSpecularTex: { value: null },
+    uSpecularUseTex: { value: 0.0 }, // 0=不采样贴图，1=采样贴图
+    uSpecularStrength: { value: 0.9 },
+    uShininess: { value: 16.0 },
+    uSpecularColor: { value: new THREE.Color(1, 1, 1) },
   };
 
   const vertexShader = `
@@ -49,6 +57,7 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uniform sampler2D uNightTex;
     uniform vec3 uLightDirWorld;
     uniform vec3 uGlobeCenterWorld;
+    uniform vec3 uCameraPosWorld;
     uniform float uSoftness;
     uniform float uGamma;
     uniform float uNightDarkness;
@@ -58,6 +67,11 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uniform float uDaySideGain;
     uniform float uExposure;
     uniform float uHighlightsRoll;
+    uniform sampler2D uSpecularTex;
+    uniform float uSpecularUseTex;
+    uniform float uSpecularStrength;
+    uniform float uShininess;
+    uniform vec3 uSpecularColor;
 
     void main() {
       // 基于世界坐标计算球面法线（纠正位移对法线的影响）
@@ -84,6 +98,23 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       vec4 color = mix(night, day, t);
       // 整体曝光：在伽马之前乘以曝光系数，便于统一提亮
       color.rgb *= uExposure;
+
+      // —— 高光（Blinn-Phong）——
+      // 仅在朝阳面产生（乘以 max(d,0) 并在终止线附近平滑衰减）
+      vec3 V = normalize(uCameraPosWorld - vWorldPos);
+      vec3 H = normalize(V + L);
+      float nh = max(dot(N, H), 0.0);
+      float specBase = pow(nh, max(1.0, uShininess));
+      specBase *= max(d, 0.0); // 只在白天侧出现
+      // 终止线附近再额外柔化，避免硬边闪烁
+      specBase *= smoothstep(0.05, 0.35, d);
+      float specMask = 1.0;
+      if (uSpecularUseTex > 0.5) {
+        // 贴图的 R 通道作为高光强度遮罩（常见于 ocean 高光）
+        specMask = texture2D(uSpecularTex, vUv).r;
+      }
+      vec3 specular = uSpecularColor * (uSpecularStrength * specBase * specMask);
+      color.rgb += specular;
 
       // 高光压缩：在曝光后进行柔和的高亮滚降，避免过曝发灰
       // 采用简单的 Reinhard 近似：c' = c / (1 + k * c)

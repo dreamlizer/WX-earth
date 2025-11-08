@@ -319,8 +319,8 @@ export function highlight(THREE, globeGroup, f) {
 export function makeEquatorAndTropics(THREE, globeGroup) {
   // 使用薄型 TubeGeometry 提升精致度；开启深度测试避免背面穿模
   const group = new THREE.Group();
-  const color = 0xffd24d; // 更亮的金黄色
-  const opacity = 0.72;   // 适度提亮但不抢眼
+  const color = 0xffd24d; // 金黄色
+  const opacity = 0.50;   // 更淡
   const ro = 28;          // 高于地球、低于标签
   const matBase = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthTest: true });
   matBase.depthWrite = false; matBase.polygonOffset = true; matBase.polygonOffsetFactor = -1; matBase.polygonOffsetUnits = -1; matBase.userData = { ro };
@@ -334,7 +334,7 @@ export function makeEquatorAndTropics(THREE, globeGroup) {
     }
     const curve = new THREE.CatmullRomCurve3(pts, true, 'centripetal', 0.6);
     const tubularSegments = Math.max(120, Math.min(360, Math.floor(360/3) * 2));
-    const tubeRadius = 0.0032; // 细圆管半径，略粗于线以提升可读性
+    const tubeRadius = 0.0022; // 更细的圆管半径
     const radialSegments = 12;
     const geo = new THREE.TubeGeometry(curve, tubularSegments, tubeRadius, radialSegments, true);
     const mat = matBase.clone();

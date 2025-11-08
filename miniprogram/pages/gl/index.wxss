@@ -168,23 +168,19 @@ canvas {
 
 /* 已移除 PC 预览缩放控件 */
 
-/* 额外滚动高度：用于 PC 端滚轮触发（不可见） */
-.wheel-space {
-  height: 1200px;
-  opacity: 0;
-}
+/* 已移除：PC 端滚轮触发占位样式 */
 
 /* 旧顶栏样式已移除 */
 
 /* 设置面板：固定定位，完整显示且避开时间条 */
 .settings-panel {
   position: fixed;
-  /* 避免 vw：统一右侧边距为 rpx */
-  right: 30rpx;
-  top: calc(env(safe-area-inset-top) + 56px); /* 紧随工具栏下方，考虑安全区 */
-  /* 300px≈600rpx；最大宽度 320px≈640rpx */
-  width: 600rpx;
-  max-width: 640rpx;
+  /* 与顶部工具栏对齐：左边缘对齐语言按钮“左半边”，右边缘对齐时间胶囊右侧 */
+  left: calc(50% - 690rpx / 2 + 40rpx);
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
+  /* 宽度 = 690rpx 容器宽 - 左半边(40rpx) - 右侧按钮与间距(100rpx) → 550rpx */
+  width: 550rpx;
+  max-width: 550rpx;
   background: rgba(10,22,36,0.88);
   border: 1px solid rgba(120,170,220,0.45);
   border-radius: 12px;

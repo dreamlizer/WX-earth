@@ -57,9 +57,22 @@ export class ZenModeManager {
       const current = Number(this.page?.__zenPreset || 1);
       const nextPreset = (current === 1) ? 2 : 1;
       this.page.__zenPreset = nextPreset;
-      // 启动新预设对应的音乐与诗句
-      try { this.page?._startZenAudio?.(nextPreset); } catch(_){ }
-      try { this.page?.__startPoetryViaMgr?.(nextPreset); } catch(_){ }
+      // 先处理：旧音乐 2 秒淡出、当前诗句强制 2 秒淡出
+      try { this.page?._stopZenAudio?.(2000); } catch(_){ }
+      try {
+        // 诗句淡出时长固定为 2000ms，无论已显示多久
+        this.page?.setData?.({ poetryFadeMs: 2000, 'poetryA.visible': false, 'poetryB.visible': false });
+      } catch(_){ }
+      // 新音乐：等待 1 秒后开始淡入（淡入 1 秒），新诗句：靠近淡出末尾切入（总淡出 2 秒，1 秒后启动，内部首句再延迟 1 秒 = 2 秒）
+      try {
+        const mgr = this.page?.__getZenMgr?.();
+        const localUrl = this.page?._getLocalAudio?.(nextPreset) || '';
+        // 1s 延迟 + 1s 淡入
+        if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(nextPreset, localUrl, 1000, 1000); }
+        else { this.page?._startZenAudio?.(nextPreset); }
+      } catch(_){ }
+      // 诗句：在淡出开始 1 秒时触发新的预设（PoetryManager 首句自带 1 秒延迟，恰好 2 秒总长度）
+      try { setTimeout(() => { try { this.page?.__startPoetryViaMgr?.(nextPreset); } catch(_){ } }, 1000); } catch(_){ }
       // 轻提示：与原页面一致，1200ms 消退
       const msg = (this.page?.data?.lang === 'zh') ? `切到预设${nextPreset}` : `Preset ${nextPreset}`;
       try {

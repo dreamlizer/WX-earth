@@ -3,10 +3,26 @@
 // 单位清晰：强度为相对值（无量纲）；角速度用“度/秒”；时间为毫秒
 
 export const APP_CFG = {
+  // [UI] 通用界面配置（面板淡出与控件显隐）
+  ui: {
+    panelFadeMs: 500,     // 面板淡出时间（毫秒）
+    showZoomBar: true     // 底部缩放条是否可见（false 则隐藏并不可用）
+  },
   // [通用] 普通模式（非禅定）——整体偏自然、易读
   normal: {
+    // 开关：普通模式是否采用“禅定灯光”配置（仅灯光强度，不引入禅材质）
+    // 回退机制：若观感不佳，改为 false 即恢复普通灯光
+    useZenLighting: true,
+    // 开关：普通模式是否采用“禅定材质”（昼夜混合 ShaderMaterial）
+    // 若出现性能或观感问题，设为 false 回退到 Phong 材质
+    useZenMaterial: true,
+    // 夜景按钮行为：true=纯夜视图（两侧都用夜景纹理），false=保持日夜混合
+    nightThemePure: true,
+    // 纯夜视图下的微调（可选）：曝光与白天侧增益
+    nightExposure: 0.95,
+    nightDaySideGain: 1.0,
     // 太阳光（方向光）强度：1.0 为基准；建议 0.8–1.6
-    dirLightIntensity: 1.15,
+    dirLightIntensity: 1.05,
     // 环境光强度：抬低全局最低亮度；建议 0.2–0.5
     ambientIntensity: 0.30,
     // 新增：普通模式下星空整体透明度（0~1）。设小值可保持极弱可见，0 为完全隐藏。
@@ -128,11 +144,14 @@ export const APP_CFG = {
   // [相机缩放] 配置最大/最小缩放（zoom 值越大越近）
   camera: {
     minZoom: 0.60,           // 最小缩放（最远）
-    maxZoom: 3.43            // 最大缩放（更近，比原先 +20%）
+    maxZoom: 3.43,           // 最大缩放（更近，比原先 +20%）
+    // 初始视觉中心（普通模式）：北京（度）。如需更改，修改此处即可。
+    // 说明：lat 为纬度（北纬为正），lon 为经度（东经为正）。
+    initialCenterDeg: { lat: 39.9042, lon: 116.4074 }
   },
   // [云能力] 在本地静态预览时关闭云调用，避免控制台刷屏报错
   cloud: {
-    enabled: false,          // 真实小程序环境再改为 true
+    enabled: true,           // 开启纹理加载；UI 默认关闭可见性
     // 云层独立慢速转动（度/秒；0 关闭）。不依赖禅定自动转动。
     spinDegPerSec: 2.0
   },

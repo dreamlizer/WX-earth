@@ -10,6 +10,8 @@ const FILE_ID_MAP = {
   earth: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/earth.jpg',
   earth_night: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/earth_night.webp',
   cloud: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/cloud.webp',
+  // 新增：地球白昼 8K 贴图（webp）
+  earth_day8k: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/earth_day8k.webp',
 };
 
 // 本地兜底图片（放置在 miniprogram/assets/textures/ 下，确保打包到小程序）
@@ -17,6 +19,7 @@ const FALLBACK_MAP = {
   earth: '/assets/textures/earth.jpg',
   earth_night: '/assets/textures/earth_night.webp',
   cloud: '/assets/textures/cloud.webp',
+  earth_day8k: '/assets/textures/earth_day8k.webp',
 };
 
 function now() { return Date.now(); }

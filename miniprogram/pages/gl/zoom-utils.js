@@ -10,19 +10,7 @@ export function clamp(value, min, max) {
   return Math.max(lo, Math.min(hi, value));
 }
 
-/**
- * 计算滚轮缩放后的下一值
- * @param {number} current - 当前缩放值
- * @param {number} dy - 事件的 deltaY（>0 向下）
- * @param {number} min - 允许的最小值（例如 0.6）
- * @param {number} max - 允许的最大值（例如 2.86）
- * @param {number} stepAbs - 单步变化绝对值（默认 0.08）
- */
-export function computeWheelZoom(current, dy, min, max, stepAbs = 0.08) {
-  const step = dy > 0 ? -Math.abs(stepAbs) : (dy < 0 ? Math.abs(stepAbs) : 0);
-  const next = current + step;
-  return clamp(next, min, max);
-}
+// 已移除：滚轮缩放计算（不再支持）
 
 /**
  * 计算按钮加减缩放后的下一值

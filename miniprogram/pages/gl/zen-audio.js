@@ -124,6 +124,48 @@ export class ZenAudio {
     })();
   }
 
+  // 启动：先等 delayMs，再以 fadeMs 时长从 0->1 淡入
+  startWithDelayFadeIn(preset = 1, localUrl = '', delayMs = 1000, fadeMs = 1000){
+    return (async () => {
+      try {
+        this.preset = preset || 1;
+        if (!this.audio) {
+          const a = wx.createInnerAudioContext();
+          a.loop = true; a.autoplay = false; a.obeyMuteSwitch = false;
+          try {
+            a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
+            a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
+            a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
+          } catch(_){ }
+          this.audio = a;
+        }
+        // 初始化音量为 0，准备淡入
+        try { this.audio.volume = 0.0; } catch(_){}
+        const cloudUrl = await this.resolveCloudAudio(this.preset);
+        const srcUrl = cloudUrl || localUrl || '';
+        if (!srcUrl) { try { console.warn('[ZEN audio] 未获取到 src，跳过淡入播放'); } catch(_){} return; }
+        this.audio.src = srcUrl;
+        // 延迟后开始播放并淡入
+        const playAndFade = () => {
+          try { this.audio?.play?.(); } catch(_){}
+          const steps = Math.max(10, Math.floor(fadeMs / 50));
+          const stepMs = Math.max(10, Math.floor(fadeMs / steps));
+          let i = 0;
+          const timer = setInterval(() => {
+            try {
+              i += 1;
+              const k = Math.max(0, Math.min(1, i / steps));
+              try { this.audio.volume = k; } catch(_){}
+              if (i >= steps) { clearInterval(timer); }
+            } catch(e){ try { console.warn('[ZEN audio] fadeIn error', e); } catch(_){} clearInterval(timer); }
+          }, stepMs);
+        };
+        const dms = Math.max(0, Number(delayMs || 0));
+        if (dms > 0) setTimeout(playAndFade, dms); else playAndFade();
+      } catch(_){ }
+    })();
+  }
+
   // 淡出并停止：在支持 volume 的环境逐步降低音量；否则直接停止
   fadeOutStop(ms = 2000){
     try {

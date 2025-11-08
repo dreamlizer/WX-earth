@@ -56,11 +56,12 @@ export class PoetryManager {
       this._timer = null; this._timer2 = null; this._idx = 0;
       const cfg = this.appCfg?.poetry || {};
       const fadeInMs = Number(cfg.fadeInMs || 600);
-      const crossMs = Number(cfg.crossfadeMs || 1000);
+      const crossMs = Number(cfg.crossfadeMs || 2000); // 默认交叉 2 秒，匹配“旧诗句淡出 2 秒”的需求
       const moveSpeed = Number(cfg.movePxPerSec || 36);
       const margin = Number(cfg.safeMarginPx || 18);
       // 页面数据中的过渡时长需要同步
-      this.setData({ poetryFadeMs: fadeInMs });
+      // 统一使用 2 秒淡出；如需单独控制淡入，可在模板中区分 class（此处先满足需求）
+      this.setData({ poetryFadeMs: Math.max(fadeInMs, 2000) });
 
       const lines = presetsMap[preset] || presetsMap[1] || [];
       try { console.info('[poetry] 开始播放', { preset, lines: (Array.isArray(lines)? lines.length : 0) }); } catch(_){}
@@ -119,6 +120,8 @@ export class PoetryManager {
         const nearEnd = Math.max(0, showDuration - crossMs);
         const endPos = { x: move.endX, y: move.endY };
         this._timer = setTimeout(async () => {
+          // 先启动旧诗句淡出（2 秒），随后靠近末尾切入新诗句
+          const hide = {}; hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false; this.setData(hide);
           const nextItem = lines[(++this._idx) % lines.length];
           // 通过配置限制“下一句贴近上一句首字”的最大距离，避免飘到边缘
           const limit = (typeof cfg.nextStartMaxDistancePx === 'number') ? cfg.nextStartMaxDistancePx : 20;
@@ -127,13 +130,13 @@ export class PoetryManager {
           if (!nextStart || isNaN(nextStart.x) || isNaN(nextStart.y)) {
             nextStart = this.computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds, centerRatio);
           }
-          await showLineOn(!useA, nextItem.text, Number(cfg.displayMs || 7000), nextStart);
-          const hide = {}; hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false; this.setData(hide);
+          // 在淡出过程进行 1 秒后切入（总淡出 2 秒），避免“重叠太久”或“空窗期”
+          setTimeout(async () => { await showLineOn(!useA, nextItem.text, Number(cfg.displayMs || 7000), nextStart); }, Math.min(2000, Math.max(0, crossMs - 1000)));
         }, nearEnd);
       };
 
       const item0 = lines[0];
-      // 首句延迟 1 秒再出现，避免过早出现
+      // 首句延迟保持 1 秒（进入禅定时体验较柔和）；若是“切换”场景，外部管理器会在 1 秒时触发，从而对齐 2 秒淡出
       setTimeout(() => { showLineOn(true, item0.text, Number(cfg.displayMs || 7000)); }, 1000);
     } catch(_){ }
   }

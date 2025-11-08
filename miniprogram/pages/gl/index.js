@@ -1,5 +1,5 @@
 // 极薄适配层：页面生命周期与事件绑定，只转交给 main.js
-import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, getRenderContext, setZoom, setNightMode, setCloudVisible, getCountries, setPaused, flyTo, setDebugFlags, selectCountryByCode, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode as setGlPerfMode } from './main.js';
+import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, getRenderContext, setZoom, setNightMode, setTheme, setCloudVisible, getCountries, setPaused, flyTo, setDebugFlags, selectCountryByCode, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode as setGlPerfMode } from './main.js';
 import { computeStartNearCenter, computeMove, nearbyFrom } from './poetry-motion.js';
 import { APP_CFG } from './config.js';
 import { formatTime as formatTimeUtil } from './time-utils.js';
@@ -70,6 +70,7 @@ Page({
     lang: 'zh', // zh/en
     settingsOpen: false,
     nightMode: false,
+    theme: 'default', // default/day8k/night
     showCloud: false,
     labelQty: 'default', // none/few/default/many
     cityTier: 'more',
@@ -82,6 +83,8 @@ Page({
     settingsFading: false,
     countryPanelFading: false,
     panelFadeMs: (APP_CFG?.ui?.panelFadeMs ?? 500),
+    // 底部缩放条：可见性开关（不可见则不可用）
+    showZoomBar: (APP_CFG?.ui?.showZoomBar ?? true),
     // 小标题多语言映射与当前标签集
     uiLabels: {
       zh: { capital: '首都', area: '面积', population: '人口', gdp: 'GDP' },
@@ -312,13 +315,7 @@ Page({
   // 吃掉底部缩放条的触摸事件，避免冒泡到 WebGL canvas
   onCatchTouchMove(){ /* 吃掉事件即可 */ },
 
-  // PC 端滚轮缩放：使用 scroll-view 的 bindscroll 事件，读取 deltaY 并映射到 setZoom
-  onWheelZoom(e){
-    return this.__getZoomMgr().wheel(e);
-  },
-
-  // 渲染层调用：标记最近一次滚轮已处理，页面层据此忽略重复事件
-  __markWheelHandled(){ return this.__getZoomMgr().markWheelHandled(); },
+  // 已移除：PC 端滚轮缩放与滚轮处理标记（不再支持）
 
   // 原 slider 交互：拖动预览与释放确认（双向同步）
   onZoomChanging(e){ return this.__getZoomMgr().changing(e); },
@@ -368,7 +365,21 @@ Page({
     try { return this.__getZenModeMgr().toggleCut(); } catch(_){}
   },
   onToggleNight(e){ const on = !!(e?.detail?.value); this.setData({ nightMode: on }); setNightMode(on); },
+  // 新增：主题三选按钮事件（白昼/默认/夜景）
+  onSetTheme(e){
+    const val = String(e?.currentTarget?.dataset?.val || 'default');
+    const theme = (val === 'daylight') ? 'day8k' : (val === 'night' ? 'night' : 'default');
+    this.setData({ theme, nightMode: (theme === 'night') });
+    try { setTheme(theme); } catch(_) { setNightMode(theme === 'night'); }
+  },
   onToggleCloud(e){ const on = !!(e?.detail?.value); return this.__getSettingsMgr().toggleCloud(on); },
+  // 主题行右侧的云层按钮：单键切换（显示/隐藏与缓慢旋转）
+  onTapCloudBtn(){
+    try {
+      const next = !this.data.showCloud;
+      return this.__getSettingsMgr().toggleCloud(next);
+    } catch(_){ }
+  },
   // 小型开关按钮统一入口
   onToggleOption(e){
     const key = e?.currentTarget?.dataset?.key;
