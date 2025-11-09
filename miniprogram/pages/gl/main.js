@@ -12,6 +12,7 @@ import { getTextureUrl, prefetchTextureUrls, ensureOfflineTextures } from './tex
 import { createScene, makeBorder, makeEquatorAndTropics, highlight as highlightLayer, updateCameraDistance as updateCamDist, makeCountryColliders } from './layers.js';
 import { INTERACTION_DEBUG_LOG, PERF_HIDE_STAR_ON_ON_DRAG, INERTIA_NONLINEAR, INERTIA_POWER, INERTIA_DAMP_MIN, INERTIA_DAMP_MAX, INERTIA_SPEED_MIN, INERTIA_SPEED_MAX, INERTIA_GAIN_BASE, INERTIA_GAIN_SCALE, INERTIA_LOG_DETAIL, INERTIA_LOG_THROTTLE_MS, INERTIA_APPLY_LOG_THROTTLE_MS } from './label-constants.js';
 import { createDayNightMaterial } from './shaders/dayNightMix.glsl.js';
+import { createAtmosphereShellMaterial } from './shaders/atmosphereShell.glsl.js';
 import { APP_CFG } from './config.js';
 import { createStarfield } from './starfield.glsl.js';
 import { createPoetry3D } from './poetry3d.js';
@@ -27,10 +28,12 @@ const DEBUG = { lonSameSign: true, invertLon: false, invertLat: false, logFly: t
 const DEBUG_SELECT = true; // 仅在 INTERACTION_DEBUG_LOG 开启时实际打印
 
 // 星光诊断日志总开关（如需静默可改为 false）
-const STAR_LOG = false; // 关闭星空调试日志，避免控制台刷屏
+  const STAR_LOG = false; // 关闭星空调试日志，避免控制台刷屏
 
 // 状态容器
-let state = null;
+ let state = null;
+ // 新增：独立大气壳体 mesh（Additive 混合，避免被地表覆盖）
+ let atmosphereMesh = null;
 
 export function boot(page) {
   const sys = wx.getSystemInfoSync();
@@ -451,6 +454,33 @@ export function boot(page) {
             tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} } earthDayTex = tex; dumpTextureInfo('earth_day', earthDayTex);
           earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ map: earthDayTex, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
           earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
+          // 大气壳体：在地球创建后挂载（独立 ShaderMaterial）
+          try {
+            const a = (APP_CFG?.normal?.atmosphere || {});
+            const shellEnabled = (a.enabled !== false);
+            if (shellEnabled && !atmosphereMesh) {
+              const deltaR = Number(a.shellDeltaR ?? 0.018); // 外壳半径增量（相对 R）
+              const mat = createAtmosphereShellMaterial(THREE);
+              // 参数同步（颜色/强度/幂次）
+              try {
+                if (mat.uniforms.uColor) {
+                  const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
+                  const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
+                  const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
+                  const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
+                  mat.uniforms.uColor.value.set(r, g, b);
+                }
+                if (mat.uniforms.uIntensity) mat.uniforms.uIntensity.value = Math.max(0.0, Math.min(2.0, (a.intensity ?? 0.12)));
+                if (mat.uniforms.uPower) mat.uniforms.uPower.value = Math.max(0.1, Math.min(8.0, (a.power ?? 2.0)));
+              } catch(_){}
+              const geo = new THREE.SphereGeometry(RADIUS + Math.max(0.001, deltaR), 48, 48);
+              atmosphereMesh = new THREE.Mesh(geo, mat);
+              atmosphereMesh.name = 'ATMOS_SHELL';
+              atmosphereMesh.renderOrder = 999; // 置后渲染，叠加到外缘
+              globeGroup.add(atmosphereMesh);
+              console.info('[ATMOS(shell) created]', { deltaR, intensity: mat.uniforms.uIntensity.value, power: mat.uniforms.uPower.value });
+            }
+          } catch(_){}
           // 普通模式装饰：赤道与南北回归线（淡金色）
           try { if (!TROPIC_GROUP) TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); } catch(_){}
 
@@ -503,11 +533,54 @@ export function boot(page) {
                 } catch(_){}
                 earthMesh.material = __dayNightMat;
                 earthMesh.material.needsUpdate = true;
+                // 更新：普通模式下的大气辉光（Fresnel）参数
+                try {
+                  const u = __dayNightMat.uniforms || {};
+                  const a = (APP_CFG?.normal?.atmosphere || {});
+                  const enabled = (a.enabled !== false);
+                  if (u.uAtmosphereIntensity) u.uAtmosphereIntensity.value = enabled ? Math.max(0.0, Math.min(2.0, (a.intensity ?? 0.12))) : 0.0;
+                  if (u.uAtmospherePower) u.uAtmospherePower.value = Math.max(0.1, Math.min(8.0, (a.power ?? 2.0)));
+                  if (u.uAtmosphereDebugOnly) u.uAtmosphereDebugOnly.value = (a.debugOnly === true) ? 1.0 : 0.0;
+                  if (u.uAtmosphereColor) {
+                    const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
+                    const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
+                    const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
+                    const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
+                    u.uAtmosphereColor.value.set(r, g, b);
+                  }
+                  // 诊断：确认辉光参数已写入
+                  try {
+                    console.info('[ATMOS(normal) uniforms set]', {
+                      enabled,
+                      cfgIntensity: a.intensity,
+                      cfgPower: a.power,
+                      debugOnly: !!a.debugOnly,
+                      setIntensity: Number(u.uAtmosphereIntensity?.value || 0).toFixed(3),
+                      setPower: Number(u.uAtmospherePower?.value || 0).toFixed(3),
+                      setDebugOnly: Number(u.uAtmosphereDebugOnly?.value || 0).toFixed(3),
+                      setColor: {
+                        r: Number(u.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
+                        g: Number(u.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
+                        b: Number(u.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
+                      },
+                    });
+                    if (enabled && (Number(u.uAtmosphereIntensity?.value || 0) < 0.001)) {
+                      console.warn('[ATMOS(normal)] intensity very small or zero, effect likely invisible');
+                    }
+                  } catch(_){ }
+                } catch(_){ }
                 try {
                   console.info('[NORMAL-ZEN uniforms]', {
                     matType: earthMesh?.material?.type,
                     isShader: (earthMesh?.material instanceof THREE.ShaderMaterial),
                     exposure: Number(__dayNightMat?.uniforms?.uExposure?.value || 0).toFixed(3),
+                    atmosIntensity: Number(__dayNightMat?.uniforms?.uAtmosphereIntensity?.value || 0).toFixed(3),
+                    atmosPower: Number(__dayNightMat?.uniforms?.uAtmospherePower?.value || 0).toFixed(3),
+                    atmosColor: {
+                      r: Number(__dayNightMat?.uniforms?.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
+                      g: Number(__dayNightMat?.uniforms?.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
+                      b: Number(__dayNightMat?.uniforms?.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
+                    },
                     daySideGain: Number(__dayNightMat?.uniforms?.uDaySideGain?.value || 0).toFixed(3),
                   });
                 } catch(_){}
@@ -541,9 +614,28 @@ export function boot(page) {
                 try { cloudMesh.visible = !!(page && page.data && page.data.showCloud); } catch(_){ cloudMesh.visible = false; }
                 globeGroup.add(cloudMesh);
                 dumpTextureInfo('cloud', cloudTex);
-              }, undefined, () => { try { console.warn('[texture] 云层贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
-            });
-          }
+              }, undefined, () => {
+                // 云端失败：尝试使用本地兜底贴图（如存在）
+                if (cloudFb) {
+                  try {
+                    logSrc('cloud-fallback', cloudUrl, cloudFb, 'fallback');
+                    loader.load(cloudFb, (fbTex) => {
+                      fbTex.minFilter = THREE.LinearFilter; fbTex.magFilter = THREE.LinearFilter;
+                      try { fbTex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { fbTex.encoding = THREE.sRGBEncoding; } catch(__){} }
+                      const cloudMat = new THREE.MeshPhongMaterial({ map: fbTex, transparent: true, opacity: 0.42, depthWrite: false });
+                      cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat);
+                      cloudMesh.name = 'CLOUD';
+                      try { cloudMesh.visible = !!(page && page.data && page.data.showCloud); } catch(_){ cloudMesh.visible = false; }
+                      globeGroup.add(cloudMesh);
+              dumpTextureInfo('cloud-fallback', fbTex);
+            }, undefined, () => { try { console.warn('[texture] 云层贴图本地兜底也加载失败'); } catch(_){} });
+          } catch(_){ try { console.warn('[texture] 云层贴图回退流程异常'); } catch(__){} }
+        } else {
+          try { console.warn('[texture] 云层贴图云端加载失败（无兜底）'); } catch(_){}
+        }
+      });
+    });
+  }
 
           loadCountries().then((features) => {
             COUNTRY_FEATURES = features;
@@ -1224,6 +1316,30 @@ export function boot(page) {
           } catch(_){}
         }
       } catch(_){}
+      // 每帧更新大气壳体的球心/相机与参数（当前模式 normal/zen）
+      try {
+        if (atmosphereMesh && atmosphereMesh.material && atmosphereMesh.material.uniforms) {
+          const u = atmosphereMesh.material.uniforms;
+          const center = new THREE.Vector3(); globeGroup.getWorldPosition(center);
+          try { u.uGlobeCenterWorld.value.copy(center); } catch(_){}
+          try { u.uCameraPosWorld.value.copy(camera.position); } catch(_){}
+          // 动态跟随当前主题参数（两种模式可对比）
+          const a = (zenActive ? (APP_CFG?.zen?.atmosphere || {}) : (APP_CFG?.normal?.atmosphere || {}));
+          const enabled = (a.enabled !== false);
+          atmosphereMesh.visible = !!enabled;
+          try {
+            if (u.uIntensity) u.uIntensity.value = Math.max(0.0, Math.min(2.0, (a.intensity ?? (zenActive ? 0.18 : 0.12))));
+            if (u.uPower) u.uPower.value = Math.max(0.1, Math.min(8.0, (a.power ?? (zenActive ? 2.2 : 2.0))));
+            if (u.uColor) {
+              const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
+              const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
+              const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
+              const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
+              u.uColor.value.set(r, g, b);
+            }
+          } catch(_){}
+        }
+      } catch(_){}
       try { poetry3d?.update?.(now); } catch(_){}
       // 高亮淡出动画（0.5s）：逐帧降低不透明度，到期后移除并释放资源
       try {
@@ -1506,7 +1622,41 @@ export function boot(page) {
                     if (__dayNightMat.uniforms.uSpecularStrength) __dayNightMat.uniforms.uSpecularStrength.value = Math.max(0.0, Math.min(2.0, (LIGHT_CFG?.zen?.specularStrength ?? 0.95)));
                     if (__dayNightMat.uniforms.uSpecularColor) { __dayNightMat.uniforms.uSpecularColor.value.set(1,1,1); }
                     if (__dayNightMat.uniforms.uSpecularUseTex) { __dayNightMat.uniforms.uSpecularUseTex.value = 0.0; }
-                    if (__dayNightMat.uniforms.uCameraPosWorld) { __dayNightMat.uniforms.uCameraPosWorld.value.copy(camera.position); }
+                  if (__dayNightMat.uniforms.uCameraPosWorld) { __dayNightMat.uniforms.uCameraPosWorld.value.copy(camera.position); }
+                  } catch(_){ }
+                  // 诊断：确认禅定模式下辉光参数写入
+                  try {
+                    const a = (APP_CFG?.zen?.atmosphere || APP_CFG?.normal?.atmosphere || {});
+                    const u = __dayNightMat.uniforms || {};
+                    if (u.uAtmosphereDebugOnly) u.uAtmosphereDebugOnly.value = (a.debugOnly === true) ? 1.0 : 0.0;
+                    console.info('[ATMOS(zen) uniforms set]', {
+                      cfgIntensity: a.intensity,
+                      cfgPower: a.power,
+                      debugOnly: !!a.debugOnly,
+                      setIntensity: Number(u.uAtmosphereIntensity?.value || 0).toFixed(3),
+                      setPower: Number(u.uAtmospherePower?.value || 0).toFixed(3),
+                      setDebugOnly: Number(u.uAtmosphereDebugOnly?.value || 0).toFixed(3),
+                      setColor: {
+                        r: Number(u.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
+                        g: Number(u.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
+                        b: Number(u.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
+                      },
+                    });
+                  } catch(_){ }
+                  // 更新：禅定模式下的大气辉光（Fresnel）参数
+                  try {
+                    const u = __dayNightMat.uniforms || {};
+                    const a = (APP_CFG?.zen?.atmosphere || APP_CFG?.normal?.atmosphere || {});
+                    const enabled = (a.enabled !== false);
+                    if (u.uAtmosphereIntensity) u.uAtmosphereIntensity.value = enabled ? Math.max(0.0, Math.min(2.0, (a.intensity ?? 0.12))) : 0.0;
+                    if (u.uAtmospherePower) u.uAtmospherePower.value = Math.max(0.1, Math.min(8.0, (a.power ?? 2.0)));
+                    if (u.uAtmosphereColor) {
+                      const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
+                      const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
+                      const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
+                      const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
+                      u.uAtmosphereColor.value.set(r, g, b);
+                    }
                   } catch(_){ }
                   // 诊断：输出关键 uniform 值与材质类型，确认是否为 ShaderMaterial 且参数生效
                   try {
@@ -1515,6 +1665,13 @@ export function boot(page) {
                       matType: earthMesh?.material?.type,
                       isShader: (earthMesh?.material instanceof THREE.ShaderMaterial),
                       exposure: Number(u.uExposure?.value || 0).toFixed(3),
+                      atmosIntensity: Number(u.uAtmosphereIntensity?.value || 0).toFixed(3),
+                      atmosPower: Number(u.uAtmospherePower?.value || 0).toFixed(3),
+                      atmosColor: {
+                        r: Number(u.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
+                        g: Number(u.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
+                        b: Number(u.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
+                      },
                       daySideGain: Number(u.uDaySideGain?.value || 0).toFixed(3),
                       nightDarkness: Number(u.uNightDarkness?.value || 0).toFixed(3),
                       dayContrast: Number(u.uDayContrast?.value || 0).toFixed(3),

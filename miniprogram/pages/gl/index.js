@@ -74,6 +74,9 @@ Page({
     showCloud: false,
     labelQty: 'default', // none/few/default/many
     cityTier: 'more',
+    // 设置面板运行时定位与尺寸（左对齐语言按钮、右对齐时间胶囊）
+    settingsPanelLeft: 0,
+    settingsPanelWidth: 320,
     // 惯性（0-100）：控制旋转阻尼与速度上限，默认 75%
   inertiaPct: 30,
     // 国家信息面板
@@ -193,6 +196,8 @@ Page({
       try { this.__getZenMgr().ensureOffline(); } catch(_){}
     }
     try { this.updateTopOffsets(); } catch(_){ }
+    // 初始加载后测量一次设置面板左右边界
+    try { setTimeout(() => { try { this.updateSettingsPanelFrame(); } catch(_){ } }, 50); } catch(_){ }
   },
   onReady(){
     // 首次渲染完成后测量时间胶囊宽度，确保国家面板等宽
@@ -904,6 +909,26 @@ Page({
       const suffix = buildCountryTitleSuffix(this.data.lang || 'zh', offset);
       this.setData({ countryInfo: { ...info, titleTzSuffix: suffix } });
     } catch(_){ }
+  },
+  // 动态测量设置面板的 left 与 width，使其左对齐语言按钮、右对齐时间胶囊
+  updateSettingsPanelFrame(){
+    try {
+      const q = wx.createSelectorQuery().in(this);
+      q.select('#langBtn').boundingClientRect();
+      q.select('#timePill').boundingClientRect();
+      q.exec(res => {
+        try {
+          const langRect = res && res[0];
+          const timeRect = res && res[1];
+          if (!langRect || !timeRect) return;
+          const left = Math.round(langRect.left);
+          const right = Math.round(timeRect.right);
+          const width = Math.max(200, right - left);
+          const next = { settingsPanelLeft: left, settingsPanelWidth: width };
+          this.setData(next);
+        } catch(e){ try { console.warn('[settingsPanelFrame] exec failed', e); } catch(_){} }
+      });
+    } catch(e){ try { console.warn('[settingsPanelFrame] query failed', e); } catch(_){} }
   },
   // —— 布局：根据安全区/顶栏/提示条，统一委托给 LayoutManager
   updateTopOffsets(){

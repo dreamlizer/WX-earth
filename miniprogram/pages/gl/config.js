@@ -36,6 +36,16 @@ export const APP_CFG = {
     // 呼吸速度（弧度/秒；越小越慢），与振幅（0~1；0 关闭）
     starBreathSpeed: 0.6,
     starBreathStrength: 0.25,
+    // 大气辉光（Fresnel）：提升边缘的蓝色柔光
+    atmosphere: {
+      enabled: true,
+      color: { r: 0.50, g: 0.80, b: 1.00 }, // 柔和天蓝
+      intensity: 0.12,   // 强度（0 关闭；建议 0.08–0.22）
+      power: 2.0,        // 幂次（形状锐度；建议 1.6–3.0）
+      // 新增：独立大气壳体半径增量（相对 R=1 的比例）；建议 0.015–0.022
+      shellDeltaR: 0.018,
+      debugOnly: false   // 调试：仅显示辉光层（true 时更易辨认效果）
+    },
   },
 
   // [禅定专用] 禅定模式（右侧白天、左侧夜晚）
@@ -87,6 +97,16 @@ export const APP_CFG = {
     // 新增：高光压缩（ToneMap）系数，避免右侧“曝白”发灰；0 关闭
     // 建议范围 0.25–0.45（与 exposure/daySideGain 搭配）
     highlightsRoll: 0.32,
+
+    // 大气辉光（Fresnel）：禅定模式可略加强，突出质感
+    atmosphere: {
+      enabled: true,
+      color: { r: 0.50, g: 0.80, b: 1.00 },
+      intensity: 0.18,   // 禅定下更亮一点
+      power: 2.2,
+      shellDeltaR: 0.018,
+      debugOnly: false
+    },
 
     // 叠加线（边境/赤道/回归线）亮度调低——仅在禅定下生效
     overlays: {

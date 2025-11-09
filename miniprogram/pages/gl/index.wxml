@@ -1,7 +1,7 @@
 <!-- 统一顶部工具栏：语言 | 时间 | 设置 -->
 <view class="top-bar">
-  <view class="top-icon-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleLang" role="button">{{lang === 'zh' ? '中' : 'EN'}}</view>
-  <text class="time-pill {{zenMode ? 'inert' : ''}}">{{currentTime}}</text>
+  <view id="langBtn" class="top-icon-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleLang" role="button">{{lang === 'zh' ? '中' : 'EN'}}</view>
+  <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}}">{{currentTime}}</text>
   <view class="top-icon-btn settings-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSettings" role="button">⚙</view>
   <!-- 第二行：左侧“切”按钮（与右侧“禅”按钮对称） -->
   <!-- 恢复原搜索放大镜；禅模式下隐藏但占位，避免布局跳动 -->
@@ -43,7 +43,7 @@
 <view wx:if="{{settingsOpen}}" class="settings-mask {{settingsFading?'fading-out':''}}" bindtap="onCloseSettings" bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
 
 <!-- 设置面板：移出滚动容器，保持与顶栏同层级，避免遮挡与层级冲突 -->
-<view class="settings-panel {{settingsFading?'fading-out':''}}" wx:if="{{settingsOpen}}">
+<view class="settings-panel {{settingsFading?'fading-out':''}}" wx:if="{{settingsOpen}}" style="left: {{settingsPanelLeft}}px; width: {{settingsPanelWidth}}px;">
   <view class="settings-title">设置</view>
   <view class="settings-row">
     <text>主题</text>

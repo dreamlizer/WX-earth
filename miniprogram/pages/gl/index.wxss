@@ -175,12 +175,13 @@ canvas {
 /* 设置面板：固定定位，完整显示且避开时间条 */
 .settings-panel {
   position: fixed;
-  /* 与顶部工具栏对齐：左边缘对齐语言按钮“左半边”，右边缘对齐时间胶囊右侧 */
-  left: calc(50% - 690rpx / 2 + 40rpx);
+  /* 由 JS 动态设置 left 与 width；此处去除居中 transform，避免覆盖 */
+  left: auto;
+  transform: none;
   top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
-  /* 宽度 = 690rpx 容器宽 - 左半边(40rpx) - 右侧按钮与间距(100rpx) → 550rpx */
-  width: 550rpx;
-  max-width: 550rpx;
+  width: auto;
+  max-width: none;
+  box-sizing: border-box; /* 关键：宽度包含 padding+border，确保右侧与时间胶囊严格对齐 */
   background: rgba(10,22,36,0.88);
   border: 1px solid rgba(120,170,220,0.45);
   border-radius: 12px;
@@ -210,11 +211,12 @@ canvas {
 /* 惯性滑条：更小的滑块，明确的滑轨颜色与间距 */
 .inertia-row .qty-group { padding: 8rpx 6rpx; }
 .inertia-slider { margin: 0 8rpx; width: 100%; }
-.toggle-group { display: flex; gap: 4px; }
-.toggle-btn { min-width: 36px; height: 26px; line-height: 26px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; }
+.settings-row .toggle-group { flex: 1 1 auto; overflow: hidden; }
+.toggle-group { display: flex; flex-wrap: nowrap; gap: 4px; }
+.toggle-btn { flex: 1 1 0; min-width: 0; padding: 0 6px; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; }
 .toggle-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
-.qty-group { display: flex; flex-wrap: nowrap; gap: 3px; }
-.qty-btn { min-width: 42px; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; padding: 0 6px; }
+.qty-group { display: flex; flex-wrap: nowrap; gap: 4px; }
+.qty-btn { flex: 1 1 0; min-width: 0; height: 22px; line-height: 22px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; padding: 0 4px; }
 .qty-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
 
 /* 底部缩放条：统一胶囊风格（原样式恢复） */

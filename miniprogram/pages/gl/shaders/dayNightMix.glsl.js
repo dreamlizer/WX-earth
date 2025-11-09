@@ -36,6 +36,13 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uSpecularStrength: { value: 0.9 },
     uShininess: { value: 16.0 },
     uSpecularColor: { value: new THREE.Color(1, 1, 1) },
+    // —— 大气辉光（Fresnel）参数 ——
+    // 颜色：柔和天蓝；强度：0 关闭；幂次：边缘锐度
+    uAtmosphereColor: { value: new THREE.Color(0.5, 0.8, 1.0) },
+    uAtmosphereIntensity: { value: 0.0 },
+    uAtmospherePower: { value: 2.0 },
+    // 调试：仅显示大气辉光（关闭其他通道），0 关闭 / 1 开启
+    uAtmosphereDebugOnly: { value: 0.0 },
   };
 
   const vertexShader = `
@@ -72,6 +79,11 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uniform float uSpecularStrength;
     uniform float uShininess;
     uniform vec3 uSpecularColor;
+    // 大气辉光（Fresnel）
+    uniform vec3 uAtmosphereColor;
+    uniform float uAtmosphereIntensity;
+    uniform float uAtmospherePower;
+    uniform float uAtmosphereDebugOnly;
 
     void main() {
       // 基于世界坐标计算球面法线（纠正位移对法线的影响）
@@ -120,6 +132,18 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       // 采用简单的 Reinhard 近似：c' = c / (1 + k * c)
       if (uHighlightsRoll > 0.0001) {
         color.rgb = color.rgb / (vec3(1.0) + vec3(uHighlightsRoll) * color.rgb);
+      }
+
+      // —— 大气辉光（Fresnel）：观察方向与法线越垂直，辉光越强 ——
+      // F = (1 - dot(N,V))^power * intensity
+      float nv = max(dot(N, V), 0.0);
+      float fres = pow(1.0 - nv, max(0.1, uAtmospherePower)) * max(0.0, uAtmosphereIntensity);
+      color.rgb += uAtmosphereColor * fres;
+
+      // 调试：仅显示辉光层，便于确认效果是否产生
+      if (uAtmosphereDebugOnly > 0.5) {
+        gl_FragColor = vec4(uAtmosphereColor * fres, 1.0);
+        return;
       }
 
       // 简易 gamma 调整，保持贴图观感

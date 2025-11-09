@@ -4,7 +4,10 @@ export class PanelManager {
   constructor(page){ this.page = page; }
 
   // 顶部“设定”按钮：关闭国家面板，打开设定面板
-  toggleSettings(){ this.page.setData({ countryPanelOpen: false, settingsOpen: true }); }
+  toggleSettings(){
+    this.page.setData({ countryPanelOpen: false, settingsOpen: true });
+    try { setTimeout(() => { try { this.page.updateSettingsPanelFrame && this.page.updateSettingsPanelFrame(); } catch(_){ } }, 16); } catch(_){ }
+  }
   // 关闭设定面板
   closeSettings(){ if (this.page.data.settingsOpen) this.page.setData({ settingsOpen: false }); }
 
