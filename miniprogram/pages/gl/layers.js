@@ -146,7 +146,8 @@ export function highlight(THREE, globeGroup, f) {
     });
   };
 
-  const addFill = (polyRings) => {
+  const addFill = (polyRings, opts={}) => {
+    const allowSimplify = (opts && opts.allowSimplify !== false);
     if (!polyRings || !polyRings.length || !polyRings[0] || polyRings[0].length < 3) return;
     const deg2rad = Math.PI / 180;
     const ensureClosed2D = (arr) => {
@@ -228,7 +229,7 @@ export function highlight(THREE, globeGroup, f) {
       }
       return { pts2: out2, pts3: out3 };
     };
-    const { pts2: contour2DSimpl, pts3: flatten3DSimpl } = simplifyAligned(contour2D, flatten3DOpen);
+    const { pts2: contour2DSimpl, pts3: flatten3DSimpl } = allowSimplify ? simplifyAligned(contour2D, flatten3DOpen) : { pts2: contour2D, pts3: flatten3DOpen };
 
     // 强制使用耳剪法，绕过 THREE.ShapeUtils.triangulateShape 在复杂凹多边形上的不稳定性
     const earTriangulate = (pts) => {
@@ -305,13 +306,14 @@ export function highlight(THREE, globeGroup, f) {
     HIGHLIGHT_GROUP.add(mesh);
   };
 
+  const codeUp = String(f?.props?.ISO_A3 || f?.props?.ISO_A2 || f?.props?.ISO || f?.props?.CC || '').toUpperCase();
+  const isCHN = (codeUp === 'CHN');
   if (f.type === 'Polygon') {
     processPolygon(f.coords);
-    addFill(f.coords);
+    addFill(f.coords, { allowSimplify: !isCHN });
   } else if (f.type === 'MultiPolygon') {
-    f.coords.forEach(poly => { processPolygon(poly); addFill(poly); });
+    f.coords.forEach(poly => { processPolygon(poly); addFill(poly, { allowSimplify: !isCHN }); });
   }
-  globeGroup.add(HIGHLIGHT_GROUP);
   return HIGHLIGHT_GROUP;
 }
 

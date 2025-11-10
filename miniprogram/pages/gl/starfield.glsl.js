@@ -19,10 +19,12 @@ export function createStarfield(THREE) {
     uniform float uSizeScale;
     varying vec3 vColor;
     varying float vTwinkle;
+    varying float vPhase;
     void main() {
       vColor = color;
       // 平滑闪烁：不同速度+不同相位，整体节奏缓慢
-      vTwinkle = 0.5 * (1.0 + sin(time * twinkleSpeed + twinkleOffset + position.x*0.1));
+      vPhase = twinkleOffset + position.x * 0.17 + position.y * 0.11;
+      vTwinkle = 0.5 * (1.0 + sin(time * twinkleSpeed + vPhase));
       vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
       gl_PointSize = size * uSizeScale * ( 600.0 / -mvPosition.z );
       gl_Position = projectionMatrix * mvPosition;
@@ -33,6 +35,7 @@ export function createStarfield(THREE) {
   const fragmentShader = `
     varying vec3 vColor;
     varying float vTwinkle;
+    varying float vPhase;
     uniform float uOpacity;
     uniform float time;            // 片元也需要访问时间用于全局呼吸
     uniform float uBrightnessGain; // 整体提亮系数（配置可调）
@@ -51,7 +54,8 @@ export function createStarfield(THREE) {
       // 外侧微光晕：较宽范围的柔和提升
       float glow = 1.0 - smoothstep(0.16, 0.5, r);
       // 全局呼吸：缓慢脉动的乘法因子（保持“有生命感”但不抢眼）
-      float breath = 0.5 + 0.5 * sin(time * uBreathSpeed);
+      // 引入每颗星的相位偏移，使“全局呼吸”呈现交错群组效果而非完全同步
+      float breath = 0.5 + 0.5 * sin(time * uBreathSpeed + vPhase);
       float breathMul = 1.0 + uBreathStrength * (breath - 0.5) * 2.0; // 范围约 [1-振幅, 1+振幅]
       float intensity = (core + glow * uGlowFactor) * vTwinkle * breathMul * uBrightnessGain;
       // 透明度随淡入淡出控制；中心比光晕更不透明

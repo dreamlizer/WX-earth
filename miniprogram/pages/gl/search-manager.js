@@ -6,6 +6,7 @@ import { setZoom, setPaused, flyTo, selectCountryByCode, getCountries } from './
 import { INTERACTION_DEBUG_LOG } from './label-constants.js';
 import { setForcedLabel, setForcedCityCountries, clearForcedCityCountries } from './labels.js';
 import { highlightCityMarker } from './city-markers.js';
+import { cities } from '../../assets/data/cities_data.js';
 
 export class SearchManager {
   constructor({
@@ -20,6 +21,9 @@ export class SearchManager {
     onTouchStart = () => {},
     onTouchMove = () => {},
     markPanelsPendingClose = () => {},
+    // 新增：由页面注入，用于设置“保持城市强制高亮”的时间窗口与记录最后强制ID
+    setKeepCityForcedUntil = (ms) => {},
+    setLastForcedId = (id) => {},
   } = {}){
     this.setData = setData;
     this.updateTopOffsets = updateTopOffsets;
@@ -32,6 +36,8 @@ export class SearchManager {
     this.onTouchStart = onTouchStart;
     this.onTouchMove = onTouchMove;
     this.markPanelsPendingClose = markPanelsPendingClose;
+    this.setKeepCityForcedUntil = setKeepCityForcedUntil;
+    this.setLastForcedId = setLastForcedId;
   }
 
   toggle(open){
@@ -74,10 +80,31 @@ export class SearchManager {
 
         try {
           if (t === 'city' && ident) {
-            setForcedLabel(ident);
+            // 强制显示该城市标签：若当前 tier 未包含该城市，则即时注入
+            // 文本按当前语言选择：中文界面用中文名，英文界面用英文名
+            let text = null;
+            try {
+              const lang = (typeof this.getLang === 'function') ? this.getLang() : 'zh';
+              const m = /^CITY_([A-Z]{2,3})_(.+)$/i.exec(ident || '');
+              const cc = m ? String(m[1]).toUpperCase() : '';
+              const nameEn = m ? m[2] : '';
+              if (lang === 'zh' && cc && nameEn) {
+                const hit = (Array.isArray(cities) ? cities : []).find(c => String(c.country_code || '').toUpperCase() === cc && String(c.name_en || '') === nameEn);
+                text = hit ? (hit.name_zh || hit.name_en || nameEn) : null;
+              } else {
+                text = nameEn || null;
+              }
+            } catch(_){ }
+            setForcedLabel(ident, { lat: latNum, lon: lonNum, text });
             highlightCityMarker(ident, 2500);
+            // 记录并保持城市强制高亮一段时间，避免后续 selectCountry 覆盖
+            try { this.setLastForcedId(ident); } catch(_){}
+            try { this.setKeepCityForcedUntil(4500); } catch(_){}
           } else if (t === 'country' && ident) {
             setForcedLabel(String(ident).toUpperCase());
+            // 选择国家时清理“保持城市强制高亮”窗口
+            try { this.setLastForcedId(String(ident).toUpperCase()); } catch(_){}
+            try { this.setKeepCityForcedUntil(0); } catch(_){}
           }
         } catch(_){}
 
@@ -111,10 +138,30 @@ export class SearchManager {
 
         try {
           if (t === 'city' && ident) {
-            setForcedLabel(ident);
+            // 与 pick 同步：强制显示该城市标签（必要时注入）
+            // 文本按当前语言选择：中文界面用中文名，英文界面用英文名
+            let text = null;
+            try {
+              const lang = (typeof this.getLang === 'function') ? this.getLang() : 'zh';
+              const m = /^CITY_([A-Z]{2,3})_(.+)$/i.exec(ident || '');
+              const cc = m ? String(m[1]).toUpperCase() : '';
+              const nameEn = m ? m[2] : '';
+              if (lang === 'zh' && cc && nameEn) {
+                const hit = (Array.isArray(cities) ? cities : []).find(c => String(c.country_code || '').toUpperCase() === cc && String(c.name_en || '') === nameEn);
+                text = hit ? (hit.name_zh || hit.name_en || nameEn) : null;
+              } else {
+                text = nameEn || null;
+              }
+            } catch(_){ }
+            setForcedLabel(ident, { lat: latNum, lon: lonNum, text });
             highlightCityMarker(ident, 2500);
+            // 与 pick 同步：维持城市强制高亮窗口
+            try { this.setLastForcedId(ident); } catch(_){}
+            try { this.setKeepCityForcedUntil(4500); } catch(_){}
           } else if (t === 'country' && ident) {
             setForcedLabel(String(ident).toUpperCase());
+            try { this.setLastForcedId(String(ident).toUpperCase()); } catch(_){}
+            try { this.setKeepCityForcedUntil(0); } catch(_){}
           }
         } catch(_){}
 

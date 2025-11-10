@@ -3,12 +3,34 @@
 // 单位清晰：强度为相对值（无量纲）；角速度用“度/秒”；时间为毫秒
 
 export const APP_CFG = {
+  // -------------------- 全局 --------------------
   // [UI] 通用界面配置（面板淡出与控件显隐）
+  // 面板淡出、是否显示缩放条、Bloom（泛光）效果等通用 UI 设置。
   ui: {
-    panelFadeMs: 500,     // 面板淡出时间（毫秒）
-    showZoomBar: true     // 底部缩放条是否可见（false 则隐藏并不可用）
+  panelFadeMs: 500,     // 面板淡出时间（毫秒）
+  // —— Bloom（泛光）效果参数：为“电影感”的关键 ——
+  bloom: {
+    // 普通模式：开启与强度（关闭以禁用）
+    normalEnabled: false,
+    normalStrength: 0.45,  // 强度（0.0-2.0）
+    normalThreshold: 0.8,  // 亮度阈值（0.0-1.0；越低越多像素参与）
+    normalRadius: 0.18,    // 半径（0.0-1.0；越大越“糊”）
+    // 禅模式：通常更强，营造柔和发光（关闭以禁用）
+    zenEnabled: false,
+    zenStrength: 0.85,
+    zenThreshold: 0.7,
+    zenRadius: 0.24,
+    // 兼容选项：若 UnrealBloomPass 不可用，使用简化回退
+    fallbackEnabled: false,   // 关闭回退，整体禁用 Bloom
+    fallbackBoost: 1.15       // 回退时整体亮度微提（乘法）
   },
+    showZoomBar: false     // 底部缩放条是否可见（false 则隐藏并不可用）
+  },
+
+  
+  // -------------------- 普通模式 --------------------
   // [通用] 普通模式（非禅定）——整体偏自然、易读
+  // 灯光、材质、星空效果与明暗等针对普通模式的观感参数。
   normal: {
     // 开关：普通模式是否采用“禅定灯光”配置（仅灯光强度，不引入禅材质）
     // 回退机制：若观感不佳，改为 false 即恢复普通灯光
@@ -27,7 +49,7 @@ export const APP_CFG = {
     ambientIntensity: 0.30,
     // 新增：普通模式下星空整体透明度（0~1）。设小值可保持极弱可见，0 为完全隐藏。
     // 提升普通模式星空亮度（夸张以便确认）：可在 0.2–0.5 调整
-    starOpacity: 0.30,
+    starOpacity: 0.60,
     // 新增：普通模式星点大小缩放（影响 gl_PointSize），1.0 为标准
     starSizeScale: 1.8,
     // 新增：普通模式星点亮度增益（乘法系数），用于更尖锐更亮的中心
@@ -36,19 +58,12 @@ export const APP_CFG = {
     // 呼吸速度（弧度/秒；越小越慢），与振幅（0~1；0 关闭）
     starBreathSpeed: 0.6,
     starBreathStrength: 0.25,
-    // 大气辉光（Fresnel）：提升边缘的蓝色柔光
-    atmosphere: {
-      enabled: true,
-      color: { r: 0.50, g: 0.80, b: 1.00 }, // 柔和天蓝
-      intensity: 0.12,   // 强度（0 关闭；建议 0.08–0.22）
-      power: 2.0,        // 幂次（形状锐度；建议 1.6–3.0）
-      // 新增：独立大气壳体半径增量（相对 R=1 的比例）；建议 0.015–0.022
-      shellDeltaR: 0.018,
-      debugOnly: false   // 调试：仅显示辉光层（true 时更易辨认效果）
-    },
   },
 
+  
+  // -------------------- 禅定模式 --------------------
   // [禅定专用] 禅定模式（右侧白天、左侧夜晚）
+  // 进入禅定后的地球位移、自动旋转、昼夜混合与星空参数。
   zen: {
     // 禅定位移：向下移动的“附加偏移”（相对于地球半径 R=1 的比例）
     // 例如 -0.35 表示在现有基础位置上再向下移动 0.35R
@@ -85,7 +100,7 @@ export const APP_CFG = {
     daySideGain: 1.50,
 
     // 新增：禅定模式下的星空整体透明度（0~1）。为确保可见暂时提高。
-    starOpacity: 0.60,
+    starOpacity: 0.70,
     // 新增：禅定模式星点大小缩放
     starSizeScale: 2.0,
     // 新增：禅定模式星点亮度增益
@@ -98,28 +113,21 @@ export const APP_CFG = {
     // 建议范围 0.25–0.45（与 exposure/daySideGain 搭配）
     highlightsRoll: 0.32,
 
-    // 大气辉光（Fresnel）：禅定模式可略加强，突出质感
-    atmosphere: {
-      enabled: true,
-      color: { r: 0.50, g: 0.80, b: 1.00 },
-      intensity: 0.18,   // 禅定下更亮一点
-      power: 2.2,
-      shellDeltaR: 0.018,
-      debugOnly: false
-    },
-
     // 叠加线（边境/赤道/回归线）亮度调低——仅在禅定下生效
     overlays: {
       // 国家边境线颜色强度系数（乘法因子）；<1 变暗；建议 0.5–0.9
-      bordersColorFactor: 0.65,
+      bordersColorFactor: 0.35,
       // 赤道透明度系数（乘法因子）；<1 变淡；建议 0.5–0.9
-      equatorOpacityFactor: 0.65,
+      equatorOpacityFactor: 0.45,
       // 回归线透明度系数（乘法因子）；<1 变淡；建议 0.5–0.9
-      tropicsOpacityFactor: 0.65,
+      tropicsOpacityFactor: 0.45,
     },
   },
 
+  
+  // -------------------- 全局 --------------------
   // [禅定诗句] 动画参数（集中管理，便于微调）
+  // 诗句淡入淡出、显示时长、拖影/描边与运动速度等。
   poetry: {
     // 淡入/淡出时长（毫秒）
     fadeInMs: 1200,
@@ -131,7 +139,7 @@ export const APP_CFG = {
     // 竖排诗句字号（px），用于页面样式绑定
     fontSizePx: 24,
     // 诗句移动速度（px/s）：值越大移动越快
-    movePxPerSec: 12,
+    movePxPerSec: 8,
     // 句间交替时长（毫秒）：上一句淡出与下一句淡入的重叠时间
     crossfadeMs: 800,
     // 屏幕安全边界（px）：与四边保持的最小距离，防止抛出屏幕
@@ -154,14 +162,29 @@ export const APP_CFG = {
       enabled: true,
       thicknessPx: 0.8     // 描边粗细（通过阴影半径近似）
     }
+    ,
+    // Special 字符串展示（彩蛋）参数：统一配置便于后续微调
+    special: {
+      fontSizePx: 36,          // Special 大字号（px）
+      fadeInMs: 2000,          // 1 秒淡入
+      fadeOutMs: 2000,         // 2 秒淡出
+      displayMs: 10000,        // 显示 10 秒
+      movePxPerSec: 10,        // 缓慢移动速度（px/s）
+      upperCenterYRatio: 0.65, // 移动偏向屏幕中上方的比例
+      tapTolerancePx: 22       // 时间胶囊点击容忍扩展半径（px，缩小以避免遮挡按钮）
+    }
   },
 
+  
   // [通用] 地球基础材质（Phong）
+  // 高光强度等基础材质参数，适用于所有模式。
   earthMaterial: {
     // 高光强度（越大高光越明显）；建议 4–16
     shininess: 8,
   },
+  
   // [相机缩放] 配置最大/最小缩放（zoom 值越大越近）
+  // 全局相机限制与初始视角中心。
   camera: {
     minZoom: 0.60,           // 最小缩放（最远）
     maxZoom: 3.43,           // 最大缩放（更近，比原先 +20%）
@@ -169,13 +192,17 @@ export const APP_CFG = {
     // 说明：lat 为纬度（北纬为正），lon 为经度（东经为正）。
     initialCenterDeg: { lat: 39.9042, lon: 116.4074 }
   },
+  
   // [云能力] 在本地静态预览时关闭云调用，避免控制台刷屏报错
+  // 纹理加载与独立云层旋转设置。
   cloud: {
     enabled: true,           // 开启纹理加载；UI 默认关闭可见性
     // 云层独立慢速转动（度/秒；0 关闭）。不依赖禅定自动转动。
     spinDegPerSec: 2.0
   },
+  
   // [国家高亮] 填充透明度（0~1）。提高到 0.8–1.0 可形成“不透明方式”。
+  // 高亮淡出时长与“自动取消背面选中”策略。
   highlight: {
     fillOpacity: 0.75,
     // 高亮消失淡出时长（毫秒）
@@ -191,7 +218,9 @@ export const APP_CFG = {
   // 未来扩展：在此添加其他常用可调项（示例）
   // camera: { defaultZoom: 1.0 },
   // labels: { fontSize: 14 },
+  
   // [边界校正] 形变网格（Warp）参数
+  // 边界微位移与调试箭头显示。
   warp: {
     enabled: false,     // 默认关闭；开启后对边界顶点做微位移
     strength: 1.0,      // 位移强度（乘法系数）
@@ -200,6 +229,7 @@ export const APP_CFG = {
       showArrows: false // 在锚点处显示位移箭头，便于校准
     }
   },
+  
   // [边界数据] 分辨率 LOD（Natural Earth 系列）：110m/50m/10m
   bordersLod: '110m'
 };

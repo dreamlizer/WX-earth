@@ -41,6 +41,8 @@ export const CITY_FONT_FAMILY = 'sans-serif';
 // 新增：城市标签的 LOD（相机距离阈值），与 WinReference 对齐
 export const LOD_CITIES_START_APPEAR = 8.0;   // 相机距离小于该值开始显示城市
 export const LOD_CITIES_ALL_APPEAR   = 5.5;   // 更近时显示更多级别城市
+// 新增：当屏幕上的城市候选数量不超过该阈值时，全部显示（忽略优先级）
+export const CITY_SHOW_ALL_THRESHOLD = 12;
 
 // 新增：远距行为配置
 export const FAR_FONT_STABLE_DIST      = 8.0;  // 超过该距离字体不再继续变小（稳定为 1.0）
@@ -49,7 +51,7 @@ export const FAR_FONT_STABLE_DIST      = 8.0;  // 超过该距离字体不再继
 export const PERF_DRAG_LABEL_BUDGET_SCALE = 0.7; // 拖动中标签预算缩放比例（0.7 约降至 16）
 export const PERF_DRAG_RESTORE_IDLE_MS = 500;    // 触摸结束后等待多少毫秒再恢复
 export const PERF_HIDE_MARKERS_ON_DRAG = true;   // 拖动时隐藏城市光点
-export const PERF_HIDE_STAR_ON_DRAG = true;      // 拖动时隐藏星空背景
+export const PERF_HIDE_STAR_ON_DRAG = false;     // 拖动时不隐藏星空背景（保持呼吸独立于交互）
 // 兼容旧名（避免 main.js 现有导入报错）
 export const PERF_HIDE_STAR_ON_ON_DRAG = PERF_HIDE_STAR_ON_DRAG;
 
@@ -87,3 +89,11 @@ export const FONT_MIN_SCREEN_PX_CITY    = 20;  // 城市标签最小像素高度
 // deprecated: 使用统一的 LABELS_DEBUG_LOG / INTERACTION_DEBUG_LOG；避免重复导出产生冲突
 // export const LABEL_DEBUG_LOG = false;
 // export const INTERACTION_DEBUG_LOG = false;
+
+// —— 新增：中心保底与前半球点击阈值（用于强制居中城市显示与避免穿模）
+// 当城市属于被选中国家且中心权重≥该值时，硬保底显示（即使预算/网格紧张）。
+export const MUST_CENTER_WEIGHT_CITY = 0.94;
+// 点击命中前半球最小点积阈值：要求 ≥0 表示严格前半球；如需宽容边缘可改为 0.02。
+export const FRONT_DOT_MIN_EDGE = 0.02;
+// 点击候选中心距离上限（度）：过滤明显远离点击点的国家，防止跨经线误命中
+export const HIT_CENTER_MAX_DEG = 60;

@@ -31,12 +31,27 @@ export class CountryInfoManager {
         setForcedLabel(null);
         try { page.__lastForcedId = null; page.__keepCityForcedUntil = 0; } catch(_){}
         try { clearForcedCityCountries(); } catch(_){}
-        page.setData({ countryPanelOpen: false, countryInfo: null });
+        // 单一机制：关闭国家面板时强制关闭时区胶囊
+        try { page.onCloseCountryPanel?.(); }
+        catch(_){ try { page.setData({ countryPanelOpen: false, hoverText: '' }); } catch(__){} }
+        page.setData({ countryInfo: null });
         return;
       }
       const p = hit?.props || {};
       const codeRaw = p.ISO_A3 || p.ISO_A2 || p.ISO || p.CC || p.ISO2 || null;
       const code = (codeRaw ? String(codeRaw).toUpperCase() : null);
+
+      // —— 特殊处理：台湾点击等同于中国；同时关闭面板
+      if (code === 'TWN' || code === 'TW') {
+        try { setForcedLabel('CHN'); page.__lastForcedId = 'CHN'; } catch(_){}
+        // 仅保留台北城市：强制台湾的城市（结合下游过滤仅保留台北）
+        try { setForcedCityCountries(['TWN']); } catch(_){}
+        // 关闭面板，不显示台湾专属信息
+        try { page.onCloseCountryPanel?.(); }
+        catch(_){ try { page.setData({ countryPanelOpen: false, hoverText: '' }); } catch(__){} }
+        page.setData({ countryInfo: null });
+        return;
+      }
 
       // 若搜索城市触发了“保持城市高亮”的锁，则暂不覆盖强制标签，避免城市变小；否则正常高亮国家
       const lastForced = page.__lastForcedId || null;

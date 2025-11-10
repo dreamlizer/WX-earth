@@ -11,7 +11,8 @@ function audioTargetPath(preset){
     if (!root) return '';
     const dir = root + '/audio';
     wx.getFileSystemManager().mkdir({ dirPath: dir, recursive: true, success(){}, fail(){} });
-    const name = preset === 1 ? 'zen-1.aac' : 'zen-2.aac';
+    // 禅音频文件名：preset1 为 aac，preset2/3 为 mp3（与你上传的文件一致）
+    const name = preset === 1 ? 'zen-1.aac' : (preset === 2 ? 'zen-2.mp3' : 'zen-3.mp3');
     return dir + '/' + name;
   } catch(_) { return ''; }
 }
@@ -27,13 +28,26 @@ export class ZenAudio {
 
   updateFileIds(map){ this.fileIds = { ...this.fileIds, ...(map || {}) }; }
 
+  // 创建新的音频实例：不复用旧实例，避免淡出定时器误停新音频
+  _createAudio(){
+    const a = wx.createInnerAudioContext();
+    a.loop = true; a.autoplay = false; a.obeyMuteSwitch = false;
+    try {
+      a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
+      a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
+      a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
+    } catch(_){ }
+    return a;
+  }
+
   async ensureOffline(){
     // 本地预览或缺少文件系统/云下载能力时直接跳过
     if (this.appCfg?.cloud?.enabled === false || !(wx?.cloud?.downloadFile && wx?.getFileSystemManager)) { return; }
     try {
       const map = readAudioSaved();
       const fs = wx.getFileSystemManager();
-      const files = [ { preset: 1, fileID: this.fileIds[1] } /* , { preset: 2, fileID: this.fileIds[2] } */ ];
+      // 三个预设均尝试离线保存（若 fileID 存在）
+      const files = [ { preset: 1, fileID: this.fileIds[1] }, { preset: 2, fileID: this.fileIds[2] }, { preset: 3, fileID: this.fileIds[3] } ];
       for (const it of files) {
         const pSaved = map[it.preset];
         if (pSaved) { try { fs.accessSync(pSaved); continue; } catch(_){} }
@@ -56,7 +70,7 @@ export class ZenAudio {
       const saved = readAudioSaved()[preset];
       if (saved) { try { wx.getFileSystemManager().accessSync(saved); return saved; } catch(_){} }
     } catch(_){}
-    const fileId = (preset === 1) ? (this.fileIds[1] || '') : (this.fileIds[2] || '');
+    const fileId = this.fileIds?.[preset] || '';
     const app = (typeof getApp === 'function') ? getApp() : null;
     const env = app?.globalData?.env;
     try { console.info('[ZEN audio] resolving cloud URL', { fileId, env }); } catch(_){}
@@ -89,17 +103,9 @@ export class ZenAudio {
     return (async () => {
       try {
         this.preset = preset || 1;
-        if (!this.audio) {
-          const a = wx.createInnerAudioContext();
-          a.loop = true; a.autoplay = false; a.obeyMuteSwitch = false;
-          try { a.volume = 1.0; } catch(_){}
-          try {
-            a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
-            a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
-            a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
-          } catch(_){ }
-          this.audio = a;
-        }
+        // 始终创建新实例，避免旧实例淡出在 1 秒后 stop 新音频
+        const a = this._createAudio();
+        this.audio = a;
         // 每次开始播放前重置音量到 1，避免上一次淡出影响
         try { this.audio.volume = 1.0; } catch(_){}
         const cloudUrl = await this.resolveCloudAudio(this.preset);
@@ -129,16 +135,9 @@ export class ZenAudio {
     return (async () => {
       try {
         this.preset = preset || 1;
-        if (!this.audio) {
-          const a = wx.createInnerAudioContext();
-          a.loop = true; a.autoplay = false; a.obeyMuteSwitch = false;
-          try {
-            a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
-            a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
-            a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
-          } catch(_){ }
-          this.audio = a;
-        }
+        // 始终创建新实例，避免并发淡出误停新音频
+        const a = this._createAudio();
+        this.audio = a;
         // 初始化音量为 0，准备淡入
         try { this.audio.volume = 0.0; } catch(_){}
         const cloudUrl = await this.resolveCloudAudio(this.preset);
@@ -187,6 +186,8 @@ export class ZenAudio {
             try { a.stop?.(); } catch(_){}
             // 停止后恢复音量值，避免下次播放仍为0
             try { a.volume = 1.0; } catch(_){}
+            // 释放旧实例资源（若支持）
+            try { a.destroy?.(); } catch(_){}
           }
         } catch(e){
           try { console.warn('[ZEN audio] fadeOutStop error', e); } catch(_){}

@@ -33,6 +33,9 @@ export class PoetryManager {
     this._idx = 0;
   }
 
+  // 暴露当前正在播放的诗句索引（用于外部“暂停后接续播放”）
+  getIndex(){ return Number(this._idx || 0); }
+
   stop(){
     try {
       // 若启用 3D 模式，先停止 three 层
@@ -50,10 +53,10 @@ export class PoetryManager {
     } catch(_){ }
   }
 
-  async start(preset = 1, presetsMap = {}){
+  async start(preset = 1, presetsMap = {}, startIdx = 0){
     try {
       clearTimeout(this._timer); clearTimeout(this._timer2);
-      this._timer = null; this._timer2 = null; this._idx = 0;
+      this._timer = null; this._timer2 = null; this._idx = Math.max(0, Number(startIdx || 0));
       const cfg = this.appCfg?.poetry || {};
       const fadeInMs = Number(cfg.fadeInMs || 600);
       const crossMs = Number(cfg.crossfadeMs || 2000); // 默认交叉 2 秒，匹配“旧诗句淡出 2 秒”的需求
@@ -63,7 +66,8 @@ export class PoetryManager {
       // 统一使用 2 秒淡出；如需单独控制淡入，可在模板中区分 class（此处先满足需求）
       this.setData({ poetryFadeMs: Math.max(fadeInMs, 2000) });
 
-      const lines = presetsMap[preset] || presetsMap[1] || [];
+      // 诊断与正确性：不再在目标预设缺失时回退到 1，避免造成“切到第三首仍显示第一套”错觉。
+      const lines = Array.isArray(presetsMap[preset]) ? presetsMap[preset] : [];
       try { console.info('[poetry] 开始播放', { preset, lines: (Array.isArray(lines)? lines.length : 0) }); } catch(_){}
       if (!Array.isArray(lines) || !lines.length) return;
       // 3D 模式：交由 three.js 层渲染（被地球遮挡），关闭 DOM 叠加层
@@ -135,7 +139,7 @@ export class PoetryManager {
         }, nearEnd);
       };
 
-      const item0 = lines[0];
+      const item0 = lines[this._idx % lines.length];
       // 首句延迟保持 1 秒（进入禅定时体验较柔和）；若是“切换”场景，外部管理器会在 1 秒时触发，从而对齐 2 秒淡出
       setTimeout(() => { showLineOn(true, item0.text, Number(cfg.displayMs || 7000)); }, 1000);
     } catch(_){ }

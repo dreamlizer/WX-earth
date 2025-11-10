@@ -5,7 +5,10 @@ export class PanelManager {
 
   // 顶部“设定”按钮：关闭国家面板，打开设定面板
   toggleSettings(){
-    this.page.setData({ countryPanelOpen: false, settingsOpen: true });
+    // 单一机制：国家面板关闭 → 时区胶囊也强制关闭
+    try { this.page.onCloseCountryPanel?.(); }
+    catch(_){ try { this.page.setData({ countryPanelOpen: false, hoverText: '' }); } catch(__){} }
+    this.page.setData({ settingsOpen: true });
     try { setTimeout(() => { try { this.page.updateSettingsPanelFrame && this.page.updateSettingsPanelFrame(); } catch(_){ } }, 16); } catch(_){ }
   }
   // 关闭设定面板

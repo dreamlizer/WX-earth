@@ -9,11 +9,14 @@
   <!-- 第二行：右侧“禅”按钮（位于设置按钮正下方） -->
   <view class="top-icon-btn zen-btn" bindtap="onToggleZenMode" role="button">禅</view>
   <!-- 第一行第三列：“切”按钮常驻，通过 inert 类淡入淡出（禅定下可见） -->
-  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}}" bindtap="onToggleCut" role="button">切</view>
+  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}}" bindtap="onToggleCut" role="button">定</view>
   <!-- 提示信息（可选）：与时间保持同一行，不占宽度 -->
   <view class="top-tip {{hoverText ? 'visible' : ''}} {{zenMode ? 'inert' : ''}}">{{hoverText}}</view>
   <!-- 禅定诗句改为独立层：双容器交替，支持淡入淡出与位移 -->
 </view>
+
+<!-- 彩蛋点击感应区：禅定模式下覆盖时间胶囊附近，接受点击（扩大容忍度） -->
+<view wx:if="{{zenMode && eggSensorVisible}}" id="eggArea" class="egg-sensor" style="left: {{eggSensorLeft}}px; top: {{eggSensorTop}}px; width: {{eggSensorWidth}}px; height: {{eggSensorHeight}}px;" bindtap="onEggTap"></view>
 
 <!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
 <view wx:if="{{zenMode}}" class="poetry-layer">
@@ -23,6 +26,16 @@
   <view id="poetryB" class="poetry-item {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
     <text class="poetry-text">{{poetryB.text}}</text>
   </view>
+</view>
+
+<!-- Special 文本独立层：覆盖全屏显示，淡入/缓慢移动后淡出 -->
+<view wx:if="{{zenMode}}" class="special-layer">
+  <view id="specialText" class="special-item {{specialVisible?'visible':''}}" style="left: {{specialX}}px; top: {{specialY}}px; font-size: {{specialFontSizePx}}px; transition: transform {{specialMoveMs}}ms linear, opacity {{specialFadeMs}}ms ease-in-out; transform: translate3d({{specialTx}}px, {{specialTy}}px, 0) scale({{specialScale}});">
+    <text class="special-text">{{specialText}}</text>
+  </view>
+  
+  <!-- 说明：special-layer 设为 pointer-events:none，不阻挡地球旋转；感应区 egg-sensor 单独捕获点击 -->
+  
 </view>
 
 <!-- 搜索面板遮罩：点击任意空白关闭，同时把触摸事件转交到渲染层（与国家面板一致） -->

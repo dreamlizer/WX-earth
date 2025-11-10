@@ -72,19 +72,135 @@ const LABEL_MESHES = new Map(); // id -> Sprite
 const LABEL_STATES = new Map(); // id -> { alpha, lastWinAt }
 const STICKY_MS = 900; // 失去入选后，维持可见的粘性时间（旋转更稳）
 const DEFAULT_WORLD_HEIGHT = 0.12; // 以球半径=1为基准的世界单位高度
+// 新增：城市强制高亮的自动清除时间（毫秒）
+const CITY_FORCED_AUTO_CLEAR_MS = _const?.CITY_FORCED_AUTO_CLEAR_MS ?? 5000;
 
 // 页面层：强制显示某一标签（选中国家时）
 let FORCED_ID = null;
-export function setForcedLabel(id){
+let FORCED_SINCE = 0; // 记录强制高亮开始时间，用于短暂“缩放冻结”
+let FORCED_CLEAR_TIMER = null; // 自动清除的计时器句柄（仅城市）
+export function setForcedLabel(id, opt = {}){
+  // 若为城市且尚未存在标签，允许通过 opt.lat/opt.lon 即时注入一个临时标签
+  try {
+    const ident = id || null;
+    const isCity = (typeof ident === 'string') && /^CITY_/i.test(ident);
+    const notExists = !!ident && !BASE_LABEL_MAP.has(ident);
+    const hasPos = Number.isFinite(opt?.lat) && Number.isFinite(opt?.lon);
+    if (isCity && notExists && hasPos) {
+      const ctx = getRenderContext();
+      const { THREE, globeGroup } = ctx || {};
+      const textFromId = (() => {
+        try {
+          const m = /^CITY_([A-Z]{2,3})_(.+)$/i.exec(String(ident));
+          return m ? m[2] : String(ident);
+        } catch(_) { return String(ident); }
+      })();
+      const baseVec3 = convertLatLonToVec3(Number(opt.lon), Number(opt.lat), 1.0);
+      const meta = {
+        id: ident,
+        text: String(opt.text || textFromId),
+        isCity: true,
+        lon: Number(opt.lon),
+        lat: Number(opt.lat),
+        score: 1.0,
+        importance: 1,
+        country: (() => { const m=/^CITY_([A-Z]{2,3})_/i.exec(String(ident)); return m?m[1].toUpperCase():null; })(),
+        baseVec3
+      };
+      // 创建 Sprite 文本对象并加入球体分组
+      if (ctx && THREE && globeGroup && baseVec3) {
+        const px = FONT_CITY_PX;
+        const wh = CITY_WORLD_HEIGHT;
+        const color = CITY_TEXT_COLOR;
+        const strokeWidth = CITY_STROKE_WIDTH;
+        const fontWeight = CITY_FONT_WEIGHT;
+        const mesh = makeTextSprite(THREE, meta.text, { worldHeight: wh, padding: 14, strokeWidth, font: `${fontWeight} ${px}px ${CITY_FONT_FAMILY}` , color });
+        if (mesh) {
+          mesh.visible = false;
+          const local = new THREE.Vector3(baseVec3.x, baseVec3.y, baseVec3.z).multiplyScalar(1 + LABEL_ALTITUDE);
+          mesh.position.set(local.x, local.y, local.z);
+          mesh.userData.baseScaleX = mesh.scale.x;
+          mesh.userData.baseScaleY = mesh.scale.y;
+          if (mesh.material) { mesh.material.depthTest = false; mesh.material.depthWrite = false; }
+          mesh.renderOrder = 999;
+          globeGroup.add(mesh);
+          LABEL_MESHES.set(ident, mesh);
+          LABEL_STATES.set(ident, { alpha: 0, lastWinAt: 0 });
+        }
+      }
+      BASE_LABEL_MAP.set(ident, meta);
+    }
+  } catch(_){ /* 注入失败则保持原逻辑 */ }
+
+  // 若标签已存在且传入了新的文本，执行就地更新（重建该 Sprite）
+  try {
+    const ident2 = id || null;
+    const has = !!ident2 && LABEL_MESHES.has(ident2);
+    const hasText = (opt && typeof opt.text === 'string' && opt.text.length > 0);
+    if (has && hasText) {
+      const ctx = getRenderContext();
+      const { THREE, globeGroup } = ctx || {};
+      const prev = BASE_LABEL_MAP.get(ident2) || {};
+      const baseVec3 = prev.baseVec3 || (Number.isFinite(opt.lon) && Number.isFinite(opt.lat) ? convertLatLonToVec3(Number(opt.lon), Number(opt.lat), 1.0) : null);
+      const old = LABEL_MESHES.get(ident2);
+      try {
+        if (old) {
+          globeGroup?.remove(old);
+          old.material?.map?.dispose?.();
+          old.material?.dispose?.();
+        }
+      } catch(_){ }
+      if (ctx && THREE && globeGroup && baseVec3) {
+        const isCity = !!prev.isCity || ((typeof ident2 === 'string') && /^CITY_/i.test(ident2));
+        const px = isCity ? FONT_CITY_PX : FONT_COUNTRY_PX;
+        const wh = isCity ? CITY_WORLD_HEIGHT : DEFAULT_WORLD_HEIGHT;
+        const color = isCity ? CITY_TEXT_COLOR : COUNTRY_TEXT_COLOR;
+        const strokeWidth = isCity ? CITY_STROKE_WIDTH : 3;
+        const fontWeight = isCity ? CITY_FONT_WEIGHT : 600;
+        const mesh = makeTextSprite(THREE, String(opt.text), { worldHeight: wh, padding: 14, strokeWidth, font: `${fontWeight} ${px}px ${CITY_FONT_FAMILY}` , color });
+        if (mesh) {
+          mesh.visible = false;
+          const local = new THREE.Vector3(baseVec3.x, baseVec3.y, baseVec3.z).multiplyScalar(1 + LABEL_ALTITUDE);
+          mesh.position.set(local.x, local.y, local.z);
+          mesh.userData.baseScaleX = mesh.scale.x;
+          mesh.userData.baseScaleY = mesh.scale.y;
+          if (mesh.material) { mesh.material.depthTest = false; mesh.material.depthWrite = false; }
+          mesh.renderOrder = 999;
+          globeGroup.add(mesh);
+          LABEL_MESHES.set(ident2, mesh);
+        }
+      }
+      // 同步更新元数据中的文本
+      const nextMeta = { ...prev, text: String(opt.text) };
+      BASE_LABEL_MAP.set(ident2, nextMeta);
+    }
+  } catch(_){ }
+
   FORCED_ID = id || null;
-  // 将脉冲标记为待触发，实际启动时间由 updateLabels 在“飞行结束”后触发
+  FORCED_SINCE = Date.now();
+  // 取消脉动：选中仅做简单放大；不再设置任何脉动相关状态
   if (FORCED_ID) {
     const st = LABEL_STATES.get(FORCED_ID) || { alpha: 0, lastWinAt: 0 };
-    st.pulsePending = true;
-    st.pulseStart = null;
-    st.pulseDur = 5600; // 柔和脉冲动画，约 5.6s（变大→变小）
+    // 清理历史脉动字段以避免旧状态影响
+    delete st.pulsePending;
+    delete st.pulseStart;
+    delete st.pulseDur;
     LABEL_STATES.set(FORCED_ID, st);
   }
+  // 自动清除（仅城市）：约5秒后移除强制，使其恢复为普通城市标签
+  try { if (FORCED_CLEAR_TIMER) { clearTimeout(FORCED_CLEAR_TIMER); FORCED_CLEAR_TIMER = null; } } catch(_){}
+  try {
+    const isCity2 = (typeof FORCED_ID === 'string') && /^CITY_/i.test(FORCED_ID);
+    if (isCity2) {
+      FORCED_CLEAR_TIMER = setTimeout(() => {
+        // 仅当强制目标仍是该城市时才清除，防止后续操作误清
+        if ((typeof FORCED_ID === 'string') && /^CITY_/i.test(FORCED_ID)) {
+          clearForcedLabel();
+        }
+        FORCED_CLEAR_TIMER = null;
+      }, Math.max(2000, CITY_FORCED_AUTO_CLEAR_MS));
+    }
+  } catch(_){}
 }
 export function clearForcedLabel(){ FORCED_ID = null; }
 
@@ -355,6 +471,9 @@ export function updateLabels(){
   if (INIT_CAM_DIST === null) { INIT_CAM_DIST = camDistLOD; }
   const isFarByRatio = INIT_CAM_DIST ? (camDistLOD / INIT_CAM_DIST) >= FAR_DISTANCE_RATIO : false;
 
+  // 城市强制高亮的短暂“缩放冻结”窗口：防止其他标签在2秒内出现突增导致的闪动
+  const __forcedCityFreeze = (typeof FORCED_ID === 'string' && /^CITY_/i.test(FORCED_ID) && (Date.now() - FORCED_SINCE) < 2000);
+
   // 1) 预计算候选集及其评分/屏幕位置/尺寸
   const grid = makeGrid(width, height, GRID_SIZE);
   // 高亮城市点的避让：预先占用其周围若干网格，防止标签压住高亮光点
@@ -405,8 +524,13 @@ export function updateLabels(){
     // 基础得分（面积/人口等）+ 中心优先 + 稳定噪声 + 强制国家加成（不保证全部显示）
     const base = scoreLabel(meta) * AREA_WEIGHT;
     const noise = stableRand(id) * 0.35; // 稳定随机，提供“概率”感
-    const forcedBoost = (meta.isCity && meta.country && FORCED_CITY_CODES.has(String(meta.country).toUpperCase())) ? 0.8 : 0; // 仅加分
-    const s = base + centerWeight * CENTER_PRIORITY + noise + forcedBoost;
+    const isForcedCity = (meta.isCity && meta.country && FORCED_CITY_CODES.has(String(meta.country).toUpperCase()));
+    const forcedBoost = isForcedCity ? 1.6 : 0; // 被选中国家城市加成更强
+    let s = base + centerWeight * CENTER_PRIORITY + noise + forcedBoost;
+    // 最中心区域的被选中国家城市“强保底”：避免被阈值淘汰
+    if (isForcedCity && centerWeight >= 0.92) {
+      s = Math.max(s, SCORE_THRESHOLD + 0.8);
+    }
     if (s < SCORE_THRESHOLD) { continue; }
     if (s > maxScore) maxScore = s;
 
@@ -422,7 +546,7 @@ export function updateLabels(){
     );
     const edgeAlpha = Math.max(0, Math.min(1, edgeFade));
 
-    candidates.push({ id, mesh, world, normal, sp, size, score: s, edgeAlpha, dot });
+    candidates.push({ id, mesh, world, normal, sp, size, score: s, edgeAlpha, dot, centerWeight });
   }
 
   // 2) 分组排序：国家优先 + 预算保底 + 网格去重
@@ -437,6 +561,7 @@ export function updateLabels(){
 
   // 动态城市预算（选中国家优先）：根据视距限制城市数量，避免密集拥挤
   let cityCandsFiltered = cityCands;
+  let __showAllCitiesMode = false; // 少量城市时全部显示的模式
   try {
     const forcedCodes = new Set([...FORCED_CITY_CODES].map(s => String(s).toUpperCase()));
     const forcedCities = cityCands.filter(c => {
@@ -445,25 +570,73 @@ export function updateLabels(){
     });
     const forcedIds = new Set(forcedCities.map(c => c.id));
     const otherCities = cityCands.filter(c => !forcedIds.has(c.id));
+    // 被选中国家：优先给到更大的预算（占总预算的 80%），近距离进一步扩充
     let budgetForced = CITY_BUDGET_MID;
-    if (camDistLOD >= FAR_COUNTRY_ONLY_DIST) budgetForced = CITY_BUDGET_FAR;
-    else if (camDistLOD <= LOD_CITIES_ALL_APPEAR) budgetForced = CITY_BUDGET_NEAR;
+    const effBudget = Math.max(0, Math.min(LABELS_BUDGET, Math.round(LABELS_BUDGET * 0.8)));
+    if (camDistLOD >= FAR_COUNTRY_ONLY_DIST) {
+      budgetForced = Math.min(CITY_BUDGET_FAR, effBudget);
+    } else if (camDistLOD <= LOD_CITIES_ALL_APPEAR) {
+      budgetForced = Math.max(CITY_BUDGET_NEAR, effBudget);
+    }
     cityCandsFiltered = [
       ...forcedCities.slice(0, Math.max(0, budgetForced)),
       ...(camDistLOD <= LOD_CITIES_ALL_APPEAR ? otherCities : [])
     ];
+    // 若城市候选数量不多，则开启“全部显示”模式（保留所有城市）
+    const thr = _const?.CITY_SHOW_ALL_THRESHOLD ?? 12;
+    if (Array.isArray(cityCands) && cityCands.length > 0 && cityCands.length <= thr && camDistLOD <= LOD_CITIES_START_APPEAR) {
+      cityCandsFiltered = cityCands;
+      __showAllCitiesMode = true;
+    }
   } catch(_){ /* 容错：缺省仍按原逻辑 */ }
 
   const winners = new Set();
   let used = 0;
+  // 2.0 居中城市硬保底：被选中国家且中心权重超过阈值的城市，先行放置
+  let __mustCentral = [];
+  try {
+    const forcedCodes = new Set([...FORCED_CITY_CODES].map(s => String(s).toUpperCase()));
+    const thrCenter = _const?.MUST_CENTER_WEIGHT_CITY ?? 0.94;
+    __mustCentral = candidates.filter(c => {
+      const m = BASE_LABEL_MAP.get(c.id) || {};
+      const isForcedCity = m.isCity && m.country && forcedCodes.has(String(m.country).toUpperCase());
+      return isForcedCity && (c.centerWeight || 0) >= thrCenter;
+    });
+    // 先尝试占位；如网格拥挤也直接加入 winners（允许少量重叠，保证稳定可见）
+    for (const c of __mustCentral) {
+      if (winners.has(c.id)) continue;
+      let wCells = Math.max(1, Math.ceil(c.size.w / GRID_SIZE));
+      let hCells = Math.max(1, Math.ceil(c.size.h / GRID_SIZE));
+      wCells = Math.max(1, Math.floor(wCells * 0.6));
+      hCells = Math.max(1, Math.floor(hCells * 0.6));
+      if (!tryOccupy(grid, c.sp.x, c.sp.y, wCells, hCells)) {
+        // 放弃占位但仍强制加入，稍后由透明度/边缘淡出缓冲
+      }
+      winners.add(c.id); used++;
+      const st = LABEL_STATES.get(c.id) || { alpha: 0, lastWinAt: 0 };
+      st.lastWinAt = Date.now();
+      LABEL_STATES.set(c.id, st);
+    }
+  } catch(_){ /* 容错：保持原逻辑 */ }
   // 拖动中动态缩减预算（不改变外部设置），降低排序与网格冲突的压力
   const __budgetEff = __perfDrag ? Math.max(12, Math.round(LABELS_BUDGET * (_const?.PERF_DRAG_LABEL_BUDGET_SCALE ?? 0.7))) : LABELS_BUDGET;
-  const countryBudget = Math.min(__budgetEff, COUNTRY_MIN_WINNERS);
+  // 在“全部显示城市”模式下，为城市预留预算；同时预留居中保底城市数量
+  const reserveCentral = (__mustCentral?.length || 0);
+  const cityReserve = (__showAllCitiesMode ? Math.min(__budgetEff, cityCandsFiltered.length) : 0) + reserveCentral;
+  const countryBudget = Math.max(0, Math.min(__budgetEff - cityReserve, COUNTRY_MIN_WINNERS));
   // 2.1 先放国家
+  // 预计算：被选中国家代码集合（用于占位缩放）
+  const __forcedCodesSet = new Set([...FORCED_CITY_CODES].map(s => String(s).toUpperCase()));
   for (const c of countryCands) {
     if (used >= countryBudget) break;
-    const wCells = Math.max(1, Math.ceil(c.size.w / GRID_SIZE));
-    const hCells = Math.max(1, Math.ceil(c.size.h / GRID_SIZE));
+    const meta = BASE_LABEL_MAP.get(c.id) || {};
+    let wCells = Math.max(1, Math.ceil(c.size.w / GRID_SIZE));
+    let hCells = Math.max(1, Math.ceil(c.size.h / GRID_SIZE));
+    // 被选中国家城市：占位略缩小，允许更密集显示
+    if (meta.isCity && meta.country && __forcedCodesSet.has(String(meta.country).toUpperCase())) {
+      wCells = Math.max(1, Math.floor(wCells * 0.7));
+      hCells = Math.max(1, Math.floor(hCells * 0.7));
+    }
     if (tryOccupy(grid, c.sp.x, c.sp.y, wCells, hCells)) {
       winners.add(c.id); used++;
       const st = LABEL_STATES.get(c.id) || { alpha: 0, lastWinAt: 0 };
@@ -472,10 +645,21 @@ export function updateLabels(){
     }
   }
   // 2.2 剩余预算给城市 + 未放下的国家（若保底不足）
-  for (const c of [...countryCands.slice(used), ...cityCandsFiltered]) {
+  // 在“全部显示城市”模式下，优先放城市；否则保持国家优先
+  // 去掉已保底的居中城市，避免重复加入
+  const __mustIds = new Set((__mustCentral||[]).map(c => c.id));
+  const __cityTail = cityCandsFiltered.filter(c => !__mustIds.has(c.id));
+  const tailOrder = __showAllCitiesMode ? [...__cityTail, ...countryCands.slice(used)] : [...countryCands.slice(used), ...__cityTail];
+  for (const c of tailOrder) {
     if (used >= LABELS_BUDGET) break;
-    const wCells = Math.max(1, Math.ceil(c.size.w / GRID_SIZE));
-    const hCells = Math.max(1, Math.ceil(c.size.h / GRID_SIZE));
+    const meta = BASE_LABEL_MAP.get(c.id) || {};
+    let wCells = Math.max(1, Math.ceil(c.size.w / GRID_SIZE));
+    let hCells = Math.max(1, Math.ceil(c.size.h / GRID_SIZE));
+    // 被选中国家城市：占位略缩小，允许更密集显示
+    if (meta.isCity && meta.country && __forcedCodesSet.has(String(meta.country).toUpperCase())) {
+      wCells = Math.max(1, Math.floor(wCells * 0.7));
+      hCells = Math.max(1, Math.floor(hCells * 0.7));
+    }
     if (tryOccupy(grid, c.sp.x, c.sp.y, wCells, hCells)) {
       winners.add(c.id); used++;
       const st = LABEL_STATES.get(c.id) || { alpha: 0, lastWinAt: 0 };
@@ -554,17 +738,10 @@ export function updateLabels(){
     const meta = BASE_LABEL_MAP.get(id) || {};
     // 仅将被明确强制的标签视为高亮（国家被点击或搜索项）
     const isForced = (id === FORCED_ID);
-    // 不再移动被搜索城市的标签位置：始终使用基础位置
+    // 不再“推挤”周边国家的标签位置：选中某国时，其他标签保持原始位置与大小
     try {
       if (meta?.baseVec3) {
-        let pos = null;
-        // 机制：当选中国家时，凡是在该国边界内的其他国家标签，将其外推到边界外
-        const sel = __resolveSelectedFeature();
-        if (sel && !isForced && !meta.isCity && typeof meta.lon === 'number' && typeof meta.lat === 'number') {
-          const outside = __pushOutsideSelected(meta.lon, meta.lat, sel);
-          if (outside) { pos = outside; }
-        }
-        if (!pos) { pos = meta.baseVec3; }
+        const pos = meta.baseVec3;
         const local = new ctx.THREE.Vector3(pos.x, pos.y, pos.z).multiplyScalar(1 + LABEL_ALTITUDE);
         mesh.position.set(local.x, local.y, local.z);
       }
@@ -601,63 +778,37 @@ export function updateLabels(){
     const finalAlpha = nextAlpha;
     const vis = finalAlpha > 0.02;
     mesh.visible = vis;
-    if (mesh.material) {
-      mesh.material.transparent = true;
-      mesh.material.opacity = finalAlpha;
-      // 选中高亮：把文字整体轻微着色并加一点放大
-      // 说明：SpriteMaterial 的 color 会对纹理乘色，不影响原始贴图；
-      // 强制标签（仅被选中的国家或被搜索点）采用暖色（琥珀色）以更容易辨认；
-      try {
-        if (isForced) {
-          if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
-            mesh.material.color = new ctx.THREE.Color('#ffd54f');
+      if (mesh.material) {
+        mesh.material.transparent = true;
+        mesh.material.opacity = finalAlpha;
+        // 选中高亮：把文字整体轻微着色并加一点放大
+        // 说明：SpriteMaterial 的 color 会对纹理乘色，不影响原始贴图；
+        // 强制标签颜色策略：
+        // 城市→保持原来的城市文字颜色（白/淡蓝），只放大；国家→琥珀色以示选中。
+        try {
+          if (isForced) {
+            const forcedColor = (meta && meta.isCity) ? (CITY_TEXT_COLOR || '#d7e1ea') : '#ffd54f';
+            if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
+              mesh.material.color = new ctx.THREE.Color(forcedColor);
+            } else {
+              mesh.material.color.set(forcedColor);
+            }
           } else {
-            mesh.material.color.set('#ffd54f');
+            const defaultColor = meta.isCity ? CITY_TEXT_COLOR : COUNTRY_TEXT_COLOR;
+            if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
+              mesh.material.color = new ctx.THREE.Color(defaultColor);
+            } else {
+              mesh.material.color.set(defaultColor);
+            }
           }
-        } else {
-          const defaultColor = meta.isCity ? CITY_TEXT_COLOR : COUNTRY_TEXT_COLOR;
-          if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
-            mesh.material.color = new ctx.THREE.Color(defaultColor);
-          } else {
-            mesh.material.color.set(defaultColor);
-          }
-        }
-      } catch(_){ /* 容错：不同平台材质对象差异 */ }
-    }
+        } catch(_){ /* 容错：不同平台材质对象差异 */ }
+      }
     // 跟随相机距离动态缩放，提升缩放体验（靠近时减小字体，远离时略增大）
     if (mesh.userData && typeof mesh.userData.baseScaleX === 'number') {
-      // 高亮基准放大：仅在强制高亮时生效。国家仅+20%，城市≈+90%
-      const highlightBase = isForced ? (meta.isCity ? 1.90 : 1.20) : 1.0;
-      // 脉冲动画：选中后在 pulseDur 时间内从 1 → 峰值 → 1（峰值约等效2倍）
-      let pulseMul = 1.0;
-      if (isForced) {
-        const st = LABEL_STATES.get(id) || {};
-        if (meta && meta.isCity) {
-          // 城市保持原有脉冲动画逻辑
-          if (st.pulsePending && !ctx.isFlying) {
-            st.pulsePending = false; st.pulseStart = Date.now(); LABEL_STATES.set(id, st);
-          }
-          const dur = Math.max(300, st.pulseDur || 1000);
-          const start = st.pulseStart || 0;
-          const now = Date.now();
-          const elapsed = now - start;
-          if (elapsed >= 0 && elapsed <= dur) {
-            const t = Math.max(0, Math.min(1, elapsed / dur));
-            // 柔和正弦缓动：从 0→1→0 的形状（sin(pi*t)），避免突然起停
-            const peak = Math.max(1.10, Math.min(2.0 / Math.max(1e-3, highlightBase), 2.0));
-            const s = Math.sin(Math.PI * t); // 0→1→0
-            // 轻微缓入缓出：在两端再乘一个 0.5-0.5*cos 的因子
-            const easeInOut = 0.5 - 0.5 * Math.cos(Math.PI * t);
-            pulseMul = 1 + (peak - 1) * (0.6 * s + 0.4 * easeInOut);
-            if (t >= 1) { st.pulseStart = null; LABEL_STATES.set(id, st); }
-          }
-        } else {
-          // 国家：取消脉冲，严格限制为基础+20%
-          pulseMul = 1.0;
-          st.pulsePending = false; st.pulseStart = null; LABEL_STATES.set(id, st);
-        }
-      }
-      const scaleMul = highlightBase * pulseMul;
+      // 高亮基准放大：仅在强制高亮时生效。取消脉动，改为“稳定增大”。
+      // 保留原有放大比例以维持辨识度：城市≈+90%，国家≈+20%。
+      const highlightBase = isForced ? (meta.isCity ? 2.00 : 1.20) : 1.0;
+      const scaleMul = highlightBase;
       // 平滑缩放：使用指数跟随，避免每帧硬跳造成“卡顿感”
       const targetX = mesh.userData.baseScaleX * distScale * scaleMul;
       const targetY = mesh.userData.baseScaleY * distScale * scaleMul;
@@ -680,16 +831,18 @@ export function updateLabels(){
       let maxPx = baseMaxPxDyn;
       if (isForced) {
         if (meta && meta.isCity) {
-          const st = LABEL_STATES.get(id) || {};
-          const pulseActive = !!st.pulseStart && (Date.now() - st.pulseStart) <= (st.pulseDur || 1000);
-          // 城市：保留更明显的脉冲与高亮范围
-          maxPx = pulseActive ? Math.round(baseMaxPxDyn * 2.2) : Math.round(baseMaxPxDyn * 1.7);
+          // 城市选中：仅放大，不改变颜色。放宽上限，确保“更大”。
+          maxPx = Math.round(baseMaxPxDyn * 2.0);
         } else {
-          // 国家：不再放宽上限，严格等于配置值（避免“明显超标”）
+          // 国家选中：保持上限为动态值。
           maxPx = baseMaxPxDyn;
         }
       }
       const h = sizeNow.h;
+      // 冻结策略：在城市被强制高亮的短窗口期，非强制标签不允许“向上增大”，仅允许按需减小
+      if (!isForced && __forcedCityFreeze && h > 0) {
+        maxPx = Math.min(maxPx, h);
+      }
       if (h > maxPx && h > 0) {
         const r = maxPx / h;
         const clampedX = mesh.scale.x * r;

@@ -248,6 +248,42 @@ canvas {
   z-index: 980;
 }
 
+/* —— 彩蛋：时间胶囊感应区（透明点击覆盖） —— */
+.egg-sensor {
+  position: fixed;
+  z-index: 1300; /* 高于顶栏与诗句层 */
+  background: rgba(255,255,255,0); /* 完全透明，仅用于接收点击 */
+  pointer-events: auto;
+}
+
+/* —— Special 文本层：大字号、发光、水平（与诗句层独立） —— */
+.special-layer {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 1300;
+  pointer-events: none; /* 不拦截触控，旋转仍可 */
+}
+.special-item {
+  position: fixed;
+  color: #eaf7ff;
+  font-weight: 700; /* Special 文本更粗，提升存在感 */
+  background: transparent;
+  border: none;
+  opacity: 0; /* 初始透明，配合 .visible 切换 */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  /* 宇宙风格发光 */
+  text-shadow: 0 0 24px rgba(160,200,255,0.85), 0 0 48px rgba(100,160,240,0.45);
+}
+.special-item .special-text {
+  display: inline-block;
+  writing-mode: horizontal-tb; /* 特殊文本水平排布 */
+  letter-spacing: 0.5px;
+  white-space: nowrap;        /* 不换行，四字短句保持一行 */
+  word-break: keep-all;       /* 避免把中文拆分到下一行 */
+}
+.special-item.visible { opacity: 1; }
+
 /* 国家信息面板 */
 .country-panel {
   position: fixed;

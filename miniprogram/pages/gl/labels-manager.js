@@ -48,7 +48,13 @@ export class LabelsManager {
           FR: { lon: 2.8, lat: 49.0 },
           FRA: { lon: 2.8, lat: 49.0 },
         };
-        const baseLabels = features.map((f, idx) => {
+        // 过滤：移除台湾的国家标签（TWN/TW）
+        const filteredFeatures = features.filter(f => {
+          const p = f?.props || {};
+          const code = String(p.ISO_A3 || p.ISO_A2 || p.ISO || '').toUpperCase();
+          return code !== 'TWN' && code !== 'TW';
+        });
+        const baseLabels = filteredFeatures.map((f, idx) => {
           const p = f.props || {};
           const code = String(p.ISO_A3 || p.ISO_A2 || p.ISO || '').toUpperCase();
           const fromDict = dict && code ? (dict[code] || dict[code.padStart(3,'0')]) : null;
@@ -60,7 +66,10 @@ export class LabelsManager {
           let lat = (minLat + maxLat) / 2;
           if (POS_OVERRIDES[code]) { lon = POS_OVERRIDES[code].lon; lat = POS_OVERRIDES[code].lat; }
           const id = p.ISO_A3 || p.ISO_A2 || p.ISO || String(idx);
-          return { id, text: name, isCity: false, lon, lat, area: Math.max(1, Math.log10((p.AREA || 5000))) };
+          // 提升中国国家标签的排序分数，确保默认优先显示
+          const isChina = (code === 'CHN' || code === 'CN');
+          const score = isChina ? 999 : undefined;
+          return { id, text: name, isCity: false, lon, lat, area: Math.max(1, Math.log10((p.AREA || 5000))), score };
         });
 
         let cityLabels = [];
@@ -76,6 +85,16 @@ export class LabelsManager {
           } else {
             filtered = srcCities.filter(c => Number(c.importance || 0) >= 1);
           }
+          // 过滤台湾的城市，仅保留台北
+          // 规则：country_code === 'TWN' 且 name_en === 'Taipei' 或中文包含“台北”保留，其他台湾城市移除
+          filtered = filtered.filter(c => {
+            const cc = String(c.country_code || '').toUpperCase();
+            if (cc !== 'TWN') return true;
+            const en = String(c.name_en || '');
+            const zh = String(c.name_zh || '');
+            const isTaipei = (/^taipei$/i.test(en)) || (zh.indexOf('台北') >= 0);
+            return isTaipei;
+          });
           cityLabels = filtered.map((c, i) => {
             const text = (lang === 'zh') ? (c.name_zh || c.name_en || `City#${i}`) : (c.name_en || c.name_zh || `City#${i}`);
             const id = `CITY_${c.country_code || 'UNK'}_${c.name_en || text}`;

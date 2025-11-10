@@ -55,7 +55,8 @@ export class ZenModeManager {
   toggleCut(){
     try {
       const current = Number(this.page?.__zenPreset || 1);
-      const nextPreset = (current === 1) ? 2 : 1;
+      // 循环：1 → 2 → 3 → 1
+      const nextPreset = (current === 1) ? 2 : (current === 2 ? 3 : 1);
       this.page.__zenPreset = nextPreset;
       // 先处理：旧音乐 2 秒淡出、当前诗句强制 2 秒淡出
       try { this.page?._stopZenAudio?.(2000); } catch(_){ }
@@ -73,12 +74,8 @@ export class ZenModeManager {
       } catch(_){ }
       // 诗句：在淡出开始 1 秒时触发新的预设（PoetryManager 首句自带 1 秒延迟，恰好 2 秒总长度）
       try { setTimeout(() => { try { this.page?.__startPoetryViaMgr?.(nextPreset); } catch(_){ } }, 1000); } catch(_){ }
-      // 轻提示：与原页面一致，1200ms 消退
-      const msg = (this.page?.data?.lang === 'zh') ? `切到预设${nextPreset}` : `Preset ${nextPreset}`;
-      try {
-        this.page?.setData?.({ hoverText: msg });
-        setTimeout(() => { try { this.page?.setData?.({ hoverText: '' }); } catch(_){ } }, 1200);
-      } catch(_){ }
+      // 需求调整：切换时不再显示“切到预设X”的提示
+      // 为保持整洁，不设置 hoverText。
     } catch(_){ }
   }
 }

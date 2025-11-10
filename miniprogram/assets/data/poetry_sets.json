@@ -36,9 +36,18 @@
     "_id": "preset_2",
     "preset": 2,
     "lines": [
-      { "text": "风起于青萍之末。", "duration": 7000 },
-      { "text": "水落而石出。", "duration": 7000 },
-      { "text": "山高月小，水落石出。", "duration": 7000 }
+      { "text": "幸甚此刻，你我同坐", "duration": 7000 },
+      { "text": "两身两貌，一魂相依", "duration": 7000 },
+      { "text": "入于花园，鸟声长存", "duration": 7000 },
+      { "text": "天上群星，下来看我", "duration": 7000 },
+      { "text": "我们示之，明月其光", "duration": 7000 },
+      { "text": "你我不二，欢喜相融", "duration": 7000 },
+      { "text": "安稳静好，远离杂语", "duration": 7000 },
+      { "text": "天国彩羽，因我生妒", "duration": 7000 },
+      { "text": "此处同笑，万物屏息", "duration": 7000 },
+      { "text": "奇哉此事，同在一隅", "duration": 7000 },
+      { "text": "此刻同时，天涯在", "duration": 7000 },
+      { "text": "亦在此时，海角在", "duration": 7000 }
     ],
     "updatedAt": 1730865600000
   }

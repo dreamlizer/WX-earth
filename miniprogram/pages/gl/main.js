@@ -10,9 +10,8 @@ import {
 import { loadCountries, buildIndex, gatherCandidates } from './geoindex.js';
 import { getTextureUrl, prefetchTextureUrls, ensureOfflineTextures } from './texture-source.js';
 import { createScene, makeBorder, makeEquatorAndTropics, highlight as highlightLayer, updateCameraDistance as updateCamDist, makeCountryColliders } from './layers.js';
-import { INTERACTION_DEBUG_LOG, PERF_HIDE_STAR_ON_ON_DRAG, INERTIA_NONLINEAR, INERTIA_POWER, INERTIA_DAMP_MIN, INERTIA_DAMP_MAX, INERTIA_SPEED_MIN, INERTIA_SPEED_MAX, INERTIA_GAIN_BASE, INERTIA_GAIN_SCALE, INERTIA_LOG_DETAIL, INERTIA_LOG_THROTTLE_MS, INERTIA_APPLY_LOG_THROTTLE_MS } from './label-constants.js';
+import { INTERACTION_DEBUG_LOG, PERF_HIDE_STAR_ON_ON_DRAG, INERTIA_NONLINEAR, INERTIA_POWER, INERTIA_DAMP_MIN, INERTIA_DAMP_MAX, INERTIA_SPEED_MIN, INERTIA_SPEED_MAX, INERTIA_GAIN_BASE, INERTIA_GAIN_SCALE, INERTIA_LOG_DETAIL, INERTIA_LOG_THROTTLE_MS, INERTIA_APPLY_LOG_THROTTLE_MS, FRONT_DOT_MIN_EDGE, HIT_CENTER_MAX_DEG } from './label-constants.js';
 import { createDayNightMaterial } from './shaders/dayNightMix.glsl.js';
-import { createAtmosphereShellMaterial } from './shaders/atmosphereShell.glsl.js';
 import { APP_CFG } from './config.js';
 import { createStarfield } from './starfield.glsl.js';
 import { createPoetry3D } from './poetry3d.js';
@@ -28,12 +27,10 @@ const DEBUG = { lonSameSign: true, invertLon: false, invertLat: false, logFly: t
 const DEBUG_SELECT = true; // 仅在 INTERACTION_DEBUG_LOG 开启时实际打印
 
 // 星光诊断日志总开关（如需静默可改为 false）
-  const STAR_LOG = false; // 关闭星空调试日志，避免控制台刷屏
+const STAR_LOG = false; // 关闭星空调试日志，避免控制台刷屏
 
 // 状态容器
- let state = null;
- // 新增：独立大气壳体 mesh（Additive 混合，避免被地表覆盖）
- let atmosphereMesh = null;
+let state = null;
 
 export function boot(page) {
   const sys = wx.getSystemInfoSync();
@@ -83,8 +80,68 @@ export function boot(page) {
     try { if (ambientLight) ambientLight.intensity = __normalAmbient; } catch(_){}
     try { if (dirLight) dirLight.intensity = __normalDir; } catch(_){}
     try { console.info('[lights] normal profile', { useZenLights: __useZenLights, ambient: __normalAmbient, dir: __normalDir }); } catch(_){}
-    const ambientBase = __normalAmbient; // 退出禅模式时恢复到此值（可为禅灯光）
-    const dirLightBase = __normalDir;    // 退出禅模式时恢复到此值（可为禅灯光）
+  const ambientBase = __normalAmbient; // 退出禅模式时恢复到此值（可为禅灯光）
+  const dirLightBase = __normalDir;    // 退出禅模式时恢复到此值（可为禅灯光）
+  // —— Bloom 管线（UnrealBloomPass 优先，回退到内置 ApproxPass） ——
+  let composer = null;
+  let __bloomPass = null; // UnrealBloomPass 或回退
+  const __initBloom = () => {
+    try {
+      const THREE = state.THREE; const renderer = state.renderer; const scene = state.scene; const camera = state.camera;
+      // 尝试使用示例中的后处理模块（若三方库包含）
+      const hasExamples = !!(THREE && (THREE.EffectComposer || THREE.UnrealBloomPass || THREE.RenderPass));
+      if (hasExamples && THREE.EffectComposer && THREE.RenderPass && THREE.UnrealBloomPass) {
+        try {
+          composer = new THREE.EffectComposer(renderer);
+          const renderPass = new THREE.RenderPass(scene, camera);
+          const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(state.width, state.height), 0.6, 0.2, 0.85);
+          composer.addPass(renderPass);
+          composer.addPass(bloom);
+          __bloomPass = bloom;
+          console.info('[bloom] using UnrealBloomPass');
+          return true;
+        } catch(e){ console.warn('[bloom] UnrealBloom setup failed', e); }
+      }
+      // 回退：实现一个极简的“亮度阈值 + 模糊 + 叠加”近似（性能友好）
+      try {
+        const rt = new THREE.WebGLRenderTarget(state.width, state.height, { samples: 0 });
+        __bloomPass = {
+          setParams({ strength, threshold, radius }) { this.strength=strength; this.threshold=threshold; this.radius=radius; },
+          strength: 0.6, threshold: 0.8, radius: 0.2,
+          render() {
+            // 近似：提升曝光并二次渲染到纹理，再用屏幕四边形叠加（加色）
+            const oldExposure = (renderer.toneMappingExposure ?? 1.0);
+            try { renderer.toneMappingExposure = oldExposure * (APP_CFG?.bloom?.fallbackBoost ?? 1.15); } catch(_){}
+            renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene, camera);
+            renderer.setRenderTarget(null);
+            // 叠加：使用简易的“把渲染目标纹理绘制在屏幕上并加色”做近似（threejs-miniprogram不含 ShaderPass 时）
+            try {
+              const quadScene = new THREE.Scene();
+              const quadCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+              const mat = new THREE.MeshBasicMaterial({
+                map: rt.texture,
+                transparent: true,
+                opacity: Math.min(1.0, this.strength),
+                blending: THREE.AdditiveBlending,
+                depthTest: false,
+                depthWrite: false
+              });
+              const geo = new THREE.PlaneGeometry(2,2);
+              const mesh = new THREE.Mesh(geo, mat);
+              quadScene.add(mesh);
+              renderer.render(quadScene, quadCam);
+              geo.dispose(); mat.dispose();
+            } catch(_){ }
+            try { renderer.toneMappingExposure = oldExposure; } catch(_){}
+          }
+        };
+        composer = { render(){ renderer.render(scene, camera); __bloomPass?.render?.(); } };
+        console.info('[bloom] using fallback BloomApproxPass');
+        return true;
+      } catch(e){ console.warn('[bloom] Fallback setup failed', e); }
+      return false;
+    } catch(e){ console.warn('[bloom] init failed', e); return false; }
+  };
     // 禅定稳定时间戳与上一帧时间（用于自动旋转）
     let zenStableSince = 0;
     let __prevRenderTime = 0;
@@ -370,7 +427,19 @@ export function boot(page) {
       __highlightFeature = f || null;
       __belowThresholdCount = 0;
       if (!f) return;
-      HIGHLIGHT_GROUP = highlightLayer(THREE, globeGroup, f);
+      // 支持数组：同时高亮多个国家（如台湾+中国）
+      const container = new THREE.Group();
+      const addOne = (feat) => {
+        if (!feat) return;
+        try {
+          const grp = highlightLayer(THREE, globeGroup, feat);
+          if (grp) container.add(grp);
+        } catch(_){ }
+      };
+      if (Array.isArray(f)) { for (const feat of f) addOne(feat); }
+      else { addOne(f); }
+      globeGroup.add(container);
+      HIGHLIGHT_GROUP = container;
     };
 
     // 统一封装：在禅定模式下调低叠加线亮度（国家边境颜色/赤道与回归线透明度）
@@ -454,37 +523,10 @@ export function boot(page) {
             tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} } earthDayTex = tex; dumpTextureInfo('earth_day', earthDayTex);
           earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ map: earthDayTex, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
           earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
-          // 大气壳体：在地球创建后挂载（独立 ShaderMaterial）
-          try {
-            const a = (APP_CFG?.normal?.atmosphere || {});
-            const shellEnabled = (a.enabled !== false);
-            if (shellEnabled && !atmosphereMesh) {
-              const deltaR = Number(a.shellDeltaR ?? 0.018); // 外壳半径增量（相对 R）
-              const mat = createAtmosphereShellMaterial(THREE);
-              // 参数同步（颜色/强度/幂次）
-              try {
-                if (mat.uniforms.uColor) {
-                  const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
-                  const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
-                  const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
-                  const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
-                  mat.uniforms.uColor.value.set(r, g, b);
-                }
-                if (mat.uniforms.uIntensity) mat.uniforms.uIntensity.value = Math.max(0.0, Math.min(2.0, (a.intensity ?? 0.12)));
-                if (mat.uniforms.uPower) mat.uniforms.uPower.value = Math.max(0.1, Math.min(8.0, (a.power ?? 2.0)));
-              } catch(_){}
-              const geo = new THREE.SphereGeometry(RADIUS + Math.max(0.001, deltaR), 48, 48);
-              atmosphereMesh = new THREE.Mesh(geo, mat);
-              atmosphereMesh.name = 'ATMOS_SHELL';
-              atmosphereMesh.renderOrder = 999; // 置后渲染，叠加到外缘
-              globeGroup.add(atmosphereMesh);
-              console.info('[ATMOS(shell) created]', { deltaR, intensity: mat.uniforms.uIntensity.value, power: mat.uniforms.uPower.value });
-            }
-          } catch(_){}
           // 普通模式装饰：赤道与南北回归线（淡金色）
           try { if (!TROPIC_GROUP) TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); } catch(_){}
 
-          // 预加载夜景纹理（云端-only，失败不再回本地）
+          // 预加载夜景纹理（云端优先，失败回本地兜底）
           getTextureUrl('earth_night').then(({ url: nightUrl, fallback: nightFb }) => {
             logSrc('earth_night', nightUrl, nightFb, 'start');
           loader.load(nightUrl, (night) => {
@@ -533,60 +575,31 @@ export function boot(page) {
                 } catch(_){}
                 earthMesh.material = __dayNightMat;
                 earthMesh.material.needsUpdate = true;
-                // 更新：普通模式下的大气辉光（Fresnel）参数
-                try {
-                  const u = __dayNightMat.uniforms || {};
-                  const a = (APP_CFG?.normal?.atmosphere || {});
-                  const enabled = (a.enabled !== false);
-                  if (u.uAtmosphereIntensity) u.uAtmosphereIntensity.value = enabled ? Math.max(0.0, Math.min(2.0, (a.intensity ?? 0.12))) : 0.0;
-                  if (u.uAtmospherePower) u.uAtmospherePower.value = Math.max(0.1, Math.min(8.0, (a.power ?? 2.0)));
-                  if (u.uAtmosphereDebugOnly) u.uAtmosphereDebugOnly.value = (a.debugOnly === true) ? 1.0 : 0.0;
-                  if (u.uAtmosphereColor) {
-                    const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
-                    const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
-                    const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
-                    const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
-                    u.uAtmosphereColor.value.set(r, g, b);
-                  }
-                  // 诊断：确认辉光参数已写入
-                  try {
-                    console.info('[ATMOS(normal) uniforms set]', {
-                      enabled,
-                      cfgIntensity: a.intensity,
-                      cfgPower: a.power,
-                      debugOnly: !!a.debugOnly,
-                      setIntensity: Number(u.uAtmosphereIntensity?.value || 0).toFixed(3),
-                      setPower: Number(u.uAtmospherePower?.value || 0).toFixed(3),
-                      setDebugOnly: Number(u.uAtmosphereDebugOnly?.value || 0).toFixed(3),
-                      setColor: {
-                        r: Number(u.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
-                        g: Number(u.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
-                        b: Number(u.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
-                      },
-                    });
-                    if (enabled && (Number(u.uAtmosphereIntensity?.value || 0) < 0.001)) {
-                      console.warn('[ATMOS(normal)] intensity very small or zero, effect likely invisible');
-                    }
-                  } catch(_){ }
-                } catch(_){ }
                 try {
                   console.info('[NORMAL-ZEN uniforms]', {
                     matType: earthMesh?.material?.type,
                     isShader: (earthMesh?.material instanceof THREE.ShaderMaterial),
                     exposure: Number(__dayNightMat?.uniforms?.uExposure?.value || 0).toFixed(3),
-                    atmosIntensity: Number(__dayNightMat?.uniforms?.uAtmosphereIntensity?.value || 0).toFixed(3),
-                    atmosPower: Number(__dayNightMat?.uniforms?.uAtmospherePower?.value || 0).toFixed(3),
-                    atmosColor: {
-                      r: Number(__dayNightMat?.uniforms?.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
-                      g: Number(__dayNightMat?.uniforms?.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
-                      b: Number(__dayNightMat?.uniforms?.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
-                    },
                     daySideGain: Number(__dayNightMat?.uniforms?.uDaySideGain?.value || 0).toFixed(3),
                   });
                 } catch(_){}
               }
             } catch(_){ }
-          }, undefined, () => { try { console.warn('[texture] 夜景贴图云端加载失败（保持云端-only，不使用本地回退）'); } catch(_){} });
+          }, undefined, () => {
+            // 云端失败：尝试使用本地兜底贴图（mini-program 目录内，确保打包可用）
+            try {
+              if (nightFb) {
+                logSrc('earth_night-fallback', nightUrl, nightFb, 'fallback');
+                loader.load(nightFb, (fbNight) => {
+                  fbNight.minFilter = THREE.LinearFilter; fbNight.magFilter = THREE.LinearFilter;
+                  try { fbNight.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { fbNight.encoding = THREE.sRGBEncoding; } catch(__){} }
+                  earthNightTex = fbNight; dumpTextureInfo('earth_night-fallback', earthNightTex);
+                }, undefined, () => { try { console.warn('[texture] 夜景贴图本地兜底也加载失败'); } catch(_){} });
+              } else {
+                try { console.warn('[texture] 夜景贴图云端加载失败（无本地兜底）'); } catch(_){}
+              }
+            } catch(_){ try { console.warn('[texture] 夜景贴图回退流程异常'); } catch(__){} }
+          });
           });
           // 预加载 8K 白昼贴图（云端优先，失败回本地）
           getTextureUrl('earth_day8k').then(({ url: day8kUrl, fallback: day8kFb }) => {
@@ -596,7 +609,19 @@ export function boot(page) {
               try { day8k.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { day8k.encoding = THREE.sRGBEncoding; } catch(__){} }
               earthDay8kTex = day8k; dumpTextureInfo('earth_day8k', earthDay8kTex);
             }, undefined, () => {
-              try { console.warn('[texture] 8K 白昼贴图加载失败（将保持默认白昼贴图）'); } catch(_){}
+              // 云端失败：尝试本地兜底（若存在）
+              try {
+                if (day8kFb) {
+                  logSrc('earth_day8k-fallback', day8kUrl, day8kFb, 'fallback');
+                  loader.load(day8kFb, (fb8k) => {
+                    fb8k.minFilter = THREE.LinearFilter; fb8k.magFilter = THREE.LinearFilter; fb8k.anisotropy = 1;
+                    try { fb8k.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { fb8k.encoding = THREE.sRGBEncoding; } catch(__){} }
+                    earthDay8kTex = fb8k; dumpTextureInfo('earth_day8k-fallback', earthDay8kTex);
+                  }, undefined, () => { try { console.warn('[texture] 8K 白昼贴图本地兜底也加载失败'); } catch(_){} });
+                } else {
+                  try { console.warn('[texture] 8K 白昼贴图云端加载失败（将保持默认白昼贴图，且无兜底）'); } catch(_){}
+                }
+              } catch(_){ try { console.warn('[texture] 8K 白昼贴图回退流程异常'); } catch(__){} }
             });
           });
           // 云层：按配置开关加载（避免不必要的资源与逻辑交叉）
@@ -627,15 +652,15 @@ export function boot(page) {
                       cloudMesh.name = 'CLOUD';
                       try { cloudMesh.visible = !!(page && page.data && page.data.showCloud); } catch(_){ cloudMesh.visible = false; }
                       globeGroup.add(cloudMesh);
-              dumpTextureInfo('cloud-fallback', fbTex);
-            }, undefined, () => { try { console.warn('[texture] 云层贴图本地兜底也加载失败'); } catch(_){} });
-          } catch(_){ try { console.warn('[texture] 云层贴图回退流程异常'); } catch(__){} }
-        } else {
-          try { console.warn('[texture] 云层贴图云端加载失败（无兜底）'); } catch(_){}
-        }
-      });
-    });
-  }
+                      dumpTextureInfo('cloud-fallback', fbTex);
+                    }, undefined, () => { try { console.warn('[texture] 云层贴图本地兜底也加载失败'); } catch(_){} });
+                  } catch(_){ try { console.warn('[texture] 云层贴图回退流程异常'); } catch(__){} }
+                } else {
+                  try { console.warn('[texture] 云层贴图云端加载失败（无兜底）'); } catch(_){}
+                }
+              });
+            });
+          }
 
           loadCountries().then((features) => {
             COUNTRY_FEATURES = features;
@@ -793,10 +818,22 @@ export function boot(page) {
           const normalP = interCountry.point.clone().sub(globeCenter).normalize();
           const viewP = camera.position.clone().sub(interCountry.point).normalize();
           const dotP = normalP.dot(viewP);
-          if (dotP > -0.08) inter = interCountry; // 允许轻微边缘
+          if (dotP >= (typeof FRONT_DOT_MIN_EDGE === 'number' ? FRONT_DOT_MIN_EDGE : 0.0)) inter = interCountry; // 严格前半球
         } catch(_){ inter = interCountry; }
       }
-      if (!inter) { inter = raycaster.intersectObject(earthMesh, true)[0]; }
+      if (!inter) {
+        // 回退到地球球体命中，但同样只接受“前半球”点，避免穿模
+        const interEarth = raycaster.intersectObject(earthMesh, true)[0];
+        if (interEarth) {
+          try {
+            const globeCenter = new THREE.Vector3(); globeGroup.getWorldPosition(globeCenter);
+            const normalP = interEarth.point.clone().sub(globeCenter).normalize();
+            const viewP = camera.position.clone().sub(interEarth.point).normalize();
+            const dotP = normalP.dot(viewP);
+            if (dotP >= (typeof FRONT_DOT_MIN_EDGE === 'number' ? FRONT_DOT_MIN_EDGE : 0.0)) { inter = interEarth; }
+          } catch(_){ inter = interEarth; }
+        }
+      }
       if (!inter) {
         setHighlight(null);
         // 取消选中，但不清空时间（改为显示中央经线时区）
@@ -828,7 +865,10 @@ export function boot(page) {
         const f0 = COUNTRY_FEATURES[fidFromCollider];
         if (featureContains(lon, lat, f0)) { meshHit = f0; }
       }
-      const disable2DSearch = !isColliderHit;
+      // 始终允许二维回退搜索：
+      // 之前当碰撞网格未命中时禁用二维搜索，导致如中国边界被点击仍出现“no country”现象。
+      // 为确保边界扭曲或反经线附近仍能命中实际国家，这里强制开启二维候选回退。
+      const disable2DSearch = false;
 
       const steps = [12, 24, 48, 80];
       let hit = null;
@@ -849,6 +889,19 @@ export function boot(page) {
         }
         for (const fid of candIds) {
           const f = COUNTRY_FEATURES[fid];
+          // 预筛选：若点击点与该国包围盒中心距离过大，则跳过（防止跨经线误命中）
+          try {
+            const b = f.bbox || [-180,-90,180,90];
+            const cLon = (b[0] + b[2]) * 0.5;
+            const cLat = (b[1] + b[3]) * 0.5;
+            const A = convertLatLonToVec3(lon, lat, 1);
+            const B = convertLatLonToVec3(cLon, cLat, 1);
+            const va = new THREE.Vector3(A.x, A.y, A.z).normalize();
+            const vb = new THREE.Vector3(B.x, B.y, B.z).normalize();
+            const dot = Math.max(-1, Math.min(1, va.dot(vb)));
+            const ang = Math.acos(dot) * 180 / Math.PI;
+            if (ang > (typeof HIT_CENTER_MAX_DEG === 'number' ? HIT_CENTER_MAX_DEG : 60)) { continue; }
+          } catch(_){ }
           if (featureContains(lon, lat, f)) { hit = f; break; }
         }
         if (hit) break;
@@ -866,6 +919,18 @@ export function boot(page) {
       if (!hit && !disable2DSearch) {
         for (let i = 0; i < COUNTRY_FEATURES.length; i++) {
           const f = COUNTRY_FEATURES[i];
+          try {
+            const b = f.bbox || [-180,-90,180,90];
+            const cLon = (b[0] + b[2]) * 0.5;
+            const cLat = (b[1] + b[3]) * 0.5;
+            const A = convertLatLonToVec3(lon, lat, 1);
+            const B = convertLatLonToVec3(cLon, cLat, 1);
+            const va = new THREE.Vector3(A.x, A.y, A.z).normalize();
+            const vb = new THREE.Vector3(B.x, B.y, B.z).normalize();
+            const dot = Math.max(-1, Math.min(1, va.dot(vb)));
+            const ang = Math.acos(dot) * 180 / Math.PI;
+            if (ang > (typeof HIT_CENTER_MAX_DEG === 'number' ? HIT_CENTER_MAX_DEG : 60)) { continue; }
+          } catch(_){ }
           if (featureContains(lon, lat, f)) { hit = f; break; }
         }
       }
@@ -943,12 +1008,46 @@ export function boot(page) {
           const normalP = worldP.clone().sub(globeCenter).normalize();
           const viewP = camera.position.clone().sub(worldP).normalize();
           const dotP = normalP.dot(viewP);
-          // 允许轻微负值（边缘），仅当“明显在背面”才视为未命中
-          if (dotP <= -0.08) { hit = null; }
+          // 严格前半球：点积必须 >= FRONT_DOT_MIN_EDGE
+          if (dotP < (typeof FRONT_DOT_MIN_EDGE === 'number' ? FRONT_DOT_MIN_EDGE : 0.0)) { hit = null; }
         } catch(_){ /* 忽略可见性判定失败，走原逻辑 */ }
       }
 
-      setHighlight(hit);
+      // 特殊处理：台湾与中国的互相关联高亮
+      // - 点击台湾（TW/TWN）时：同时高亮中国（CHN）本土
+      // - 点击中国（CN/CHN）时：同时高亮台湾（TW/TWN）边境
+      let __highlightTarget = hit;
+      try {
+        const p = hit?.props || {};
+        const codeRaw = p.ISO_A3 || p.ISO_A2 || p.ISO || p.CC || p.ISO3 || p.SOV_A3 || null;
+        const code = (codeRaw ? String(codeRaw).toUpperCase() : null);
+        if (code === 'TWN' || code === 'TW') {
+          let fCN = null;
+          if (COUNTRY_FEATURES && COUNTRY_FEATURES.length) {
+            for (let i = 0; i < COUNTRY_FEATURES.length; i++) {
+              const fi = COUNTRY_FEATURES[i];
+              const pi = fi?.props || {};
+              const ciRaw = pi.ISO_A3 || pi.ISO_A2 || pi.ISO || pi.CC || pi.ISO3 || pi.SOV_A3 || null;
+              const ci = (ciRaw ? String(ciRaw).toUpperCase() : null);
+              if (ci === 'CHN') { fCN = fi; break; }
+            }
+          }
+          if (fCN) { __highlightTarget = [fCN, hit]; }
+        } else if (code === 'CHN' || code === 'CN') {
+          let fTW = null;
+          if (COUNTRY_FEATURES && COUNTRY_FEATURES.length) {
+            for (let i = 0; i < COUNTRY_FEATURES.length; i++) {
+              const fi = COUNTRY_FEATURES[i];
+              const pi = fi?.props || {};
+              const ciRaw = pi.ISO_A3 || pi.ISO_A2 || pi.ISO || pi.CC || pi.ISO3 || pi.SOV_A3 || null;
+              const ci = (ciRaw ? String(ciRaw).toUpperCase() : null);
+              if (ci === 'TWN' || ci === 'TW') { fTW = fi; break; }
+            }
+          }
+          if (fTW) { __highlightTarget = [hit, fTW]; }
+        }
+      } catch(_){ }
+      setHighlight(__highlightTarget);
       try { page?.onCountryPicked?.(hit || null); } catch(_){ }
       if (hit) {
         const name = hit.props?.NAME || hit.props?.ADMIN || '(unknown)';
@@ -1124,8 +1223,25 @@ export function boot(page) {
         page.lastTimeUpdate = now;
         const dt = new Date(now);
         // 基于当前时区格式化字符串，提供“仅到分钟”的格式在拖动时使用
-        const timeStrFull = page.formatTime(dt, page.currentTZ ?? activeTZ); // 假定返回 HH:mm:ss 或 HH:mm
-        const timeStrMinute = page.formatTime(dt, page.currentTZ ?? activeTZ)?.replace(/^(\d{2}:\d{2}).*$/, '$1');
+        let timeStrFull = page.formatTime(dt, page.currentTZ ?? activeTZ); // 假定返回 YYYY/MM/DD HH:mm:ss 或 "--:--:--"
+        let timeStrMinute = page.formatTime(dt, page.currentTZ ?? activeTZ)?.replace(/^(\d{2}:\d{2}).*$/, '$1');
+
+        // 安全兜底：移动端部分 WebView 不支持某些 IANA（如 Pacific/*），导致返回占位 "--:--:--"
+        // 发生时，按“屏幕中央经线”推导 Etc/GMT±N（保证永不空白；与海洋区域兜底一致）
+        try {
+          const looksInvalid = !timeStrFull || !/\d{2}:\d{2}/.test(timeStrFull);
+          if (looksInvalid && earthMesh) {
+            const v = new THREE.Vector3(0, 0, RADIUS);
+            v.applyEuler(new THREE.Euler(touch.rotX, touch.rotY, 0, 'XYZ'));
+            const [clon] = convertVec3ToLatLon(v.x, v.y, v.z);
+            const off = Math.round(normalizeLon(clon) / 15);
+            const sign = off >= 0 ? '-' : '+'; // Etc/GMT-8 表示 GMT+8（Etc 号反向约定）
+            const abs = Math.abs(off);
+            const etcTZ = `Etc/GMT${sign}${abs}`;
+            timeStrFull = page.formatTime(dt, etcTZ);
+            timeStrMinute = page.formatTime(dt, etcTZ)?.replace(/^(\d{2}:\d{2}).*$/, '$1');
+          }
+        } catch(_){}
 
         let nextStr = timeStrFull;
         if (touch.isDragging) {
@@ -1316,30 +1432,6 @@ export function boot(page) {
           } catch(_){}
         }
       } catch(_){}
-      // 每帧更新大气壳体的球心/相机与参数（当前模式 normal/zen）
-      try {
-        if (atmosphereMesh && atmosphereMesh.material && atmosphereMesh.material.uniforms) {
-          const u = atmosphereMesh.material.uniforms;
-          const center = new THREE.Vector3(); globeGroup.getWorldPosition(center);
-          try { u.uGlobeCenterWorld.value.copy(center); } catch(_){}
-          try { u.uCameraPosWorld.value.copy(camera.position); } catch(_){}
-          // 动态跟随当前主题参数（两种模式可对比）
-          const a = (zenActive ? (APP_CFG?.zen?.atmosphere || {}) : (APP_CFG?.normal?.atmosphere || {}));
-          const enabled = (a.enabled !== false);
-          atmosphereMesh.visible = !!enabled;
-          try {
-            if (u.uIntensity) u.uIntensity.value = Math.max(0.0, Math.min(2.0, (a.intensity ?? (zenActive ? 0.18 : 0.12))));
-            if (u.uPower) u.uPower.value = Math.max(0.1, Math.min(8.0, (a.power ?? (zenActive ? 2.2 : 2.0))));
-            if (u.uColor) {
-              const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
-              const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
-              const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
-              const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
-              u.uColor.value.set(r, g, b);
-            }
-          } catch(_){}
-        }
-      } catch(_){}
       try { poetry3d?.update?.(now); } catch(_){}
       // 高亮淡出动画（0.5s）：逐帧降低不透明度，到期后移除并释放资源
       try {
@@ -1382,7 +1474,31 @@ export function boot(page) {
           }
         }
       } catch(_){ }
-      renderer.render(scene, camera);
+      // —— 应用 Bloom ——
+      try {
+        // 读取集中配置：位于 APP_CFG.ui.bloom
+        const cfg = (APP_CFG && APP_CFG.ui && APP_CFG.ui.bloom) ? APP_CFG.ui.bloom : {};
+        const allDisabled = (cfg.normalEnabled === false) && (cfg.zenEnabled === false);
+        if (!composer && !allDisabled) { __initBloom(); }
+        if (composer) {
+          // 根据模式与配置更新参数
+          const zen = !!(page?.data?.zenMode);
+          const enabled = zen ? (cfg.zenEnabled !== false) : (cfg.normalEnabled !== false);
+          if (__bloomPass && enabled) {
+            const strength  = zen ? (cfg.zenStrength  ?? 0.85) : (cfg.normalStrength  ?? 0.45);
+            const threshold = zen ? (cfg.zenThreshold ?? 0.7 ) : (cfg.normalThreshold ?? 0.8 );
+            const radius    = zen ? (cfg.zenRadius    ?? 0.24) : (cfg.normalRadius    ?? 0.18);
+            if (typeof __bloomPass.strength === 'number') { __bloomPass.strength = strength; }
+            if (typeof __bloomPass.threshold === 'number') { __bloomPass.threshold = threshold; }
+            if (typeof __bloomPass.radius === 'number') { __bloomPass.radius = radius; }
+            if (typeof __bloomPass.setParams === 'function') { __bloomPass.setParams({ strength, threshold, radius }); }
+          }
+          // 如果禁用：直接用普通渲染
+          if (enabled) composer.render(); else renderer.render(scene, camera);
+        } else {
+          renderer.render(scene, camera);
+        }
+      } catch(e){ try { console.warn('[bloom] render failed', e); } catch(_){} }
       try { page?.onRenderTick?.() } catch (e) {}
       __prevRenderTime = now;
       __rafId = canvas.requestAnimationFrame(render);
@@ -1622,41 +1738,7 @@ export function boot(page) {
                     if (__dayNightMat.uniforms.uSpecularStrength) __dayNightMat.uniforms.uSpecularStrength.value = Math.max(0.0, Math.min(2.0, (LIGHT_CFG?.zen?.specularStrength ?? 0.95)));
                     if (__dayNightMat.uniforms.uSpecularColor) { __dayNightMat.uniforms.uSpecularColor.value.set(1,1,1); }
                     if (__dayNightMat.uniforms.uSpecularUseTex) { __dayNightMat.uniforms.uSpecularUseTex.value = 0.0; }
-                  if (__dayNightMat.uniforms.uCameraPosWorld) { __dayNightMat.uniforms.uCameraPosWorld.value.copy(camera.position); }
-                  } catch(_){ }
-                  // 诊断：确认禅定模式下辉光参数写入
-                  try {
-                    const a = (APP_CFG?.zen?.atmosphere || APP_CFG?.normal?.atmosphere || {});
-                    const u = __dayNightMat.uniforms || {};
-                    if (u.uAtmosphereDebugOnly) u.uAtmosphereDebugOnly.value = (a.debugOnly === true) ? 1.0 : 0.0;
-                    console.info('[ATMOS(zen) uniforms set]', {
-                      cfgIntensity: a.intensity,
-                      cfgPower: a.power,
-                      debugOnly: !!a.debugOnly,
-                      setIntensity: Number(u.uAtmosphereIntensity?.value || 0).toFixed(3),
-                      setPower: Number(u.uAtmospherePower?.value || 0).toFixed(3),
-                      setDebugOnly: Number(u.uAtmosphereDebugOnly?.value || 0).toFixed(3),
-                      setColor: {
-                        r: Number(u.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
-                        g: Number(u.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
-                        b: Number(u.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
-                      },
-                    });
-                  } catch(_){ }
-                  // 更新：禅定模式下的大气辉光（Fresnel）参数
-                  try {
-                    const u = __dayNightMat.uniforms || {};
-                    const a = (APP_CFG?.zen?.atmosphere || APP_CFG?.normal?.atmosphere || {});
-                    const enabled = (a.enabled !== false);
-                    if (u.uAtmosphereIntensity) u.uAtmosphereIntensity.value = enabled ? Math.max(0.0, Math.min(2.0, (a.intensity ?? 0.12))) : 0.0;
-                    if (u.uAtmospherePower) u.uAtmospherePower.value = Math.max(0.1, Math.min(8.0, (a.power ?? 2.0)));
-                    if (u.uAtmosphereColor) {
-                      const c = a.color || { r: 0.5, g: 0.8, b: 1.0 };
-                      const r = (typeof c.r === 'number') ? c.r : (Array.isArray(c) ? c[0] : 0.5);
-                      const g = (typeof c.g === 'number') ? c.g : (Array.isArray(c) ? c[1] : 0.8);
-                      const b = (typeof c.b === 'number') ? c.b : (Array.isArray(c) ? c[2] : 1.0);
-                      u.uAtmosphereColor.value.set(r, g, b);
-                    }
+                    if (__dayNightMat.uniforms.uCameraPosWorld) { __dayNightMat.uniforms.uCameraPosWorld.value.copy(camera.position); }
                   } catch(_){ }
                   // 诊断：输出关键 uniform 值与材质类型，确认是否为 ShaderMaterial 且参数生效
                   try {
@@ -1665,13 +1747,6 @@ export function boot(page) {
                       matType: earthMesh?.material?.type,
                       isShader: (earthMesh?.material instanceof THREE.ShaderMaterial),
                       exposure: Number(u.uExposure?.value || 0).toFixed(3),
-                      atmosIntensity: Number(u.uAtmosphereIntensity?.value || 0).toFixed(3),
-                      atmosPower: Number(u.uAtmospherePower?.value || 0).toFixed(3),
-                      atmosColor: {
-                        r: Number(u.uAtmosphereColor?.value?.r ?? NaN).toFixed(3),
-                        g: Number(u.uAtmosphereColor?.value?.g ?? NaN).toFixed(3),
-                        b: Number(u.uAtmosphereColor?.value?.b ?? NaN).toFixed(3),
-                      },
                       daySideGain: Number(u.uDaySideGain?.value || 0).toFixed(3),
                       nightDarkness: Number(u.uNightDarkness?.value || 0).toFixed(3),
                       dayContrast: Number(u.uDayContrast?.value || 0).toFixed(3),
@@ -1756,12 +1831,19 @@ export function boot(page) {
                     });
                   }
                 } catch(_){ }
-                // 恢复旧材质，关闭昼夜混合
+                // 恢复旧材质，关闭禅定材质；若恢复的是“普通模式的昼夜混合着色器”，则保留其引用，确保主题切换可更新纹理
                 try {
                   if (earthMesh && __earthOldMat) {
                     earthMesh.material = __earthOldMat;
                     earthMesh.material.needsUpdate = true;
-                    __dayNightMat = null;
+                    // 若恢复后的材质是 ShaderMaterial（普通模式的昼夜混合），保持 __dayNightMat 指向它
+                    try {
+                      if (earthMesh.material && (earthMesh.material instanceof THREE.ShaderMaterial)) {
+                        __dayNightMat = earthMesh.material;
+                      } else {
+                        __dayNightMat = null;
+                      }
+                    } catch(_){ __dayNightMat = null; }
                     __earthOldMat = null;
                   }
                 } catch(_){}
@@ -1967,6 +2049,28 @@ export function selectCountryByCode(code){
     const s = state;
     if (!s || !s.COUNTRY_FEATURES) return false;
     const codeUp = String(code || '').toUpperCase();
+    // 特殊处理：TW/TWN 点击等同于 CHN 高亮，但页面命中保留台湾以触发关闭面板/仅台北的逻辑
+    if (codeUp === 'TWN' || codeUp === 'TW') {
+      const fTW = s.COUNTRY_FEATURES.find(feat => {
+        const p = feat?.props || {};
+        const a3 = String(p.ISO_A3 || '').toUpperCase();
+        const a2 = String(p.ISO_A2 || p.ISO || p.ISO2 || p.CC || '').toUpperCase();
+        return a3 === 'TWN' || a2 === 'TW';
+      }) || null;
+      const fCN = s.COUNTRY_FEATURES.find(feat => {
+        const p = feat?.props || {};
+        const a3 = String(p.ISO_A3 || '').toUpperCase();
+        const a2 = String(p.ISO_A2 || p.ISO || p.ISO2 || p.CC || '').toUpperCase();
+        return a3 === 'CHN' || a2 === 'CN';
+      }) || null;
+      // 同时高亮中国与台湾
+      const targets = [];
+      if (fCN) targets.push(fCN);
+      if (fTW) targets.push(fTW);
+      s.__setHighlight?.(targets.length ? targets : null);
+      try { s.page?.onCountryPicked?.(fTW || null); } catch(_){}
+      return !!(fTW || fCN);
+    }
     const f = s.COUNTRY_FEATURES.find(feat => {
       const p = feat?.props || {};
       const a3 = String(p.ISO_A3 || '').toUpperCase();
