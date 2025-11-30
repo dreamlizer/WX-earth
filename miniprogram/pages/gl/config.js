@@ -24,7 +24,14 @@ export const APP_CFG = {
     fallbackEnabled: false,   // 关闭回退，整体禁用 Bloom
     fallbackBoost: 1.15       // 回退时整体亮度微提（乘法）
   },
-    showZoomBar: false     // 底部缩放条是否可见（false 则隐藏并不可用）
+    showZoomBar: false,     // 底部缩放条是否可见（false 则隐藏并不可用）
+    transitions: {
+      themeFadeOutMs: 500,
+      themeFadeInMs: 600,
+      zenFadeOutMs: 600,
+      zenFadeInMs: 700,
+      lightSmoothMs: 200
+    }
   },
 
   
@@ -37,7 +44,7 @@ export const APP_CFG = {
     useZenLighting: true,
     // 开关：普通模式是否采用“禅定材质”（昼夜混合 ShaderMaterial）
     // 若出现性能或观感问题，设为 false 回退到 Phong 材质
-    useZenMaterial: true,
+    useZenMaterial: false,
     // 夜景按钮行为：true=纯夜视图（两侧都用夜景纹理），false=保持日夜混合
     nightThemePure: true,
     // 纯夜视图下的微调（可选）：曝光与白天侧增益
@@ -60,11 +67,19 @@ export const APP_CFG = {
     starBreathStrength: 0.25,
   },
 
+  brightness: {
+    default: 0.8,
+    min: 0.3,
+    max: 1.5
+  },
+
   
   // -------------------- 禅定模式 --------------------
   // [禅定专用] 禅定模式（右侧白天、左侧夜晚）
   // 进入禅定后的地球位移、自动旋转、昼夜混合与星空参数。
   zen: {
+    // 开关：是否使用 ShaderMaterial（昼夜混合）。若设备不支持或显示异常，改为 false 回退到 MeshPhongMaterial
+    useShaderMaterial: true,
     // 禅定位移：向下移动的“附加偏移”（相对于地球半径 R=1 的比例）
     // 例如 -0.35 表示在现有基础位置上再向下移动 0.35R
     globeYOffsetR: -0.75,
@@ -100,14 +115,14 @@ export const APP_CFG = {
     daySideGain: 1.50,
 
     // 新增：禅定模式下的星空整体透明度（0~1）。为确保可见暂时提高。
-    starOpacity: 0.70,
+    starOpacity: 0.78,
     // 新增：禅定模式星点大小缩放
     starSizeScale: 2.0,
     // 新增：禅定模式星点亮度增益
-    starBrightnessGain: 2.8,
+    starBrightnessGain: 3.0,
     // 新增：禅定模式——全局“呼吸式”闪烁参数（更慢、略强）
-    starBreathSpeed: 0.42,
-    starBreathStrength: 0.35,
+    starBreathSpeed: 0.55,
+    starBreathStrength: 0.50,
 
     // 新增：高光压缩（ToneMap）系数，避免右侧“曝白”发灰；0 关闭
     // 建议范围 0.25–0.45（与 exposure/daySideGain 搭配）
@@ -136,6 +151,8 @@ export const APP_CFG = {
     use3D: false,
     // 单句停留显示时长（毫秒；若预设中有自定义 duration 则以预设为准）
     displayMs: 10000,
+    // 开关：以哪边为准（true=优先使用每句的 duration；false=以上面的 displayMs 为准）
+    preferLineDuration: true,
     // 竖排诗句字号（px），用于页面样式绑定
     fontSizePx: 24,
     // 诗句移动速度（px/s）：值越大移动越快
@@ -210,7 +227,7 @@ export const APP_CFG = {
     // 自动取消选中：当选中国家大部分进入背面时清除高亮（避免穿模）
     autoClearOnBackside: {
       enabled: true,          // 开启自动取消背面选中
-      minVisibleRatio: 0.60,  // 前半球可见比例阈值（<=10% 即 90% 在背面）
+      minVisibleRatio: 0.50,  // 前半球可见比例阈值（<=10% 即 90% 在背面）
       checkIntervalMs: 500,   // 检查间隔，毫秒
       requireConsecutive: 2   // 连续判定次数，避免抖动
     }
@@ -232,4 +249,19 @@ export const APP_CFG = {
   
   // [边界数据] 分辨率 LOD（Natural Earth 系列）：110m/50m/10m
   bordersLod: '110m'
+};
+
+export function isDevtools(){
+  try {
+    const info = wx.getSystemInfoSync();
+    const env = String(info?.environment || '').toLowerCase();
+    const plat = String(info?.platform || '').toLowerCase();
+    return env === 'devtools' || plat === 'windows' || plat === 'mac';
+  } catch(_) { return false; }
+}
+
+export const LOG = {
+  info: (...a) => { try { console.info(...a); } catch(_){} },
+  warn: (...a) => { try { console.warn(...a); } catch(_){} },
+  error: (...a) => { try { console.error(...a); } catch(_){} },
 };

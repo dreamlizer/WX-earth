@@ -5,14 +5,13 @@ const AUDIO_SAVED_KEY = '__audio_saved_paths_v1';
 
 function readAudioSaved(){ try { return (typeof wx?.getStorageSync === 'function') ? (wx.getStorageSync(AUDIO_SAVED_KEY) || {}) : {}; } catch(_) { return {}; } }
 function writeAudioSaved(obj){ try { if (typeof wx?.setStorageSync === 'function') wx.setStorageSync(AUDIO_SAVED_KEY, obj || {}); } catch(_){} }
-function audioTargetPath(preset){
+  function audioTargetPath(preset){
   try {
     const root = wx.env?.USER_DATA_PATH || '';
     if (!root) return '';
     const dir = root + '/audio';
     wx.getFileSystemManager().mkdir({ dirPath: dir, recursive: true, success(){}, fail(){} });
-    // 禅音频文件名：preset1 为 aac，preset2/3 为 mp3（与你上传的文件一致）
-    const name = preset === 1 ? 'zen-1.aac' : (preset === 2 ? 'zen-2.mp3' : 'zen-3.mp3');
+    const name = preset === 1 ? 'zen-1.aac' : `zen-${preset}.mp3`;
     return dir + '/' + name;
   } catch(_) { return ''; }
 }
@@ -36,18 +35,33 @@ export class ZenAudio {
       a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
       a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
       a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
+      if (typeof a.onEnded === 'function') {
+        a.onEnded(() => { try { this._onEndedCb && this._onEndedCb(); } catch(_){ } });
+      }
+      if (typeof a.onTimeUpdate === 'function') {
+        a.onTimeUpdate(() => {
+          try {
+            const t = typeof a.currentTime === 'number' ? a.currentTime : 0;
+            const d = typeof a.duration === 'number' ? a.duration : 0;
+            if (d > 0 && this._lastTime && this._lastTime > d - 0.5 && t < 0.5) {
+              try { this._onEndedCb && this._onEndedCb(); } catch(_){ }
+            }
+            this._lastTime = t;
+          } catch(_){ }
+        });
+      }
     } catch(_){ }
     return a;
   }
 
   async ensureOffline(){
     // 本地预览或缺少文件系统/云下载能力时直接跳过
+    try { if (isDevtools()) return; } catch(_){ }
     if (this.appCfg?.cloud?.enabled === false || !(wx?.cloud?.downloadFile && wx?.getFileSystemManager)) { return; }
     try {
       const map = readAudioSaved();
       const fs = wx.getFileSystemManager();
-      // 三个预设均尝试离线保存（若 fileID 存在）
-      const files = [ { preset: 1, fileID: this.fileIds[1] }, { preset: 2, fileID: this.fileIds[2] }, { preset: 3, fileID: this.fileIds[3] } ];
+      const files = Object.keys(this.fileIds || {}).map(k => ({ preset: Number(k), fileID: this.fileIds[k] })).filter(it => !!it.fileID);
       for (const it of files) {
         const pSaved = map[it.preset];
         if (pSaved) { try { fs.accessSync(pSaved); continue; } catch(_){} }
@@ -65,6 +79,7 @@ export class ZenAudio {
   }
 
   async resolveCloudAudio(preset){
+    try { if (isDevtools()) return ''; } catch(_){ }
     // 离线优先
     try {
       const saved = readAudioSaved()[preset];
@@ -199,4 +214,19 @@ export class ZenAudio {
   }
 
   stop(){ try { this.audio?.stop?.(); } catch(_){} }
+
+  onEnded(cb){ this._onEndedCb = cb; }
 }
+
+export function clearZenAudioSaved(){
+  try {
+    const map = readAudioSaved();
+    const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+    Object.keys(map || {}).forEach(k => {
+      const p = map[k];
+      if (p) { try { fs && fs.accessSync(p); try { fs.unlinkSync(p); } catch(_){} } catch(_){} }
+    });
+    writeAudioSaved({});
+  } catch(_){ }
+}
+import { isDevtools } from './config.js';

@@ -82,14 +82,28 @@ export class CountryInfoManager {
       const gdpVal = (typeof meta?.GDP_USD_TRILLION === 'number') ? meta.GDP_USD_TRILLION : null;
       const gdp = (gdpVal !== null) ? formatThousandsFixed(gdpVal, 2) : '--';
 
-      const tzName = page.selectedTimezone || '';
+      let tzName = page.selectedTimezone || '';
+      try {
+        if (!tzName) {
+          const bb = hit?.bbox || null;
+          if (Array.isArray(bb) && bb.length >= 4) {
+            const [minLon, minLat, maxLon, maxLat] = bb;
+            const cLon = (minLon + maxLon) / 2;
+            const cLat = (minLat + maxLat) / 2;
+            tzName = page.tzlookup?.(cLat, cLon) || '';
+          }
+        }
+      } catch(_){ }
       const tzOffsetStr = page.computeGmtOffsetStr(tzName);
       const timeStr = page.formatTime(new Date(), tzName);
+      const pill = (page.__pendingHoverText || (tzOffsetStr || tzName || ''));
 
       page.setData({
         countryInfo: { code: code || '', name: displayName, capital, areaKm2, population, gdp, tzName, tzOffsetStr, time: timeStr, source: sourceLabel },
-        countryPanelOpen: true
+        countryPanelOpen: true,
+        hoverText: pill
       });
+      try { page.__pendingHoverText = null; } catch(_){}
 
       // 打开面板后刷新顶部位置，并更新标题后缀
       try { page.updateTopOffsets(); } catch(_){ }

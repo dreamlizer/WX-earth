@@ -1,7 +1,7 @@
 <!-- 统一顶部工具栏：语言 | 时间 | 设置 -->
 <view class="top-bar">
   <view id="langBtn" class="top-icon-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleLang" role="button">{{lang === 'zh' ? '中' : 'EN'}}</view>
-  <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}}">{{currentTime}}</text>
+  <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}}" bindtap="onTapTimePill">{{currentTime}}</text>
   <view class="top-icon-btn settings-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSettings" role="button">⚙</view>
   <!-- 第二行：左侧“切”按钮（与右侧“禅”按钮对称） -->
   <!-- 恢复原搜索放大镜；禅模式下隐藏但占位，避免布局跳动 -->
@@ -18,14 +18,25 @@
 <!-- 彩蛋点击感应区：禅定模式下覆盖时间胶囊附近，接受点击（扩大容忍度） -->
 <view wx:if="{{zenMode && eggSensorVisible}}" id="eggArea" class="egg-sensor" style="left: {{eggSensorLeft}}px; top: {{eggSensorTop}}px; width: {{eggSensorWidth}}px; height: {{eggSensorHeight}}px;" bindtap="onEggTap"></view>
 
+<!-- 亮度调节竖条：普通模式下可用，隐藏但可触摸；位于“禅”按钮下方 -->
+<view wx:if="{{!zenMode && brightnessSensorVisible}}" id="brightnessArea"
+      class="brightness-sensor"
+      style="left: {{brightnessSensorLeft}}px; top: {{brightnessSensorTop}}px; width: {{brightnessSensorWidth}}px; height: {{brightnessSensorHeight}}px;"
+      catchtouchstart="onBrightnessTouchStart" catchtouchmove="onBrightnessTouchMove" catchtouchend="onBrightnessTouchEnd" catchtouchcancel="onBrightnessTouchEnd"></view>
+
 <!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
 <view wx:if="{{zenMode}}" class="poetry-layer">
-  <view id="poetryA" class="poetry-item {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
+  <view id="poetryA" class="poetry-item {{lang==='en'?'horizontal':''}} {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
     <text class="poetry-text">{{poetryA.text}}</text>
   </view>
-  <view id="poetryB" class="poetry-item {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
+  <view id="poetryB" class="poetry-item {{lang==='en'?'horizontal':''}} {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
     <text class="poetry-text">{{poetryB.text}}</text>
   </view>
+</view>
+
+<!-- 地球加载中提示：居中显示，仅在 loading=true 时可见 -->
+<view wx:if="{{loading}}" class="loading-overlay">
+  <text class="loading-text">地球加载中...</text>
 </view>
 
 <!-- Special 文本独立层：覆盖全屏显示，淡入/缓慢移动后淡出 -->
@@ -64,17 +75,15 @@
       <view class="qty-btn {{theme==='day8k'?'active':''}}" data-val="daylight" bindtap="onSetTheme" role="button">白昼</view>
       <view class="qty-btn {{theme==='default'?'active':''}}" data-val="default" bindtap="onSetTheme" role="button">默认</view>
       <view class="qty-btn {{theme==='night'?'active':''}}" data-val="night" bindtap="onSetTheme" role="button">夜景</view>
-    </view>
-    <!-- 主题行右侧：云层独立开关（默认关闭） -->
-    <view class="toggle-group">
       <view class="qty-btn {{showCloud?'active':''}}" bindtap="onTapCloudBtn" role="button">云层</view>
     </view>
   </view>
   <view class="settings-row">
-    <text>城市显示</text>
+    <text>城市数量</text>
     <view class="qty-group">
       <view class="qty-btn {{cityTier==='none'?'active':''}}" data-val="none" bindtap="onSetCityTier" role="button">无</view>
       <view class="qty-btn {{cityTier==='key'?'active':''}}" data-val="key" bindtap="onSetCityTier" role="button">重点</view>
+      <view class="qty-btn {{cityTier==='default'?'active':''}}" data-val="default" bindtap="onSetCityTier" role="button">默认</view>
       <view class="qty-btn {{cityTier==='more'?'active':''}}" data-val="more" bindtap="onSetCityTier" role="button">更多</view>
     </view>
   </view>
@@ -90,17 +99,18 @@
   <view class="settings-row inertia-row">
     <text>惯性</text>
     <view class="qty-group">
-      <!-- 原生 slider：隐藏数值、小巧白色圆点、带前景/背景滑轨 -->
-<slider class="inertia-slider" min="0" max="100" step="1" value="{{inertiaPct}}" show-value="false" block-size="18" block-color="#ffffff" activeColor="#64b5ff" backgroundColor="#223447" bindchanging="onInertiaChanging" bindchange="onSetInertia"></slider>
+      <view class="qty-btn {{inertiaPct===0?'active':''}}" data-val="0" bindtap="onSetInertiaBtn" role="button">无</view>
+      <view class="qty-btn {{inertiaPct===30?'active':''}}" data-val="30" bindtap="onSetInertiaBtn" role="button">默认</view>
+      <view class="qty-btn {{inertiaPct===90?'active':''}}" data-val="90" bindtap="onSetInertiaBtn" role="button">快</view>
+      <view class="qty-btn {{inertiaPct===100?'active':''}}" data-val="100" bindtap="onSetInertiaBtn" role="button">无限</view>
     </view>
   </view>
 </view>
 
 <scroll-view
   class="wrap"
-  scroll-y="true"
+  scroll-y="{{isPC}}"
   show-scrollbar="false"
-  enable-passive="true"
   scroll-anchoring="false"
   scroll-top="{{scrollTop}}"
 >

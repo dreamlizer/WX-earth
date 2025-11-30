@@ -1,6 +1,7 @@
 // 布局管理器：统一计算国家面板的顶部位置（考虑安全区、顶栏、提示条）
 // 说明：纯计算委托给 layout-utils 的函数，这里负责从页面拿到必要状态并 setData。
-import { computeCountryPanelTop, computeSafeTopFromSystemInfo } from './layout-utils.js';
+import { computeCountryPanelTop, computeSafeTopFromSystemInfo, computeSettingsPanelFrame, computeEggSensorFrame, computeBrightnessSensorFrame } from './layout-utils.js';
+import { APP_CFG } from './config.js';
 
 export class LayoutManager {
   constructor(page){
@@ -42,5 +43,56 @@ export class LayoutManager {
         if (panelTop !== this.page?.data?.countryPanelTop) this.page?.setData?.({ countryPanelTop: panelTop });
       } catch(__){}
     }
+  }
+  updateSettingsPanelFrame(){
+    try {
+      const q = wx.createSelectorQuery().in(this.page);
+      q.select('#timePill').boundingClientRect();
+      q.select('.settings-btn').boundingClientRect();
+      q.exec(res => {
+        try {
+          const timeRect = res && res[0];
+          const settingsRect = res && res[1];
+          const fr = computeSettingsPanelFrame(timeRect, settingsRect);
+          this.page?.setData?.({ settingsPanelLeft: fr.left, settingsPanelWidth: fr.width });
+        } catch(_){ }
+      });
+    } catch(_){ }
+  }
+  updateEggSensor(){
+    try {
+      const q = wx.createSelectorQuery().in(this.page);
+      q.select('#timePill').boundingClientRect();
+      q.select('.cut-btn').boundingClientRect();
+      q.select('.zen-btn').boundingClientRect();
+      q.exec(res => {
+        try {
+          const pill = res && res[0];
+          const cutRect = res && res[1];
+          const zenRect = res && res[2];
+          const sys = wx.getSystemInfoSync() || {};
+          const safeTop = computeSafeTopFromSystemInfo(sys);
+          const opts = { margin: 6, tapTolerancePx: Number(APP_CFG?.poetry?.special?.tapTolerancePx || 22), safeTop };
+          const fr = computeEggSensorFrame(pill, cutRect, zenRect, opts);
+          this.page?.setData?.({ eggSensorLeft: fr.left, eggSensorTop: fr.top, eggSensorWidth: fr.width, eggSensorHeight: fr.height, eggSensorVisible: !!fr.visible });
+        } catch(_){ }
+      });
+    } catch(_){ }
+  }
+
+  updateBrightnessSensor(){
+    try {
+      const q = wx.createSelectorQuery().in(this.page);
+      q.select('.zen-btn').boundingClientRect();
+      q.exec(res => {
+        try {
+          const zenRect = res && res[0];
+          const win = wx.getSystemInfoSync() || {};
+          const fr = computeBrightnessSensorFrame(zenRect, win, { margin: 6, widthPx: 28, heightRatio: 0.33 });
+          const visible = !!fr.visible && !this.page?.data?.zenMode;
+          this.page?.setData?.({ brightnessSensorLeft: fr.left, brightnessSensorTop: fr.top, brightnessSensorWidth: fr.width, brightnessSensorHeight: fr.height, brightnessSensorVisible: visible });
+        } catch(_){ }
+      });
+    } catch(_){ }
   }
 }

@@ -24,7 +24,8 @@ export function formatTime(date, timeZone, lang = 'zh') {
             const y = parts.find(p => p.type === 'year')?.value || '0000';
             const m = get('month');
             const d = get('day');
-            const hh = get('hour');
+            const hhRaw = get('hour');
+            const hh = (hhRaw === '24') ? '00' : hhRaw;
             const mm = get('minute');
             const ss = get('second');
             return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
@@ -45,6 +46,8 @@ export function formatTime(date, timeZone, lang = 'zh') {
         s = s.replace(/[年\-]/g, '/').replace(/月/g, '/').replace(/日/g, '').replace(/,/g, '').trim();
         // 可能出现 "YYYY/MM/DD, HH:mm:ss" 或 "YYYY/ MM/ DD HH:mm:ss"
         s = s.replace(/\s{2,}/g, ' ');
+        // 修正午夜显示为 24:xx，统一为 00:xx
+        s = s.replace(/^(\d{4}\/\d{2}\/\d{2}) 24:/, '$1 00:');
         if (/\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}/.test(s)) return s;
       } catch(_){ /* fall through */ }
 

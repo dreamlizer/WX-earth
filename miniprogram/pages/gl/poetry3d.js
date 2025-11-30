@@ -13,9 +13,12 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
   let nextLines = [];
   let idx = 0;
   let tSwitch = 0;
+  let baseTime = 0; // 第一句的基准开始时间
+  let accumDuration = 0; // 累积的理论持续时间
   let fadeInMs = Number(cfg.fadeInMs || 800);
   let crossMs = Number(cfg.crossfadeMs || 800);
   let displayMs = Number(cfg.displayMs || 7000);
+  let preferLineDuration = !!cfg.preferLineDuration;
   let movePxPerSec = Number(cfg.movePxPerSec || 36);
   let safeMarginPx = Number(cfg.safeMarginPx || 18);
   let behindOffset = Number(cfg.behindOffset || 0.08); // 距离地球交点之后的偏移（世界单位，球半径=1）
@@ -80,20 +83,36 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
     return { x: margin, y: margin, w: viewW - margin * 2, h: viewH - margin * 2 };
   }
 
-  function showNext(useA){
+  function showNext(useA, forceStartAt = 0){
     if (!nextLines.length) return;
     const item = nextLines[idx % nextLines.length];
     idx++;
     const bounds = getBounds();
     const start = randomStart(bounds);
-    const end = computeMove(start, displayMs, bounds);
+    const durNow = preferLineDuration ? Number(item?.duration || displayMs) : Number(displayMs);
+    const end = computeMove(start, durNow, bounds);
     const s = (useA ? (a = makeSprite(item.text), a) : (b = makeSprite(item.text), b));
     group.add(s);
-    s.userData.screen = { x: start.x, y: start.y, endX: end.endX, endY: end.endY, t0: performance.now(), dur: displayMs };
+    
+    const now = performance.now();
+    const startTime = forceStartAt || now;
+    
+    // 如果是首句，初始化基准时间
+    if (!baseTime) {
+      baseTime = startTime;
+      accumDuration = 0;
+    }
+
+    s.userData.screen = { x: start.x, y: start.y, endX: end.endX, endY: end.endY, t0: startTime, dur: durNow };
     // 进入时淡入
     s.material.opacity = 0.0;
     cur = s;
-    tSwitch = performance.now() + Math.max(0, displayMs - crossMs);
+    
+    // 严格计算下一句的理论开始时间
+    accumDuration += durNow;
+    // 下一句应该在什么时候开始？ = 基准时间 + 累积时长 - 交叉淡入时间
+    // 这样能保证第 N 句的结束点严格对齐时间轴
+    tSwitch = baseTime + accumDuration - crossMs;
   }
 
   function disposeSprite(s){
@@ -102,42 +121,66 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
   }
 
   return {
-    setEnabled(on){ enabled = !!on; if (!enabled) { disposeSprite(a); disposeSprite(b); a = b = cur = null; } },
+    setEnabled(on){ enabled = !!on; if (!enabled) { disposeSprite(a); disposeSprite(b); a = b = cur = null; baseTime = 0; accumDuration = 0; } },
     start(lines, conf){
       nextLines = Array.isArray(lines) ? lines.map(l => ({ text: String(l.text||''), duration: Number(l.duration||displayMs) })).filter(x => x.text.length>0) : [];
       if (conf) {
         fadeInMs = Number(conf.fadeInMs || fadeInMs);
         crossMs = Number(conf.crossfadeMs || crossMs);
         displayMs = Number(conf.displayMs || displayMs);
+        preferLineDuration = !!conf.preferLineDuration;
         movePxPerSec = Number(conf.movePxPerSec || movePxPerSec);
         safeMarginPx = Number(conf.safeMarginPx || safeMarginPx);
         behindOffset = Number(conf.behindOffset || behindOffset);
       }
-      idx = 0; disposeSprite(a); disposeSprite(b); a = b = cur = null;
-      if (!nextLines.length) return; showNext(true);
+      idx = 0; disposeSprite(a); disposeSprite(b); a = b = cur = null; 
+      baseTime = 0; accumDuration = 0; tSwitch = 0;
+      if (!nextLines.length) return; 
+      showNext(true);
     },
-    stop(){ disposeSprite(a); disposeSprite(b); a = b = cur = null; },
+    stop(){ disposeSprite(a); disposeSprite(b); a = b = cur = null; baseTime = 0; accumDuration = 0; },
     update(now){
       if (!enabled) return;
       // 交替切换
+      // 注意：如果浏览器卡顿导致 now 远超 tSwitch，也要立即切换，并修正下一句的 t0
       if (tSwitch && now >= tSwitch){
-        // 旧句淡出、新句淡入
+        // 旧句淡出
         if (cur) { cur.userData.fadeOutUntil = now + Math.max(300, crossMs); }
-        showNext(cur === a ? false : true);
-        tSwitch = 0;
+        
+        // 强制下一句的开始时间为理论时间 tSwitch，消除累积误差
+        // 但如果卡顿太久（超过2秒），就重置基准，避免下一句一出来就结束
+        let nextStart = tSwitch;
+        if (now - tSwitch > 2000) {
+           nextStart = now;
+           // 重置基准，防止"赶进度"式快进
+           const currentDur = preferLineDuration ? Number(nextLines[idx % nextLines.length]?.duration || displayMs) : displayMs;
+           baseTime = now - (accumDuration - currentDur + crossMs); // 倒推新的基准
+        }
+        
+        showNext(cur === a ? false : true, nextStart);
       }
       // 逐帧更新位置与透明度
       [a, b].forEach(s => {
         if (!s || !s.userData.screen) return;
         const u = s.userData.screen;
-        const t = Math.max(0, Math.min(1, (now - u.t0) / Math.max(1, u.dur)));
+        // 使用相对于自身 t0 的时间
+        const elapsed = now - u.t0;
+        
+        // 如果还没到开始时间（预创建），则隐藏
+        if (elapsed < 0) {
+            s.visible = false;
+            return;
+        }
+        s.visible = true;
+
+        const t = Math.max(0, Math.min(1, elapsed / Math.max(1, u.dur)));
         const x = u.x + (u.endX - u.x) * t;
         const y = u.y + (u.endY - u.y) * t;
         const world = toWorldBehind(x, y);
         s.position.copy(world);
         // 淡入/淡出
         if (!s.userData.fadeOutUntil) {
-          const k = Math.max(0, Math.min(1, (now - u.t0) / Math.max(1, fadeInMs)));
+          const k = Math.max(0, Math.min(1, elapsed / Math.max(1, fadeInMs)));
           s.material.opacity = Math.min(1.0, 0.05 + 0.95 * k);
         } else {
           const rem = Math.max(0, s.userData.fadeOutUntil - now);

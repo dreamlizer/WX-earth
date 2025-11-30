@@ -22,11 +22,58 @@ export class LabelsManager {
   }
 
   onToggleLang(){
+    try {
+      if (this.page?.data?.settingsOpen) { this.page.__getPanelMgr?.().closeSettings?.(); }
+      if (this.page?.data?.countryPanelOpen) { this.page.onCloseCountryPanel?.(); }
+      try { this.page.updateTopOffsets?.(); } catch(_){ }
+    } catch(_){ }
     const next = this.page.data.lang === 'zh' ? 'en' : 'zh';
     const labels = this.page.data.uiLabels[next] || this.page.data.uiLabels.zh;
-    this.page.setData({ lang: next, labels });
+    // 切换语言：更新标签与诗句字号（英文小一号）
+    const basePx = Number(this.page.data.poetryFontSizeBasePx || this.page.data.poetryFontSizePx || 16);
+    const enPx = Math.max(10, basePx - 2);
+    const zhPx = basePx;
+    this.page.setData({ lang: next, labels, poetryFontSizePx: next === 'en' ? enPx : zhPx });
     try { this.page.updateCountryTitleSuffix && this.page.updateCountryTitleSuffix(); } catch(_){}
     this.rebuildLabelsByLang(next);
+    // 若处于禅定模式：切换对应语言的诗句预设组（中文1，英文4）
+    try {
+      if (this.page?.data?.zenMode) {
+        let preset = (next === 'en') ? 101 : 1;
+        if (next === 'en') {
+          try {
+            const map = this.page?.__poetryPresets || {};
+            const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
+            if (keys.length) preset = keys[0];
+          } catch(_){ }
+        }
+        this.page.__zenPreset = preset;
+        // 视觉平滑：淡出当前，再在1秒后切入新预设（与切换逻辑一致）
+        try { this.page?._stopZenAudio?.(2000); } catch(_){ }
+        try { this.page?.setData?.({ poetryFadeMs: 2000, 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
+        setTimeout(() => {
+          // 英文仍播放 1–3 三首：将 4–6 映射到 1–3
+          const audioPreset = (next === 'en') ? Math.max(1, preset - 100) : preset;
+        try { this.page?._startZenAudio?.(audioPreset); } catch(_){ }
+        try { this.page?.__getPoetryMgr?.().resetImmediate?.(); } catch(_){ }
+        try { this.page?.__startPoetryViaMgr?.(preset, 0, { firstDelayMs: 0 }); } catch(_){ }
+        }, 1000);
+      }
+    } catch(_){}
+  }
+
+  initOnce(lang){
+    const doInit = () => {
+      try {
+        const ctx = getRenderContext();
+        if (ctx && ctx.globeGroup && ctx.camera) {
+          this.rebuildLabelsByLang(lang || (this.page?.data?.lang || 'zh'));
+          return;
+        }
+      } catch(_){ }
+      setTimeout(doInit, 100);
+    };
+    doInit();
   }
 
   rebuildLabelsByLang(lang, featuresArg){

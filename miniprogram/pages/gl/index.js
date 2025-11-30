@@ -1,9 +1,9 @@
 // 极薄适配层：页面生命周期与事件绑定，只转交给 main.js
-import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, getRenderContext, setZoom, setNightMode, setTheme, setCloudVisible, getCountries, setPaused, flyTo, setDebugFlags, selectCountryByCode, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode as setGlPerfMode } from './main.js';
+import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, getRenderContext, setZoom, setNightMode, setTheme, setCloudVisible, getCountries, setPaused, flyTo, setDebugFlags, selectCountryByCode, setZenMode, startPoetry3D, stopPoetry3D, setInertia, setPerfMode as setGlPerfMode, nudgeCenter, refreshTextures, setBrightnessScale } from './main.js';
 import { computeStartNearCenter, computeMove, nearbyFrom } from './poetry-motion.js';
-import { APP_CFG } from './config.js';
+import { APP_CFG, isDevtools, LOG } from './config.js';
 import { formatTime as formatTimeUtil } from './time-utils.js';
-import { ZenAudio } from './zen-audio.js';
+import { ZenAudio, clearZenAudioSaved } from './zen-audio.js';
 import { POETRY_PRESETS } from './poetry-presets.js';
 import { computeGmtOffsetStr as computeGmtOffsetStrUtil, buildCountryTitleSuffix } from './title-utils.js';
 // 已迁移到 SearchManager：不再在页面层直接使用 buildSearchSuggestions
@@ -25,6 +25,7 @@ import { PoetryManager } from './poetry-manager.js';
 import { SearchManager } from './search-manager.js';
 import { ZenModeManager } from './zen-mode-manager.js';
 import { LayoutManager } from './layout-manager.js';
+import { PerfManager } from './perf-manager.js';
 import { SettingsManager } from './settings-manager.js';
 
 // —— 数字格式化：跨端一致的千分位（避免部分手机不支持 toLocaleString 分组）
@@ -106,6 +107,8 @@ Page({
     poetryFadeMs: 600,
     // 诗句字号（来自配置）
     poetryFontSizePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Number(APP_CFG.poetry.fontSizePx) : 16,
+    // 英文/中文切换时用于还原的基准字号
+    poetryFontSizeBasePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Number(APP_CFG.poetry.fontSizePx) : 16,
     // 诗句移动与交替配置（从 config.js 读取并缓存，便于绑定与逻辑使用）
     poetryCrossfadeMs: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.crossfadeMs)) ? Number(APP_CFG.poetry.crossfadeMs) : 1000,
     poetryMovePxPerSec: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.movePxPerSec)) ? Number(APP_CFG.poetry.movePxPerSec) : 36,
@@ -125,12 +128,20 @@ Page({
     cloudZen2FileId: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/Zen-2.mp3',
     // 新增第三首禅定音乐（preset3）：Zen-3.mp3 的云文件ID（来自你的截图）
     cloudZen3FileId: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/Zen-3.mp3',
+    cloudZen4FileId: '',
     // —— 彩蛋：时间胶囊感应区与 Special 文本展示 ——
     eggSensorVisible: false,
     eggSensorLeft: 0,
     eggSensorTop: 0,
     eggSensorWidth: 80,
     eggSensorHeight: 40,
+    // 亮度竖条感应区（隐藏但可触控）：在普通模式下可用
+    brightnessSensorVisible: false,
+    brightnessSensorLeft: 0,
+    brightnessSensorTop: 0,
+    brightnessSensorWidth: 0,
+    brightnessSensorHeight: 0,
+    brightnessScale: Number(APP_CFG?.brightness?.default ?? 0.85),
     // Special 展示状态（水平排布、轻微放大、淡入/缓慢移动/淡出）
     specialVisible: false,
     specialText: '',
@@ -143,19 +154,13 @@ Page({
     specialY: 0,
     specialTx: 0,
     specialTy: 0,
+    // 地球加载中提示
+    loading: true,
   },
 
   // 页面滚动事件：用于 PC 端鼠标滚轮触发缩放
   onPageScroll(e) {
-    if (!this.data.isPC) return;
-    const dy = e.scrollTop - this.data.lastPageScrollTop;
-    if (!dy) return;
-    const k = -0.002; // 灵敏度：向下滚动缩小
-    const next = this.data.uiZoom + dy * k;
-    setZoom(next);
-    this.setData({ uiZoom: next, lastPageScrollTop: e.scrollTop });
-    // 重置回锚点，避免页面实际滚动
-    wx.pageScrollTo({ scrollTop: this.data.pageScrollAnchor, duration: 0 });
+    return this.__getZoomMgr().pageScroll(e);
   },
 
   // 接受 IANA 名称时，将时间格式化为 YYYY/MM/DD HH:mm:ss（24小时制）
@@ -196,36 +201,30 @@ Page({
     this.selectedTimezone = null;
     this.lastTimeUpdate = 0;
 
-    // 初始标签：等待渲染上下文就绪后再构建，避免早期 ctx 不存在导致不创建 Mesh
-    const waitInit = () => {
-      try {
-        const ctx = getRenderContext();
-        if (ctx && ctx.globeGroup && ctx.camera) {
-          this.rebuildLabelsByLang(this.data.lang);
-          // 首页默认强制显示中国国家标签（CHN），稍作延迟以确保标签 Mesh 已构建
-          try { setTimeout(() => { try { setForcedLabel('CHN'); } catch(_){ } }, 80); } catch(_){ }
-          return; // 完成一次构建
-        }
-      } catch(_){ }
-      setTimeout(waitInit, 100);
-    };
-    waitInit();
+    try { this.__getLabelsMgr().initOnce(this.data.lang); } catch(_){ }
     this._lastLabelsUpdate = 0;
-    // 预加载云端数据：城市仍在 DevTools 跳过；诗句改为始终加载以支持 preset_3
-    if (!this.__isDevtools) { this.preloadCitiesCloud(); }
-    this.preloadPoetryCloud();
+    // 预加载云端数据：在 DevTools 下统一跳过所有云调用，避免报错
+    if (!this.__isDevtools) { try { this.preloadCitiesCloud(); } catch(_){} }
+    if (!this.__isDevtools) { try { this.preloadPoetryCloud(); } catch(_){} }
     // 预加载云端 Special 文本（彩蛋字符串）
-    try { this.preloadSpecialCloud(); } catch(_){}
+    if (!this.__isDevtools) { try { this.preloadSpecialCloud(); } catch(_){} }
     // 首次加载：尝试将禅音频持久化保存到本地（管理器负责）
-    try { this.__getZenMgr().ensureOffline(); } catch(_){}
+    if (!this.__isDevtools) { try { this.__getZenMgr().ensureOffline(); } catch(_){ } }
     try { this.updateTopOffsets(); } catch(_){ }
     // 初始加载后测量一次设置面板左右边界
     try { setTimeout(() => { try { this.updateSettingsPanelFrame(); } catch(_){ } }, 50); } catch(_){ }
-    // 首次测量时间胶囊感应区（并在窗口变化时刷新）
+    // 首次测量时间胶囊感应区与亮度竖条（并在窗口变化时刷新）
     try {
-      setTimeout(() => { try { this.updateEggSensor(); } catch(_){ } }, 120);
+      [120, 260].forEach(ms => { setTimeout(() => { try { this.updateEggSensor(); } catch(_){ } }, ms); });
+      [180, 360].forEach(ms => { setTimeout(() => { try { this.updateBrightnessSensor(); } catch(_){ } }, ms); });
       if (typeof wx.onWindowResize === 'function') {
-        wx.onWindowResize(() => { try { this.updateEggSensor(); } catch(_){ } });
+        wx.onWindowResize(() => { try { this.updateEggSensor(); } catch(_){ } try { this.updateBrightnessSensor(); } catch(_){ } });
+      }
+    } catch(_){ }
+    // 启用分享菜单（发送给朋友 + 朋友圈），否则菜单可能显示为灰色不可用
+    try {
+      if (typeof wx.showShareMenu === 'function') {
+        wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage', 'shareTimeline'] });
       }
     } catch(_){}
   },
@@ -243,6 +242,23 @@ Page({
   onUnload() { teardown(); },
   onShow() { try { setPaused(false); } catch(_){ } },
   onHide() { try { setPaused(true); } catch(_){ } },
+  // 发送给朋友（右上角“转发”或 button open-type=share 触发）
+  onShareAppMessage(res){
+    try {
+      const title = '行星物语-此刻此情此景';
+      const path = '/pages/gl/index?from=share'; // 可按需追加参数
+      return { title, path };
+    } catch(_){ return { title: '行星物语', path: '/pages/gl/index' }; }
+  },
+  // 分享到朋友圈（Android 支持；需基础库>=2.11.3）
+  onShareTimeline(){
+    try {
+      const title = '行星物语-此刻此情此景';
+      // 朋友圈使用 query 传参
+      const query = 'from=timeline';
+      return { title, query };
+    } catch(_){ return { title: '行星物语' }; }
+  },
   // 拖动丝滑：一旦检测到拖动，自动关闭所有面板（国家/搜索/设置），避免重绘与事件干扰
   onTouchStart(e){
     try { this.__dragClosedPanels = false; } catch(_){}
@@ -252,14 +268,7 @@ Page({
     } catch(_){}
     const ev = this.__normalizeToCanvasTouches(e);
     onTouchStart(ev);
-    // 性能模式：拖动开始立即降载（标签预算下降、星空/城市光点按需隐藏）
-    try {
-      this.__perfDrag = true;
-      setLabelPerfMode('drag');
-      setGlPerfMode('drag');
-      if (PERF_HIDE_MARKERS_ON_DRAG) setCityMarkersVisible(false);
-    } catch(_){}
-    try { clearTimeout(this.__perfRestoreTimer); } catch(_){}
+    try { this.__getPerfMgr().dragStart(); } catch(_){}
   },
   onTouchMove(e){
     // 不在 move 阶段关闭面板，避免同步重排造成的顿挫
@@ -271,27 +280,8 @@ Page({
     try { this.__dragClosedPanels = false; } catch(_){}
     const ev = this.__normalizeToCanvasTouches(e);
     onTouchEnd(ev);
-    // 性能模式：拖动结束延时恢复，避免惯性尾段抖动
-    try {
-      const delay = Math.max(100, Number(PERF_DRAG_RESTORE_IDLE_MS || 500));
-      clearTimeout(this.__perfRestoreTimer);
-      this.__perfRestoreTimer = setTimeout(() => {
-        try {
-          this.__perfDrag = false;
-          setLabelPerfMode('normal');
-          setGlPerfMode('normal');
-          if (PERF_HIDE_MARKERS_ON_DRAG) setCityMarkersVisible(true);
-        } catch(_){}
-      }, delay);
-    } catch(_){}
-    // 在本次交互结束后统一关闭已打开的面板（若标记存在），避免影响拖动流畅度
-    try {
-      if (this.__pendingPanelsClose) {
-        this.setData({ countryPanelOpen: false, searchOpen: false, settingsOpen: false, hoverText: '' });
-        try { this.updateTopOffsets(); } catch(_){}
-        this.__pendingPanelsClose = false;
-      }
-    } catch(_){}
+    try { this.__getPerfMgr().dragEnd(); } catch(_){}
+    try { this.__getPanelMgr()?.closePendingPanels?.(); } catch(_){}
   },
 
   // —— 工具：把任意组件的触摸事件统一转换为 canvas 坐标系（x/y）
@@ -301,8 +291,8 @@ Page({
 
   // —— 搜索：打开/关闭 & 输入/候选
   onToggleSearch(){
-    // 已迁移：委托 SearchManager 管理搜索开关（删除旧页面逻辑）
-    try { this.__getSearchMgr().toggle(!this.data.searchOpen); } catch(_){}
+    try { this.__getPanelMgr()?.fadeOutOpenPanels?.(); } catch(_){ }
+    try { this.__getSearchMgr().toggle(!this.data.searchOpen); } catch(_){ }
   },
   onCloseSearch(){
     // 已迁移：委托 SearchManager 关闭搜索并清理（删除旧页面逻辑）
@@ -363,6 +353,21 @@ Page({
     try {
       // 改为仅驱动 3D 文本文字可见性/透明度更新，不再 setData 到 WXML
       const now = Date.now();
+      const ctx = getRenderContext();
+      let idle = false;
+      try {
+        const grp = ctx && ctx.globeGroup;
+        const rx = grp && grp.rotation ? grp.rotation.x : 0;
+        const ry = grp && grp.rotation ? grp.rotation.y : 0;
+        if (!this.__perfDrag && !(ctx && ctx.isFlying)) {
+          if (typeof this.__lastRotX === 'number' && typeof this.__lastRotY === 'number') {
+            const dx = Math.abs(rx - this.__lastRotX);
+            const dy = Math.abs(ry - this.__lastRotY);
+            idle = (dx < 0.0006 && dy < 0.0006);
+          }
+        }
+        this.__lastRotX = rx; this.__lastRotY = ry;
+      } catch(_){ }
       if (this.__perfDrag) {
         const last = this.__lastLabelUpdateAt || 0;
         const intervalMs = 80; // 拖动中：约 12.5fps 的降频
@@ -371,32 +376,41 @@ Page({
           this.__lastLabelUpdateAt = now;
         }
       } else {
-        updateLabels();
-        this.__lastLabelUpdateAt = now;
+        const last = this.__lastLabelUpdateAt || 0;
+        const intervalMs = idle ? 120 : 0;
+        if (!last || (now - last) >= intervalMs) {
+          updateLabels();
+          this.__lastLabelUpdateAt = now;
+        }
       }
       // 城市淡点每帧更新：拖动时按需跳过（已通过 setCityMarkersVisible 隐藏）
-      const ctx = getRenderContext();
       if (ctx && ctx.camera) {
         if (!this.__perfDrag || !PERF_HIDE_MARKERS_ON_DRAG) {
           updateCityMarkers(ctx.camera, now);
         }
       }
-      // 动态线宽：根据缩放值让边境线在屏幕上保持纤细
+      // 动态线宽：根据缩放值让边境线在屏幕上保持纤细（缓存边界线对象，避免每帧遍历）
       try {
         const z = Number(this.data.uiZoom || 1);
-        const base = 0.003; // 可调基准宽度
+        const base = 0.003;
         const newWidth = base / Math.max(0.001, z);
         if (typeof this.__lastBorderWidth !== 'number' || Math.abs(this.__lastBorderWidth - newWidth) > 1e-4) {
           const group = ctx && ctx.globeGroup;
           if (group) {
-            group.traverse(obj => {
-              const mat = obj && obj.material;
-              const ro = mat && mat.userData && mat.userData.ro;
-              // ro=20：普通边境线；ro=40：高亮描边
-              if ((obj && obj.isLine) && mat && (ro === 20 || ro === 40)) {
-                try { mat.linewidth = newWidth; } catch(_){ }
-              }
-            });
+            if (!Array.isArray(this.__borderLines) || this.__borderLines.length === 0) {
+              const lines = [];
+              group.traverse(obj => {
+                const mat = obj && obj.material;
+                const ro = mat && mat.userData && mat.userData.ro;
+                if ((obj && obj.isLine) && mat && (ro === 20 || ro === 40)) { lines.push(obj); }
+              });
+              this.__borderLines = lines;
+            }
+            const arr = this.__borderLines || [];
+            for (let i = 0; i < arr.length; i++) {
+              const obj = arr[i]; const mat = obj && obj.material; if (!mat) continue;
+              try { mat.linewidth = newWidth; } catch(_){ }
+            }
           }
           this.__lastBorderWidth = newWidth;
         }
@@ -407,13 +421,34 @@ Page({
   // 点击顶部“设定”按钮：关闭国家面板，打开设定面板（不再切换为关闭）
   onToggleSettings(){ return this.__getPanelMgr().toggleSettings(); },
   onCloseSettings(){ return this.__getPanelMgr().closeSettings(); },
+  onTapTimePill(){
+    try { this.__getPanelMgr()?.fadeOutOpenPanels?.(); } catch(_){ }
+    try { this.setData({ hoverText: '' }); } catch(_){ }
+    try {
+      if (!this.data.zenMode) {
+        this.__pillTapCount = (this.__pillTapCount || 0) + 1;
+        clearTimeout(this.__pillTapTimer);
+        this.__pillTapTimer = setTimeout(() => { try { this.__pillTapCount = 0; } catch(_){} }, 2000);
+        if (this.__pillTapCount >= 5) {
+          this.__pillTapCount = 0;
+          clearTimeout(this.__pillTapTimer);
+          this.__refreshAssets();
+        }
+      }
+    } catch(_){ }
+  },
   
   // 切换“禅定模式”按钮：进入/退出，仅控制 UI 显隐与面板关闭
   onToggleZenMode(){
     // 委托给禅定管理器：统一处理面板淡出、渲染层切换与音频/诗句
     try { return this.__getZenModeMgr().toggle(); } catch(_){}
-    // 进入/退出后刷新感应区（若进入禅定则显示）
-    try { setTimeout(() => { try { this.updateEggSensor(); } catch(_){} }, 80); } catch(_){}
+    // 进入/退出后多次刷新感应区（布局稳定后更可靠）
+    try {
+      const times = [60, 160, 320];
+      times.forEach(ms => { setTimeout(() => { try { this.updateEggSensor(); } catch(_){} }, ms); });
+      const times2 = [80, 200, 360];
+      times2.forEach(ms => { setTimeout(() => { try { this.updateBrightnessSensor(); } catch(_){} }, ms); });
+    } catch(_){ }
   },
 
   // “切”按钮：后续用于切换音乐与诗句组合，这里先占位
@@ -425,9 +460,10 @@ Page({
   // 新增：主题三选按钮事件（白昼/默认/夜景）
   onSetTheme(e){
     const val = String(e?.currentTarget?.dataset?.val || 'default');
-    const theme = (val === 'daylight') ? 'day8k' : (val === 'night' ? 'night' : 'default');
-    this.setData({ theme, nightMode: (theme === 'night') });
-    try { setTheme(theme); } catch(_) { setNightMode(theme === 'night'); }
+    let theme = (val === 'daylight') ? 'day8k' : (val === 'night' ? 'night' : 'default');
+    let applyTheme = theme;
+    this.setData({ theme, nightMode: (applyTheme === 'night') });
+    try { setTheme(applyTheme); } catch(_) { setNightMode(applyTheme === 'night'); }
   },
   onToggleCloud(e){ const on = !!(e?.detail?.value); return this.__getSettingsMgr().toggleCloud(on); },
   // 主题行右侧的云层按钮：单键切换（显示/隐藏与缓慢旋转）
@@ -491,17 +527,17 @@ Page({
   // 云端拉取诗句集（按 preset 分组），存在则覆盖本地 __poetryPresets
   async preloadPoetryCloud(){
     // 本地预览或云能力不可用时直接跳过，避免控制台噪声
-    if (APP_CFG?.cloud?.enabled === false || !(wx && wx.cloud && typeof wx.cloud.callFunction === 'function')) {
-      try { console.warn('[poetry] 云能力不可用，跳过预加载'); } catch(_){}
+    if (isDevtools() || APP_CFG?.cloud?.enabled === false || !(wx && wx.cloud && typeof wx.cloud.callFunction === 'function')) {
+      LOG.warn('[poetry] 云能力不可用，跳过预加载');
       return;
     }
     const normalize = (arr) => {
       const map = {};
       for (const doc of (Array.isArray(arr) ? arr : [])) {
         const preset = Number(doc?.preset || 1);
+        // 保留空文本行：用于调度时间，不做过滤
         const lines = Array.isArray(doc?.lines) ? doc.lines
-          .map(l => ({ text: String(l?.text || ''), duration: Number(l?.duration || 7000) }))
-          .filter(x => x.text.length > 0) : [];
+          .map(l => ({ text: String(l?.text ?? ''), duration: Number(l?.duration || 7000) })) : [];
         if (lines.length) map[preset] = lines;
       }
       return map;
@@ -599,10 +635,10 @@ Page({
   __zenAudioMgr: null,
   __getZenMgr(){
     if (!this.__zenAudioMgr) {
-      this.__zenAudioMgr = new ZenAudio({ fileIds: { 1: this.data.cloudZen1FileId, 2: this.data.cloudZen2FileId, 3: this.data.cloudZen3FileId }, appCfg: APP_CFG });
+      this.__zenAudioMgr = new ZenAudio({ fileIds: { 1: this.data.cloudZen1FileId, 2: this.data.cloudZen2FileId, 3: this.data.cloudZen3FileId, 4: this.data.cloudZen4FileId }, appCfg: APP_CFG });
     } else {
       // 每次调用时刷新 fileIDs，避免 data 改动后不一致
-      this.__zenAudioMgr.updateFileIds({ 1: this.data.cloudZen1FileId, 2: this.data.cloudZen2FileId, 3: this.data.cloudZen3FileId });
+      this.__zenAudioMgr.updateFileIds({ 1: this.data.cloudZen1FileId, 2: this.data.cloudZen2FileId, 3: this.data.cloudZen3FileId, 4: this.data.cloudZen4FileId });
     }
     return this.__zenAudioMgr;
   },
@@ -663,6 +699,11 @@ Page({
     if (!this.__layoutMgr) { this.__layoutMgr = new LayoutManager(this); }
     return this.__layoutMgr;
   },
+  __perfMgr: null,
+  __getPerfMgr(){
+    if (!this.__perfMgr) { this.__perfMgr = new PerfManager(this); }
+    return this.__perfMgr;
+  },
   // —— 禅定模式管理器：负责进入/退出与面板淡出
   __zenModeMgr: null,
   __getZenModeMgr(){
@@ -691,6 +732,7 @@ Page({
         setData: (obj) => this.setData(obj),
         startPoetry3D,
         stopPoetry3D,
+        getLang: () => this.data?.lang || 'zh',
         computeStartNearCenterImpl: computeStartNearCenter,
         computeMoveImpl: computeMove,
         nearbyFromImpl: nearbyFrom
@@ -700,55 +742,55 @@ Page({
   },
   // —— 彩蛋：时间胶囊感应区测量 ——
   updateEggSensor(){
+    try { return this.__getLayoutMgr()?.updateEggSensor(); } catch(_){ }
+  },
+  updateBrightnessSensor(){
+    try { return this.__getLayoutMgr()?.updateBrightnessSensor(); } catch(_){ }
+  },
+  // —— 亮度竖条触控：映射到主引擎的 setBrightnessScale ——
+  onBrightnessTouchStart(e){
+    if (this.data.zenMode) return;
+    try { this.__getPanelMgr()?.fadeOutOpenPanels?.(); } catch(_){ }
+    this.__brightnessActive = true;
     try {
-      // 需求：可点击区域设置为“定”与“禅”两个按钮之间，且不越过它们的底边之上（一个长方形），保证不影响点击按钮。
-      const margin = 6; // 与按钮保留最小间距
-      const q = wx.createSelectorQuery();
-      q.select('#timePill').boundingClientRect();
-      q.select('.cut-btn').boundingClientRect();
-      q.select('.zen-btn').boundingClientRect();
-      q.exec(res => {
-        try {
-          const pill = res[0];
-          const cutRect = res[1];
-          const zenRect = res[2];
-          if (!pill) return;
-          // 左右边界：严格在“定”与“禅”按钮之间
-          const leftBound = cutRect ? Math.round(cutRect.right) + margin : Math.round(pill.left);
-          const rightBound = zenRect ? Math.round(zenRect.left) - margin : Math.round(pill.right);
-          const width = Math.max(0, rightBound - leftBound);
-          // 垂直边界：从工具栏上缘（用时间胶囊 top 近似）到两个按钮的底边之上
-          const top = Math.max(0, Math.round(pill.top) - 4);
-          const bottomEdge = Math.min(cutRect ? Math.round(cutRect.bottom) : top + 80, zenRect ? Math.round(zenRect.bottom) : top + 80) - margin;
-          const height = Math.max(16, bottomEdge - top);
-          // 若宽度过小（极端设备布局），回退为围绕时间胶囊但仍裁掉按钮左右区
-          if (width < 20) {
-            const tol = Number(APP_CFG?.poetry?.special?.tapTolerancePx) || 22;
-            const left = Math.max(0, Math.round(pill.left) - tol);
-            const right = Math.round(pill.right) + tol;
-            const cutRight = cutRect ? Math.round(cutRect.right) + margin : left;
-            const zenLeft = zenRect ? Math.round(zenRect.left) - margin : right;
-            const leftSafe = Math.max(left, cutRight);
-            const rightSafe = Math.min(right, zenLeft);
-            const w2 = Math.max(0, rightSafe - leftSafe);
-            const h2 = Math.max(16, (bottomEdge - top));
-            return this.setData({ eggSensorLeft: leftSafe, eggSensorTop: top, eggSensorWidth: w2, eggSensorHeight: h2, eggSensorVisible: true });
-          }
-          // 应用：扩大为按钮之间且不覆盖按钮本身
-          this.setData({ eggSensorLeft: leftBound, eggSensorTop: top, eggSensorWidth: width, eggSensorHeight: height, eggSensorVisible: true });
-        } catch(_){ }
-      });
+      const t = (e?.touches && e.touches[0]) || (e?.changedTouches && e.changedTouches[0]);
+      if (!t) return;
+      const y = Number(t.clientY || t.pageY || t.y || 0);
+      this.__brightStartY = y;
+      this.__brightStartScale = Number(this.data.brightnessScale || 1);
+      this.__brightMoved = false;
     } catch(_){ }
   },
+  onBrightnessTouchMove(e){
+    if (!this.__brightnessActive || this.data.zenMode) return;
+    try {
+      const t = (e?.touches && e.touches[0]) || (e?.changedTouches && e.changedTouches[0]);
+      if (!t) return;
+      const y = Number(t.clientY || t.pageY || t.y || 0);
+      const h = Math.max(1, Number(this.data.brightnessSensorHeight || 1));
+      const dy = Number(this.__brightStartY || y) - y; // 上为正
+      if (Math.abs(dy) < 4) return; // 点击无效（需拖动）
+      this.__brightMoved = true;
+      const minV = Number(APP_CFG?.brightness?.min ?? 0.5);
+      const maxV = Number(APP_CFG?.brightness?.max ?? 1.4);
+      const range = Math.max(0, maxV - minV);
+      const coef = range / h;
+      const base = Number(this.__brightStartScale || APP_CFG?.brightness?.default || 1);
+      const scale = Math.max(minV, Math.min(maxV, base + dy * coef));
+      this.setData({ brightnessScale: scale });
+      try { setBrightnessScale(scale); } catch(_){ }
+    } catch(_){ }
+  },
+  onBrightnessTouchEnd(){ this.__brightnessActive = false; },
   // —— 彩蛋：8 次点击触发 Special 字符串展示 ——
   __eggTapCount: 0,
   __eggTapTimer: 0,
   __specialItems: null,
   __specialIdx: 0,
   async preloadSpecialCloud(){
-    // 云端不可用时回退到单条本地字符串
+    // 云端不可用或 DevTools 时回退到单条本地字符串
     const fallback = ['你好，宇宙'];
-    if (APP_CFG?.cloud?.enabled === false || !(wx && wx.cloud)) {
+    if (isDevtools() || APP_CFG?.cloud?.enabled === false || !(wx && wx.cloud)) {
       this._specialItems = fallback; return;
     }
     try {
@@ -758,7 +800,7 @@ Page({
       const arr = Array.isArray(r?.data) ? r.data : [];
       const texts = arr.map(d => String(d?.slogan || d?.string || d?.text || '')).filter(s => s.length > 0);
       this._specialItems = texts.length ? texts : fallback;
-      try { console.info('[special] 加载', this._specialItems.length, '条'); } catch(_){}
+      LOG.info('[special] 加载', this._specialItems.length, '条');
     } catch(e){ this._specialItems = fallback; }
   },
   onEggTap(){
@@ -857,7 +899,7 @@ Page({
     } catch(_){}
   },
   // 委托给 PoetryManager 的包装方法（逐步迁移使用）
-  async __startPoetryViaMgr(preset, startIdx){
+  async __startPoetryViaMgr(preset, startIdx, opts){
     try {
       const p = Number(preset) || 1;
       // 惰性拉取：若目标预设不存在或为空，先尝试云端加载一次
@@ -865,9 +907,31 @@ Page({
       if (!has) {
         try { await this.preloadPoetryCloud(); } catch(_){ }
       }
-      this.__getPoetryMgr().start(p, this.__poetryPresets, Number(startIdx || 0));
-    } catch(_){ }
+      // 英文模式：对预设101-103的文本执行处理；保持原 Map 不变，仅在播放时临时加工
+      const isEn = (this.data?.lang === 'en');
+      const presetsMap = this.__poetryPresets || {};
+      let useMap = presetsMap;
+      if (isEn) {
+        try {
+          const sanitized = { ...presetsMap };
+          const enKeys = Object.keys(presetsMap).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
+          enKeys.forEach(k => {
+            const arr = Array.isArray(presetsMap[k]) ? presetsMap[k] : [];
+            sanitized[k] = arr.map(line => ({
+              ...line,
+              // 英文：逗号强制换行且不显示；同时清理“那”字
+              text: String(line?.text || '')
+                .replace(/[，,]+/g, '\n')
+                .replace(/那/g, '')
+            }));
+          });
+          useMap = sanitized;
+        } catch(_){ useMap = presetsMap; }
+      }
+      this.__getPoetryMgr().start(p, useMap, Number(startIdx || 0), opts || {});
+  } catch(_){ }
   },
+  __resetPoetryViaMgr(){ try { this.__getPoetryMgr().resetImmediate(); } catch(_){ } },
   __stopPoetryViaMgr(){ try { this.__getPoetryMgr().stop(); } catch(_){ } },
   _startPoetry(preset){
     try { this.__startPoetryViaMgr(preset); } catch(_){}
@@ -891,10 +955,17 @@ Page({
     const pct = Math.max(0, Math.min(100, Math.round(val)));
     this.__getSettingsMgr().setInertia(pct);
   },
+  // 设置面板：惯性按钮（无/默认/快/无限）
+  onSetInertiaBtn(e){
+    const val = Number(e?.currentTarget?.dataset?.val ?? e?.detail?.value ?? 0);
+    const pct = Math.max(0, Math.min(100, Math.round(val)));
+    this.__getSettingsMgr().setInertia(pct);
+  },
   onSetCityTier(e){
     return this.__getLabelsMgr().onSetCityTier(e);
   },
   onToggleLang(){
+    try { this.__getPanelMgr()?.fadeOutOpenPanels?.(); } catch(_){ }
     return this.__getLabelsMgr().onToggleLang();
   },
   rebuildLabelsByLang(lang, featuresArg){
@@ -1039,7 +1110,9 @@ Page({
   },
   // main.js 点选国家后触发：强行显示该国家的标签（直到用户取消选中）
   async onCountryPicked(hit){
-    try { const mgr = this.__getCountryMgr(); if (mgr) return await mgr.onCountryPicked(hit); } catch(_){}
+    let __handled = false;
+    try { const mgr = this.__getCountryMgr(); if (mgr) { __handled = true; return await mgr.onCountryPicked(hit); } } catch(_){}
+    if (__handled) return;
     try {
       // 空白点击：直接关闭面板并清除强制标签
       if (!hit) {
@@ -1097,7 +1170,9 @@ Page({
   },
   // 云端拉取 + 本地回退 + 结果缓存
   async fetchCountryMetaCloud(code){
-    try { const mgr = this.__getCountryMgr(); if (mgr) return await mgr.fetchCountryMetaCloud(code); } catch(_){}
+    let __handled = false;
+    try { const mgr = this.__getCountryMgr(); if (mgr) { __handled = true; return await mgr.fetchCountryMetaCloud(code); } } catch(_){}
+    if (__handled) return null;
     try {
       if (!code) return null;
       this._cloudMeta = this._cloudMeta || {};
@@ -1127,7 +1202,9 @@ Page({
   },
   // 根据当前语言与偏移字符串，生成标题后缀
   updateCountryTitleSuffix(){
-    try { const mgr = this.__getCountryMgr(); if (mgr) return mgr.updateCountryTitleSuffix(); } catch(_){}
+    let __handled = false;
+    try { const mgr = this.__getCountryMgr(); if (mgr) { __handled = true; return mgr.updateCountryTitleSuffix(); } } catch(_){}
+    if (__handled) return;
     try {
       const info = this.data.countryInfo;
       if (!info) return;
@@ -1136,30 +1213,33 @@ Page({
       this.setData({ countryInfo: { ...info, titleTzSuffix: suffix } });
     } catch(_){ }
   },
-  // 动态测量设置面板的 left 与 width，使其左对齐语言按钮、右对齐时间胶囊
+  // 动态测量设置面板的 left 与 width，使其左对齐时间胶囊、右对齐设定按钮
   updateSettingsPanelFrame(){
-    try {
-      const q = wx.createSelectorQuery().in(this);
-      q.select('#langBtn').boundingClientRect();
-      q.select('#timePill').boundingClientRect();
-      q.exec(res => {
-        try {
-          const langRect = res && res[0];
-          const timeRect = res && res[1];
-          if (!langRect || !timeRect) return;
-          const left = Math.round(langRect.left);
-          const right = Math.round(timeRect.right);
-          const width = Math.max(200, right - left);
-          const next = { settingsPanelLeft: left, settingsPanelWidth: width };
-          this.setData(next);
-        } catch(e){ try { console.warn('[settingsPanelFrame] exec failed', e); } catch(_){} }
-      });
-    } catch(e){ try { console.warn('[settingsPanelFrame] query failed', e); } catch(_){} }
+    try { return this.__getLayoutMgr()?.updateSettingsPanelFrame(); } catch(_){ }
   },
   // —— 布局：根据安全区/顶栏/提示条，统一委托给 LayoutManager
   updateTopOffsets(){
     try { return this.__getLayoutMgr()?.updateTopOffsets(); } catch(_){ }
   },
-  onCloseCountryPanel(){ this.setData({ countryPanelOpen: false, hoverText: '' }); try { this.updateTopOffsets(); } catch(_){} },
+  onCloseCountryPanel(){
+    try {
+      if (this.data.countryPanelOpen) {
+        const ms = Number(this.data.panelFadeMs || 500);
+        this.setData({ countryPanelFading: true, hoverText: '' });
+        setTimeout(() => { try { this.setData({ countryPanelOpen: false, countryPanelFading: false }); this.updateTopOffsets(); } catch(_){ } }, ms);
+      } else {
+        this.setData({ countryPanelOpen: false, hoverText: '' });
+        try { this.updateTopOffsets(); } catch(_){ }
+      }
+    } catch(_){ }
+  },
   // 按你的要求：不再提供“取消选中”按钮；若需要清空可通过遮罩点击关闭或重新点击地图
+  async __refreshAssets(){
+    try {
+      try { refreshTextures(); } catch(_){}
+      try { clearZenAudioSaved(); } catch(_){}
+      try { await this.__getZenMgr().ensureOffline(); } catch(_){}
+      try { console.info('[assets] refreshed by time pill'); } catch(_){}
+    } catch(_){ }
+  },
 });

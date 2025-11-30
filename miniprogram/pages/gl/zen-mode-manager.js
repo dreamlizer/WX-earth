@@ -33,10 +33,24 @@ export class ZenModeManager {
       }
       // 页面层调用渲染层进入禅定：动画倾斜与缩小，锁定交互
       try { setZenMode(true); } catch(_){ }
-      // 音频与诗句：进入禅定时启动 preset（默认1）
-      const preset = this.page?.__zenPreset || 1;
-      try { this.page?._startZenAudio?.(preset); } catch(_){ }
-      try { this.page?.__startPoetryViaMgr?.(preset); } catch(_){ }
+      // 音频与诗句：进入禅定时启动 preset（中文1，英文4）
+      const isEn = (this.page?.data?.lang === 'en');
+      let preset = this.page?.__zenPreset || (isEn ? 101 : 1);
+      if (isEn) {
+        try {
+          const map = this.page?.__poetryPresets || {};
+          const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
+          preset = (preset===1||preset===2||preset===3) ? (keys[0]||101) : preset;
+        } catch(_){ preset = (preset===1||preset===2||preset===3) ? 101 : preset; }
+      } else {
+        if (preset===101||preset===102||preset===103||preset>=104) preset = 1;
+      }
+      this.page.__zenPreset = preset;
+      // 音频：英文仍使用 1–3 三首，映射 4→1、5→2、6→3
+      const audioPreset = isEn ? Math.max(1, preset - 100) : preset;
+      try { this.page?._startZenAudio?.(audioPreset); } catch(_){ }
+      try { this.page?.__startPoetryViaMgr?.(preset, 0, { firstDelayMs: 1000 }); } catch(_){ }
+      try { this._ensureEndedListener(); } catch(_){ }
     } catch(_){ }
   }
 
@@ -54,10 +68,22 @@ export class ZenModeManager {
   // 切换预设：与页面“切”按钮同等行为，统一到管理器
   toggleCut(){
     try {
-      const current = Number(this.page?.__zenPreset || 1);
-      // 循环：1 → 2 → 3 → 1
-      const nextPreset = (current === 1) ? 2 : (current === 2 ? 3 : 1);
+      const isEn = (this.page?.data?.lang === 'en');
+      const current = Number(this.page?.__zenPreset || (isEn ? 101 : 1));
+      let nextPreset = current;
+      if (isEn) {
+        try {
+          const map = this.page?.__poetryPresets || {};
+          const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
+          const idx = Math.max(0, keys.indexOf(current));
+          nextPreset = keys.length ? keys[(idx+1) % keys.length] : (current===101?102:(current===102?103:101));
+        } catch(_){ nextPreset = (current === 101 ? 102 : (current === 102 ? 103 : 101)); }
+      } else {
+        nextPreset = (current === 1 ? 2 : (current === 2 ? 3 : 1));
+      }
       this.page.__zenPreset = nextPreset;
+      const pmgr = this.page?.__getPoetryMgr?.();
+      if (pmgr && typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { if (pmgr && typeof pmgr.stop === 'function') { pmgr.stop(); } }
       // 先处理：旧音乐 2 秒淡出、当前诗句强制 2 秒淡出
       try { this.page?._stopZenAudio?.(2000); } catch(_){ }
       try {
@@ -67,15 +93,159 @@ export class ZenModeManager {
       // 新音乐：等待 1 秒后开始淡入（淡入 1 秒），新诗句：靠近淡出末尾切入（总淡出 2 秒，1 秒后启动，内部首句再延迟 1 秒 = 2 秒）
       try {
         const mgr = this.page?.__getZenMgr?.();
-        const localUrl = this.page?._getLocalAudio?.(nextPreset) || '';
+        const audioPreset = isEn ? Math.max(1, nextPreset - 100) : nextPreset;
+        const localUrl = this.page?._getLocalAudio?.(audioPreset) || '';
         // 1s 延迟 + 1s 淡入
-        if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(nextPreset, localUrl, 1000, 1000); }
-        else { this.page?._startZenAudio?.(nextPreset); }
+        if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(audioPreset, localUrl, 1000, 1000); }
+        else { this.page?._startZenAudio?.(audioPreset); }
       } catch(_){ }
-      // 诗句：在淡出开始 1 秒时触发新的预设（PoetryManager 首句自带 1 秒延迟，恰好 2 秒总长度）
-      try { setTimeout(() => { try { this.page?.__startPoetryViaMgr?.(nextPreset); } catch(_){ } }, 1000); } catch(_){ }
+      try { this._ensureEndedListener(); } catch(_){ }
+      // 诗句：立即切换到新预设并强制从头开始（首句不延迟）
+      try { this.page?.__startPoetryViaMgr?.(nextPreset, 0, { firstDelayMs: 0 }); } catch(_){ }
       // 需求调整：切换时不再显示“切到预设X”的提示
       // 为保持整洁，不设置 hoverText。
     } catch(_){ }
   }
+
+  _onAudioEnded(){
+    try {
+      const pmgr = this.page?.__getPoetryMgr?.();
+      if (!pmgr) return;
+      if (typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { pmgr.stop(); }
+      try { this.page?.__startPoetryViaMgr?.(this.page.__zenPreset || 1, 0, { firstDelayMs: 0 }); } catch(_){ }
+    } catch(_){ }
+  }
+
+  _ensureEndedListener(){
+    try {
+      const zmgr = this.page?.__getZenMgr?.();
+      if (zmgr && typeof zmgr.onEnded === 'function') {
+        zmgr.onEnded(() => this._onAudioEnded());
+      }
+    } catch(_){ }
+  }
 }
+
+export function applyZenAutoRotate(touch, dtSec, now, cfg, zenActive, animating, zenStableSince){
+  try {
+    if (zenActive && !animating) {
+      if (zenStableSince === 0) zenStableSince = now;
+      if (cfg?.enabled && (now - zenStableSince) >= (cfg.startDelayMs || 0)) {
+        const w = (cfg.degPerSec || 0) * Math.PI / 180;
+        touch.rotY += w * dtSec;
+      }
+    }
+  } catch(_){ }
+  return zenStableSince;
+}
+
+export function applyZenBrake(brake, touch, now, logFlag, onBrakeCompleted){
+  try {
+    if (!brake) return brake;
+    const t = Math.max(0, Math.min(1, (now - brake.t0) / Math.max(1, brake.dur)));
+    const easeOut = 1 - Math.pow(1 - t, 3);
+    const scale = Math.max(0, 1 - easeOut);
+    touch.velX *= scale; touch.velY *= scale;
+    if (t >= 1) {
+      brake = null; touch.velX = 0; touch.velY = 0;
+      try { if (logFlag) console.log('[zen] pre-stop done'); } catch(_){ }
+      try { if (typeof onBrakeCompleted === 'function') onBrakeCompleted(); } catch(_){ }
+    }
+  } catch(_){ }
+  return brake;
+}
+
+export function advanceZenAnimation(anim, now, ctx){
+  try {
+    if (!anim) return { anim, tiltZ: ctx.tiltZ, zoom: ctx.zoom, zenStableSince: ctx.zenStableSince };
+    const { t0, dur, from, to } = anim;
+    const t = Math.max(0, Math.min(1, (now - t0) / Math.max(1, dur)));
+    const ease = (x) => x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
+    const k = ease(t);
+    const tiltZ = from.tiltZ + (to.tiltZ - from.tiltZ) * k;
+    const nx = from.rotX + (to.rotX - from.rotX) * k;
+    const nzm = from.zoom + (to.zoom - from.zoom) * k;
+    if (ctx.globeGroup && from.posY !== undefined && to.posY !== undefined) {
+      const ny = from.posY + (to.posY - from.posY) * k;
+      ctx.globeGroup.position.y = ny;
+    }
+    ctx.touch.rotX = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, nx));
+    const newZoom = ctx.clampZoom(nzm);
+    if (Math.abs(newZoom - ctx.zoom) > 1e-6) { ctx.zoom = newZoom; ctx.updateCamDist(ctx.camera, ctx.baseDist, ctx.zoom); }
+    ctx.touch.velX = 0; ctx.touch.velY = 0;
+    if (t >= 1) {
+      const next = anim.next;
+      const after = anim.after;
+      if (next && next.from && next.to && next.dur) {
+        next.t0 = Date.now();
+        anim = next;
+      } else {
+        anim = null;
+        ctx.zenStableSince = now;
+        try { if (typeof after === 'function') after(); } catch(_){ }
+      }
+    }
+    return { anim, tiltZ, zoom: ctx.zoom, zenStableSince: ctx.zenStableSince };
+  } catch(_){ }
+  return { anim, tiltZ: ctx.tiltZ, zoom: ctx.zoom, zenStableSince: ctx.zenStableSince };
+}
+
+export function advanceRotationFrame(ctx){
+  try {
+    const { touch, dtSec, now, LIGHT_CFG, zenActive, globeGroup, camera, baseDist, clampZoom, updateCamDist, flyMgr, INTERACTION_DEBUG_LOG, render, setZenMode } = ctx;
+    let tiltZ = ctx.tiltZ;
+    let zoom = ctx.zoom;
+    let anim = ctx.__zenAnim;
+    let brake = ctx.__zenBrake;
+    let zenStableSince = ctx.zenStableSince;
+    let __zenDelayEnter = ctx.__zenDelayEnter;
+    if (!touch.isDragging && !touch.pinch) {
+      if (anim) {
+        const res = advanceZenAnimation(anim, now, { touch, globeGroup, camera, baseDist, clampZoom, updateCamDist, tiltZ, zoom, zenStableSince });
+        anim = res.anim; tiltZ = res.tiltZ; zoom = res.zoom; zenStableSince = res.zenStableSince;
+      } else if (flyMgr.advanceFlight(now)) {
+      } else {
+        if (zenActive && !anim) {
+          const targetTilt = ((LIGHT_CFG?.zen?.tiltDeg ?? 23) * Math.PI / 180);
+          const targetZoom = Number(LIGHT_CFG?.zen?.zoom ?? 0.74);
+          const offR = Number(LIGHT_CFG?.zen?.globeYOffsetR ?? -0.35);
+          const baseY0 = -0.55;
+          const targetY = baseY0 + offR;
+          const curY = globeGroup?.position?.y || 0;
+          const needTilt = Math.abs(tiltZ - targetTilt) > 1e-3;
+          const needZoom = Math.abs(zoom - targetZoom) > 1e-3;
+          const needPos = Math.abs(curY - targetY) > 1e-3;
+          if (needTilt || needZoom || needPos) {
+            anim = { t0: now, dur: Number(LIGHT_CFG?.zen?.animMs ?? 1000), from: { rotX: touch.rotX, zoom, tiltZ, posY: curY }, to: { rotX: 0, zoom: targetZoom, tiltZ: targetTilt, posY: targetY } };
+          }
+        }
+        if (!anim) {
+          zenStableSince = applyZenAutoRotate(touch, dtSec, now, LIGHT_CFG.zen?.autoRotate, zenActive, !!anim, zenStableSince);
+        }
+        brake = applyZenBrake(brake, touch, now, INTERACTION_DEBUG_LOG, () => { if (__zenDelayEnter) { __zenDelayEnter = false; try { setZenMode(true); } catch(_){ } } });
+        if (Math.abs(touch.velX) > 0.0002 || Math.abs(touch.velY) > 0.0002) {
+          touch.rotX += zenActive ? 0 : touch.velX; touch.rotY += touch.velY;
+          touch.rotX = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, touch.rotX));
+          touch.velX *= touch.damping; touch.velY *= touch.damping;
+          try {
+            if (INTERACTION_DEBUG_LOG) {
+              if (!render.__lastInertiaLog || (now - render.__lastInertiaLog) > 300) {
+                console.log('[inertia:apply]', {
+                  velX: Number(touch.velX.toFixed(5)),
+                  velY: Number(touch.velY.toFixed(5)),
+                  damping: Number(touch.damping.toFixed(3)),
+                  maxSpeed: Number(touch.maxSpeed.toFixed(3))
+                });
+                render.__lastInertiaLog = now;
+              }
+            }
+          } catch(_){ }
+        } else { touch.velX = 0; touch.velY = 0; }
+      }
+    }
+    return { tiltZ, zoom, __zenAnim: anim, __zenBrake: brake, zenStableSince, __zenDelayEnter };
+  } catch(_){ }
+  return { tiltZ: ctx.tiltZ, zoom: ctx.zoom, __zenAnim: ctx.__zenAnim, __zenBrake: ctx.__zenBrake, zenStableSince: ctx.zenStableSince, __zenDelayEnter: ctx.__zenDelayEnter };
+}
+
+export const zenState = { active: false, tiltZ: 0, zoom: 1.0, anim: null, brake: null, delayEnter: false, stableSince: 0, restore: null };

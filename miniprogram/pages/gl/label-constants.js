@@ -97,3 +97,12 @@ export const MUST_CENTER_WEIGHT_CITY = 0.94;
 export const FRONT_DOT_MIN_EDGE = 0.02;
 // 点击候选中心距离上限（度）：过滤明显远离点击点的国家，防止跨经线误命中
 export const HIT_CENTER_MAX_DEG = 60;
+
+export const TAP_MAX_MOVE_PX = 6;
+export const TAP_MAX_DURATION_MS = 250;
+export const DRAG_BASE_STEP = 0.005;
+export const DRAG_ZOOM_MIN = 0.6;
+export const DRAG_SPEED_EXP = -0.9;
+export const DRAG_SPEED_SCALE = 1.08;
+export const DEBUG_SELECT = true;
+export const PERF_DIAG_LOG = false;

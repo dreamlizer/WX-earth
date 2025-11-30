@@ -2,7 +2,7 @@
 // 提供：createScene(canvas, dpr, width, height), makeBorder, highlight, updateCameraDistance
 
 // 为规避 DevTools 的包名解析缓存问题，改为引用本页的兼容别名（CommonJS 形式，切断循环）
-const { createScopedThreejs } = require('./threejs-miniprogram.js');
+const { createScopedThreejs, registerCanvas } = require('./threejs-miniprogram.js');
 import { convertLatLonToVec3 } from './geography.js';
 import { applyWarp, getAnchors } from './geo-warp.js';
 import { APP_CFG } from './config.js';
@@ -16,6 +16,7 @@ const BORDER_DECIMATE = 1; // 取消抽样，使用完整点集以提升邻国�
 
 export function createScene(canvas, dpr, width, height) {
   const THREE = createScopedThreejs(canvas);
+  try { registerCanvas(canvas); } catch(_){ }
   const pr = Math.min(2, dpr);
   canvas.width = Math.floor(width * pr);
   canvas.height = Math.floor(height * pr);
@@ -455,4 +456,52 @@ export function makeCountryColliders(THREE, globeGroup, COUNTRY_FEATURES) {
   }
   globeGroup.add(group);
   return group;
+}
+
+export function applyZenOverlayFactors(BORDER_GROUP, TROPIC_GROUP, ov = {}){
+  try {
+    if (BORDER_GROUP) {
+      const handled = new Set();
+      BORDER_GROUP.traverse(obj => {
+        const m = obj?.material; if (!m || handled.has(m)) return; handled.add(m);
+        if (m.color) {
+          if (!m.userData.__origColor) m.userData.__origColor = m.color.clone();
+          const k = (ov.bordersColorFactor ?? 0.65);
+          const orig = m.userData.__origColor.clone();
+          m.color.copy(orig).multiplyScalar(Math.max(0, Math.min(2, k)));
+        }
+      });
+    }
+    if (TROPIC_GROUP) {
+      TROPIC_GROUP.children.forEach((mesh, idx) => {
+        const m = mesh?.material; if (!m) return;
+        if (typeof m.opacity === 'number') {
+          if (m.userData.__origOpacity == null) m.userData.__origOpacity = m.opacity;
+          m.transparent = true;
+          const isEquator = (idx === 0);
+          const k = isEquator ? (ov.equatorOpacityFactor ?? 0.65) : (ov.tropicsOpacityFactor ?? 0.65);
+          const base = (m.userData.__origOpacity ?? m.opacity);
+          m.opacity = Math.max(0, Math.min(1, base * Math.max(0, Math.min(2, k))));
+        }
+      });
+    }
+  } catch(_){ }
+}
+
+export function restoreOverlayFactors(BORDER_GROUP, TROPIC_GROUP){
+  try {
+    if (BORDER_GROUP) {
+      const handled = new Set();
+      BORDER_GROUP.traverse(obj => {
+        const m = obj?.material; if (!m || handled.has(m)) return; handled.add(m);
+        if (m.color && m.userData.__origColor) { m.color.copy(m.userData.__origColor); }
+      });
+    }
+    if (TROPIC_GROUP) {
+      TROPIC_GROUP.children.forEach(mesh => {
+        const m = mesh?.material; if (!m) return;
+        if (m.userData.__origOpacity != null) { m.opacity = m.userData.__origOpacity; }
+      });
+    }
+  } catch(_){ }
 }

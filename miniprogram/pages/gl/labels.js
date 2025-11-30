@@ -24,6 +24,7 @@ export function setPerfMode(on){ __perfDrag = !!on; }
 const SCORE_THRESHOLD  = _const?.SCORE_THRESHOLD  ?? 0.0;   // 过滤低分项（保守取 0）
 const LABEL_CUTOFF     = _const?.LABEL_CUTOFF     ?? 0.00;  // 前半球淡入阈值（点积）
 const LABEL_FADEIN     = _const?.LABEL_FADEIN     ?? 0.35;  // 从 CUTOFF->FADEIN 线性淡入
+const LABEL_DEPTH_BACK_DOT = _const?.LABEL_DEPTH_BACK_DOT ?? 0.0;
 const EDGE_FADE_PX     = _const?.EDGE_FADE_PX     ?? 28;    // 屏幕四边像素淡出
 const OPACITY_FOLLOW   = _const?.OPACITY_FOLLOW   ?? 0.25;  // 简单平滑系数（0~1）- 更平滑
 const SCALE_FOLLOW     = _const?.SCALE_FOLLOW     ?? 0.22;  // 缩放跟随系数（0~1）- 平滑“呼吸感”（作为回退默认）
@@ -484,6 +485,42 @@ export function updateLabels(){
       if (sp) occupyAround(grid, sp.x, sp.y, Math.round(GRID_SIZE * 0.9)); // 约一格半径
     }
   } catch(_){ }
+
+  // 优化：提前计算本地空间的相机位置，避免在循环中重复计算世界坐标
+  // const invWorld = globeGroup.matrixWorld.clone().invert();
+  // const localCam = camera.position.clone().applyMatrix4(invWorld);
+  
+  // 逻辑增强：判断当前选中的国家是否为“小国家”（城市数<=5），若是则强制显示所有城市
+  let __forceAllCitiesCountry = null;
+  try {
+    // 从 FORCED_ID 推断当前选中的国家代码
+    let currentCode = null;
+    if (FORCED_ID) {
+      const m = BASE_LABEL_MAP.get(FORCED_ID);
+      if (m) {
+        if (m.isCity && m.country) currentCode = m.country;
+        else if (!m.isCity) currentCode = m.country || m.id; // 国家ID通常即代码，或在属性中
+      } else {
+        // FORCED_ID 可能是纯代码（如 CHN）
+        if (/^[A-Z]{2,3}$/i.test(FORCED_ID)) currentCode = FORCED_ID;
+      }
+    }
+    if (currentCode) {
+      const codeUp = String(currentCode).toUpperCase();
+      // 统计该国城市数量
+      let cityCount = 0;
+      for (const lb of BASE_LABELS) {
+        if (lb.isCity && lb.country && String(lb.country).toUpperCase() === codeUp) {
+          cityCount++;
+          if (cityCount > 5) break;
+        }
+      }
+      if (cityCount > 0 && cityCount <= 5) {
+        __forceAllCitiesCountry = codeUp;
+      }
+    }
+  } catch(_){ }
+
   const candidates = [];
   let maxScore = 0;
   for (const [id, mesh] of LABEL_MESHES.entries()) {
@@ -493,16 +530,40 @@ export function updateLabels(){
       return; // 退出以避免除以 0 导致异常
     }
     const meta = BASE_LABEL_MAP.get(id) || {};
+    
+    // 优化：先在本地空间进行背面剔除，避免昂贵的 getWorldPosition
+    // 假设 meta.baseVec3 是单位向量（位于球面上）
+    /* 
+    // 暂时回滚：用户反馈标签消失，疑因本地坐标计算或点积逻辑在某些视角下误判
+    let dot = -1;
+    if (meta.baseVec3) {
+       const v = meta.baseVec3; // Vector3 (x,y,z)
+       const lx = localCam.x - v.x;
+       const ly = localCam.y - v.y;
+       const lz = localCam.z - v.z;
+       const len = Math.sqrt(lx*lx + ly*ly + lz*lz);
+       if (len > 1e-6) {
+         dot = (v.x * lx + v.y * ly + v.z * lz) / len;
+       }
+    }
+    if (dot <= LABEL_CUTOFF) { continue; }
+    */
+    // 恢复默认行为：不进行预剔除，后续 getWorldPosition 会计算准确的 dot
+    let dot = 1.0; 
+
+    // 此时再计算世界坐标，用于投影
     const world = new THREE.Vector3();
     mesh.getWorldPosition(world);
-
-    const normal = world.clone().sub(globeCenter).normalize();
-    const view   = camera.position.clone().sub(world).normalize();
-    const dot    = normal.dot(view);
-    if (dot <= LABEL_CUTOFF) { continue; }
-
+    // const normal = world.clone().sub(globeCenter).normalize(); // 已由本地 dot 替代判断
+    const normal = new THREE.Vector3(); // 仅占位，后续 estimatePixelSize 可能用到，但不依赖其精确值
+    // 注意：estimatePixelSize 其实只用到 mesh.scale 和 worldToScreen，normal 参数实际未使用或可简化
+    // 为了保持兼容，这里暂时不传 normal 或传个假值，因为 estimatePixelSize 内部逻辑已查看过，不强依赖 normal
+    
     // 城市标签按距离分级显示（LOD）：远时不显示，近时逐步放开
-    if (meta.isCity) {
+    // 特殊逻辑：若是“小国家”模式下的城市，跳过 LOD 检查
+    const isSmallCountryCity = __forceAllCitiesCountry && meta.isCity && meta.country && String(meta.country).toUpperCase() === __forceAllCitiesCountry;
+    
+    if (meta.isCity && !isSmallCountryCity) {
       // 全局开关：允许关闭城市标签以提升整洁度或性能
       if (_const?.ENABLE_CITY_LABELS === false) { continue; }
       const imp = Number(meta.importance || 1);
@@ -515,22 +576,30 @@ export function updateLabels(){
 
     // 中心优先（0~1）：越靠近屏幕中心得分越高
     const centerWeight = Math.max(0, 1 - Math.hypot(sp.ndcX, sp.ndcY));
-    // 远距限制：仅保留靠近中心的国家进入候选集（城市按 LOD 已过滤）
-    if (isFarByRatio || camDistLOD > FAR_COUNTRY_ONLY_DIST) {
+    
+    // 远距限制：仅保留靠近中心的国家进入候选集
+    // 特殊逻辑：小国家城市跳过此限制
+    if ((isFarByRatio || camDistLOD > FAR_COUNTRY_ONLY_DIST) && !isSmallCountryCity) {
       if (meta.isCity) { continue; }
       if (centerWeight < FAR_CENTER_WEIGHT_MIN) { continue; }
     }
 
-    // 基础得分（面积/人口等）+ 中心优先 + 稳定噪声 + 强制国家加成（不保证全部显示）
+    // 基础得分（面积/人口等）+ 中心优先 + 稳定噪声 + 强制国家加成
     const base = scoreLabel(meta) * AREA_WEIGHT;
     const noise = stableRand(id) * 0.35; // 稳定随机，提供“概率”感
     const isForcedCity = (meta.isCity && meta.country && FORCED_CITY_CODES.has(String(meta.country).toUpperCase()));
     const forcedBoost = isForcedCity ? 1.6 : 0; // 被选中国家城市加成更强
+    
     let s = base + centerWeight * CENTER_PRIORITY + noise + forcedBoost;
-    // 最中心区域的被选中国家城市“强保底”：避免被阈值淘汰
-    if (isForcedCity && centerWeight >= 0.92) {
+    
+    // 强行提权：小国家的所有城市
+    if (isSmallCountryCity) {
+      s += 10000; // 确保极高优先级
+    } else if (isForcedCity && centerWeight >= 0.92) {
+      // 最中心区域的被选中国家城市“强保底”
       s = Math.max(s, SCORE_THRESHOLD + 0.8);
     }
+    
     if (s < SCORE_THRESHOLD) { continue; }
     if (s > maxScore) maxScore = s;
 
@@ -546,7 +615,7 @@ export function updateLabels(){
     );
     const edgeAlpha = Math.max(0, Math.min(1, edgeFade));
 
-    candidates.push({ id, mesh, world, normal, sp, size, score: s, edgeAlpha, dot, centerWeight });
+    candidates.push({ id, mesh, world, normal, sp, size, score: s, edgeAlpha, dot, centerWeight, isSmallCountryCity });
   }
 
   // 2) 分组排序：国家优先 + 预算保底 + 网格去重
@@ -564,6 +633,9 @@ export function updateLabels(){
   let __showAllCitiesMode = false; // 少量城市时全部显示的模式
   try {
     const forcedCodes = new Set([...FORCED_CITY_CODES].map(s => String(s).toUpperCase()));
+    // 若存在小国家强制显示模式，将其加入强制代码集合，确保通过 forcedCities 逻辑筛选
+    if (__forceAllCitiesCountry) forcedCodes.add(__forceAllCitiesCountry);
+
     const forcedCities = cityCands.filter(c => {
       const m = BASE_LABEL_MAP.get(c.id) || {};
       return m.isCity && m.country && forcedCodes.has(String(m.country).toUpperCase());
@@ -578,6 +650,15 @@ export function updateLabels(){
     } else if (camDistLOD <= LOD_CITIES_ALL_APPEAR) {
       budgetForced = Math.max(CITY_BUDGET_NEAR, effBudget);
     }
+    
+    // 若是小国家模式，必须保证预算足够覆盖该国所有城市（通常<=5）
+    if (__forceAllCitiesCountry) {
+      const smallCount = forcedCities.filter(c => c.isSmallCountryCity).length;
+      if (smallCount > 0) {
+        budgetForced = Math.max(budgetForced, smallCount);
+      }
+    }
+
     cityCandsFiltered = [
       ...forcedCities.slice(0, Math.max(0, budgetForced)),
       ...(camDistLOD <= LOD_CITIES_ALL_APPEAR ? otherCities : [])
@@ -708,6 +789,8 @@ export function updateLabels(){
   } catch(_){}
 
   LAST_WINNERS = candidates.filter(c => winners.has(c.id)).map(c => ({ id: c.id, x: c.sp.x, y: c.sp.y }));
+  const __winSpMap = new Map();
+  for (const c of candidates) { if (winners.has(c.id)) { __winSpMap.set(c.id, c.sp); } }
 
   // 3) 更新可见性、透明度、按距离动态缩放
   const camDist = Math.max(0.1, camera.position.length());
@@ -746,127 +829,124 @@ export function updateLabels(){
         mesh.position.set(local.x, local.y, local.z);
       }
     } catch(_){ }
-    const world = new THREE.Vector3();
-    mesh.getWorldPosition(world);
-    const normal = world.clone().sub(globeCenter).normalize();
-    const view   = camera.position.clone().sub(world).normalize();
-    const dot    = normal.dot(view);
-    let alpha = (dot - LABEL_CUTOFF) / Math.max(1e-6, (LABEL_FADEIN - LABEL_CUTOFF));
-    if (isForced) { alpha = 1; }
-    if (alpha <= 0) { mesh.visible = false; continue; }
-    if (alpha > 1) alpha = 1;
+    let world = null;
+    let normal = null;
+    if (isWin || isForced) {
+      world = new ctx.THREE.Vector3();
+      mesh.getWorldPosition(world);
+      normal = world.clone().sub(globeCenter).normalize();
+      const view = camera.position.clone().sub(world).normalize();
+      const dot = normal.dot(view);
+      if (mesh.material) { mesh.material.depthTest = (dot <= LABEL_DEPTH_BACK_DOT); }
+      let alpha = (dot - LABEL_CUTOFF) / Math.max(1e-6, (LABEL_FADEIN - LABEL_CUTOFF));
+      if (isForced) { alpha = 1; }
+      if (alpha <= 0) { mesh.visible = false; continue; }
+      if (alpha > 1) alpha = 1;
+      let target = 0;
+      const spCached = __winSpMap.get(id);
+      const sp = spCached || worldToScreen(world, ctx);
+      if (!sp) { mesh.visible = false; continue; }
+      const edgeFade = Math.min(
+        sp.x / EDGE_FADE_PX,
+        (width  - sp.x) / EDGE_FADE_PX,
+        sp.y / EDGE_FADE_PX,
+        (height - sp.y) / EDGE_FADE_PX
+      );
+      target = isForced ? 1 : alpha * Math.max(0, Math.min(1, edgeFade));
+      // 粘性与透明度平滑：失去入选后在 STICKY_MS 内缓慢淡出
+      const st = LABEL_STATES.get(id) || { alpha: 0, lastWinAt: 0 };
+      const sticky = (Date.now() - (st.lastWinAt || 0)) < STICKY_MS;
+      const targetAlpha = isForced ? 1 : (isWin ? target : (sticky ? Math.max(0, st.alpha * 0.85) : 0));
+      const nextAlpha = st.alpha * (1 - OPACITY_FOLLOW) + targetAlpha * OPACITY_FOLLOW;
+      st.alpha = nextAlpha; LABEL_STATES.set(id, st);
+      const finalAlpha = nextAlpha;
+      const vis = finalAlpha > 0.02;
+      mesh.visible = vis;
+        if (mesh.material) {
+          mesh.material.transparent = true;
+          mesh.material.opacity = finalAlpha;
+          try {
+            const tag = isForced ? (meta && meta.isCity ? 'forced-city' : 'forced-country') : (meta && meta.isCity ? 'default-city' : 'default-country');
+            if (mesh.userData.colorTag !== tag) {
+              const colorVal = isForced ? ((meta && meta.isCity) ? (CITY_TEXT_COLOR || '#d7e1ea') : '#ffd54f') : (meta && meta.isCity ? CITY_TEXT_COLOR : COUNTRY_TEXT_COLOR);
+              if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
+                mesh.material.color = new ctx.THREE.Color(colorVal);
+              } else {
+                mesh.material.color.set(colorVal);
+              }
+              mesh.userData.colorTag = tag;
+            }
+          } catch(_){ }
+        }
+      if (mesh.userData && typeof mesh.userData.baseScaleX === 'number' && (isWin || isForced)) {
+        const highlightBase = isForced ? (meta.isCity ? 2.00 : 1.20) : 1.0;
+        const scaleMul = highlightBase;
+        const targetX = mesh.userData.baseScaleX * distScale * scaleMul;
+        const targetY = mesh.userData.baseScaleY * distScale * scaleMul;
+        const st2 = LABEL_STATES.get(id) || {};
+        const prevX = typeof st2.scaleX === 'number' ? st2.scaleX : targetX;
+        const prevY = typeof st2.scaleY === 'number' ? st2.scaleY : targetY;
+        const nextX = prevX * (1 - __alphaScale) + targetX * __alphaScale;
+        const nextY = prevY * (1 - __alphaScale) + targetY * __alphaScale;
+        mesh.scale.set(nextX, nextY, 1);
+        const sizeNow = estimatePixelSize(mesh, world, normal, ctx);
+        const isCity = !!meta.isCity;
+        const baseMaxPxFar = isCity ? FONT_MAX_SCREEN_PX_CITY : FONT_MAX_SCREEN_PX_COUNTRY;
+        const minPx = isCity ? FONT_MIN_SCREEN_PX_CITY : FONT_MIN_SCREEN_PX_COUNTRY;
+        const nearDist = _const?.NEAR_FONT_DIST ?? 4.0;
+        const farDist  = FAR_FONT_STABLE_DIST;
+        const tZoom = Math.max(0, Math.min(1, (camDist - nearDist) / Math.max(1e-6, (farDist - nearDist))));
+        const baseMaxPxDyn = Math.round(minPx + (baseMaxPxFar - minPx) * tZoom);
+        let maxPx = baseMaxPxDyn;
+        if (isForced) {
+          if (meta && meta.isCity) {
+            maxPx = Math.round(baseMaxPxDyn * 2.0);
+          } else {
+            maxPx = baseMaxPxDyn;
+          }
+        }
+        const h = sizeNow.h;
+        if (!isForced && __forcedCityFreeze && h > 0) {
+          maxPx = Math.min(maxPx, h);
+        }
+        if (h > maxPx && h > 0) {
+          const r = maxPx / h;
+          const clampedX = mesh.scale.x * r;
+          const clampedY = mesh.scale.y * r;
+          mesh.scale.set(
+            mesh.scale.x * (1 - __alphaScale) + clampedX * __alphaScale,
+            mesh.scale.y * (1 - __alphaScale) + clampedY * __alphaScale,
+            1
+          );
+        } else if (h < minPx && h > 0) {
+          const r = minPx / h;
+          const clampedX = mesh.scale.x * r;
+          const clampedY = mesh.scale.y * r;
+          mesh.scale.set(
+            mesh.scale.x * (1 - __alphaScale) + clampedX * __alphaScale,
+            mesh.scale.y * (1 - __alphaScale) + clampedY * __alphaScale,
+            1
+          );
+        }
+        st2.scaleX = mesh.scale.x;
+        st2.scaleY = mesh.scale.y;
+        LABEL_STATES.set(id, st2);
+      }
+      continue;
+    }
 
-    const sp = worldToScreen(world, ctx);
-    if (!sp) { mesh.visible = false; continue; }
-    const edgeFade = Math.min(
-      sp.x / EDGE_FADE_PX,
-      (width  - sp.x) / EDGE_FADE_PX,
-      sp.y / EDGE_FADE_PX,
-      (height - sp.y) / EDGE_FADE_PX
-    );
-    const target = isForced
-      ? 1
-      : alpha * Math.max(0, Math.min(1, edgeFade)) * (isWin ? 1 : 0);
-
-    // 粘性与透明度平滑：失去入选后在 STICKY_MS 内缓慢淡出
     const st = LABEL_STATES.get(id) || { alpha: 0, lastWinAt: 0 };
     const sticky = (Date.now() - (st.lastWinAt || 0)) < STICKY_MS;
-    const targetAlpha = isForced ? 1 : (isWin ? target : (sticky ? Math.max(0, st.alpha * 0.85) : 0));
+    const targetAlpha = sticky ? Math.max(0, st.alpha * 0.85) : 0;
     const nextAlpha = st.alpha * (1 - OPACITY_FOLLOW) + targetAlpha * OPACITY_FOLLOW;
     st.alpha = nextAlpha; LABEL_STATES.set(id, st);
-
     const finalAlpha = nextAlpha;
     const vis = finalAlpha > 0.02;
     mesh.visible = vis;
-      if (mesh.material) {
-        mesh.material.transparent = true;
-        mesh.material.opacity = finalAlpha;
-        // 选中高亮：把文字整体轻微着色并加一点放大
-        // 说明：SpriteMaterial 的 color 会对纹理乘色，不影响原始贴图；
-        // 强制标签颜色策略：
-        // 城市→保持原来的城市文字颜色（白/淡蓝），只放大；国家→琥珀色以示选中。
-        try {
-          if (isForced) {
-            const forcedColor = (meta && meta.isCity) ? (CITY_TEXT_COLOR || '#d7e1ea') : '#ffd54f';
-            if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
-              mesh.material.color = new ctx.THREE.Color(forcedColor);
-            } else {
-              mesh.material.color.set(forcedColor);
-            }
-          } else {
-            const defaultColor = meta.isCity ? CITY_TEXT_COLOR : COUNTRY_TEXT_COLOR;
-            if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
-              mesh.material.color = new ctx.THREE.Color(defaultColor);
-            } else {
-              mesh.material.color.set(defaultColor);
-            }
-          }
-        } catch(_){ /* 容错：不同平台材质对象差异 */ }
-      }
-    // 跟随相机距离动态缩放，提升缩放体验（靠近时减小字体，远离时略增大）
-    if (mesh.userData && typeof mesh.userData.baseScaleX === 'number') {
-      // 高亮基准放大：仅在强制高亮时生效。取消脉动，改为“稳定增大”。
-      // 保留原有放大比例以维持辨识度：城市≈+90%，国家≈+20%。
-      const highlightBase = isForced ? (meta.isCity ? 2.00 : 1.20) : 1.0;
-      const scaleMul = highlightBase;
-      // 平滑缩放：使用指数跟随，避免每帧硬跳造成“卡顿感”
-      const targetX = mesh.userData.baseScaleX * distScale * scaleMul;
-      const targetY = mesh.userData.baseScaleY * distScale * scaleMul;
-      const st2 = LABEL_STATES.get(id) || {};
-      const prevX = typeof st2.scaleX === 'number' ? st2.scaleX : targetX;
-      const prevY = typeof st2.scaleY === 'number' ? st2.scaleY : targetY;
-      const nextX = prevX * (1 - __alphaScale) + targetX * __alphaScale;
-      const nextY = prevY * (1 - __alphaScale) + targetY * __alphaScale;
-      mesh.scale.set(nextX, nextY, 1);
-      // 像素级最大/最小字号钳制：根据当前屏幕投影的像素高度调整
-      const sizeNow = estimatePixelSize(mesh, world, normal, ctx);
-      const isCity = !!meta.isCity;
-      const baseMaxPxFar = isCity ? FONT_MAX_SCREEN_PX_CITY : FONT_MAX_SCREEN_PX_COUNTRY;
-      const minPx = isCity ? FONT_MIN_SCREEN_PX_CITY : FONT_MIN_SCREEN_PX_COUNTRY;
-      // 随相机距离动态上限：越近上限越接近 minPx，越远上限越接近 baseMaxPxFar
-      const nearDist = _const?.NEAR_FONT_DIST ?? 4.0;
-      const farDist  = FAR_FONT_STABLE_DIST;
-      const tZoom = Math.max(0, Math.min(1, (camDist - nearDist) / Math.max(1e-6, (farDist - nearDist))));
-      const baseMaxPxDyn = Math.round(minPx + (baseMaxPxFar - minPx) * tZoom);
-      let maxPx = baseMaxPxDyn;
-      if (isForced) {
-        if (meta && meta.isCity) {
-          // 城市选中：仅放大，不改变颜色。放宽上限，确保“更大”。
-          maxPx = Math.round(baseMaxPxDyn * 2.0);
-        } else {
-          // 国家选中：保持上限为动态值。
-          maxPx = baseMaxPxDyn;
-        }
-      }
-      const h = sizeNow.h;
-      // 冻结策略：在城市被强制高亮的短窗口期，非强制标签不允许“向上增大”，仅允许按需减小
-      if (!isForced && __forcedCityFreeze && h > 0) {
-        maxPx = Math.min(maxPx, h);
-      }
-      if (h > maxPx && h > 0) {
-        const r = maxPx / h;
-        const clampedX = mesh.scale.x * r;
-        const clampedY = mesh.scale.y * r;
-        // 软钳制：用按帧 alpha 缓慢趋近，避免硬剪切导致的视觉抖动
-        mesh.scale.set(
-          mesh.scale.x * (1 - __alphaScale) + clampedX * __alphaScale,
-          mesh.scale.y * (1 - __alphaScale) + clampedY * __alphaScale,
-          1
-        );
-      } else if (h < minPx && h > 0) {
-        const r = minPx / h;
-        const clampedX = mesh.scale.x * r;
-        const clampedY = mesh.scale.y * r;
-        mesh.scale.set(
-          mesh.scale.x * (1 - __alphaScale) + clampedX * __alphaScale,
-          mesh.scale.y * (1 - __alphaScale) + clampedY * __alphaScale,
-          1
-        );
-      }
-      // 记录当前缩放用于下一帧的平滑跟随
-      st2.scaleX = mesh.scale.x;
-      st2.scaleY = mesh.scale.y;
-      LABEL_STATES.set(id, st2);
+    if (mesh.material) {
+      mesh.material.depthTest = true;
+      mesh.material.transparent = true;
+      mesh.material.opacity = finalAlpha;
     }
   }
 }

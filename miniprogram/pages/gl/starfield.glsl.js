@@ -132,3 +132,48 @@ export function createStarfield(THREE) {
   starfield.name = 'starfield';
   return starfield;
 }
+export function applyZenStarUniforms(starfield, cfg = {}) {
+  const u = starfield?.material?.uniforms || {};
+  if (u.uSizeScale && typeof cfg.starSizeScale === 'number') u.uSizeScale.value = cfg.starSizeScale;
+  if (u.uBrightnessGain && typeof cfg.starBrightnessGain === 'number') u.uBrightnessGain.value = cfg.starBrightnessGain;
+  if (u.uBreathSpeed && typeof cfg.starBreathSpeed === 'number') u.uBreathSpeed.value = cfg.starBreathSpeed;
+  if (u.uBreathStrength && typeof cfg.starBreathStrength === 'number') u.uBreathStrength.value = cfg.starBreathStrength;
+}
+export function applyNormalStarUniforms(starfield, cfg = {}) {
+  const u = starfield?.material?.uniforms || {};
+  if (u.uSizeScale && typeof cfg.starSizeScale === 'number') u.uSizeScale.value = cfg.starSizeScale;
+  if (u.uBrightnessGain && typeof cfg.starBrightnessGain === 'number') u.uBrightnessGain.value = cfg.starBrightnessGain;
+  if (u.uBreathSpeed && typeof cfg.starBreathSpeed === 'number') u.uBreathSpeed.value = cfg.starBreathSpeed;
+  if (u.uBreathStrength && typeof cfg.starBreathStrength === 'number') u.uBreathStrength.value = cfg.starBreathStrength;
+}
+export function getZenStarOpacityTarget(cfg = {}) {
+  return (typeof cfg.starOpacity === 'number') ? cfg.starOpacity : 0.18;
+}
+export function getNormalStarOpacityTarget(cfg = {}) {
+  return (typeof cfg.starOpacity === 'number') ? cfg.starOpacity : 0.0;
+}
+export function tickStarfield(starfield, now, dtSec, targetOpacity){
+  try {
+    const mat = starfield?.material;
+    if (!mat) return { opacity: 0.0, visible: false };
+    const cur = (mat.uniforms && mat.uniforms.uOpacity) ? (mat.uniforms.uOpacity.value || 0.0) : 0.0;
+    const lerpK = Math.min(1.0, dtSec * 2.8);
+    const next = cur + (targetOpacity - cur) * lerpK;
+    if (mat.uniforms && mat.uniforms.uOpacity) mat.uniforms.uOpacity.value = Math.max(0.0, Math.min(1.0, next));
+    if (mat.uniforms && mat.uniforms.time) mat.uniforms.time.value = now * 0.001;
+    starfield.visible = next > 0.01;
+    return { opacity: next, visible: starfield.visible };
+  } catch(_){ return { opacity: 0.0, visible: false }; }
+}
+export function createStarfieldController(THREE, scene){
+  const mesh = createStarfield(THREE);
+  if (mesh) { mesh.renderOrder = -1; mesh.visible = false; try { scene.add(mesh); } catch(_){ } }
+  let target = 0.0;
+  return {
+    mesh,
+    setTargetOpacity(v){ try { target = Math.max(0, Math.min(1, Number(v)||0)); } catch(_){ target = 0.0; } },
+    applyZen(cfg){ try { applyZenStarUniforms(mesh, cfg||{}); } catch(_){ } },
+    applyNormal(cfg){ try { applyNormalStarUniforms(mesh, cfg||{}); } catch(_){ } },
+    tick(now, dt){ return tickStarfield(mesh, now, dt, target); }
+  };
+}

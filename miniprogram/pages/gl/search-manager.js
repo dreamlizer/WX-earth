@@ -190,9 +190,8 @@ export class SearchManager {
         try {
           const tzName = this.tzlookup?.(latNum, lonNum) || '';
           const offsetStr = this.computeGmtOffsetStr(tzName);
-          this.setData({ hoverText: offsetStr || (tzName || '') });
         } catch(_){}
-
+        
         if (feature) {
           try { this.onCountryPicked(feature); } catch(_){}
           this.updateTopOffsets();

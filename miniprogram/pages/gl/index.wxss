@@ -49,6 +49,7 @@ canvas {
   border: 2px solid rgba(120,170,220,0.55); /* 勾边粗细与时间胶囊一致 */
   border-radius: 28rpx; /* 圆角风格与时间胶囊一致 */
   font-weight: 700;
+  font-size: 36rpx; /* iPad 大屏按钮文字随容器等比增大 */
   box-sizing: border-box;
   /* 禅模式切换时的淡入淡出 */
   transition: opacity var(--ui-fade-ms, 320ms) ease;
@@ -105,9 +106,9 @@ canvas {
 }
 .top-tip.visible { opacity: 1; }
 
-/* 搜索按钮：置于第二行第一列（在语言按钮下方） */
+/* 搜索按钮：置于第二行第三列（在设置按钮下方） */
 .search-btn {
-  grid-column: 1 / span 1;
+  grid-column: 3 / span 1;
   grid-row: 2;
   /* 去掉边框，背景透明，仅用白色放大镜图标 */
   border: none !important;
@@ -120,16 +121,16 @@ canvas {
   box-shadow: none;
 }
 
-/* “切”按钮：置于第二行第一列（语言按钮下方），与“禅”对称 */
+/* “切”按钮：禅定模式下显示，移动到搜索放大镜位置（右列） */
 .cut-btn {
-  grid-column: 1 / span 1; /* 第二行左侧，与“禅”对称 */
+  grid-column: 3 / span 1;
   grid-row: 2;
 }
 
-/* “禅”按钮：置于第二行第三列（设置按钮下方） */
+/* “禅”按钮：置于第二行第一列（语言按钮下方） */
 .zen-btn {
-  grid-column: 3 / span 1;
-  grid-row: 2; /* 固定第二行，避免上移 */
+  grid-column: 1 / span 1;
+  grid-row: 2;
 }
 
 /* 禅定诗句盒：右上角显示，跟随顶部安全区与工具栏布局 */
@@ -163,6 +164,8 @@ canvas {
   will-change: transform, opacity; /* 降低移动时的闪烁 */
   backface-visibility: hidden;
 }
+.poetry-item.horizontal { writing-mode: horizontal-tb; text-orientation: mixed; font-style: italic; }
+.poetry-item.horizontal .poetry-text { white-space: pre; display: block; text-align: center; }
 .poetry-text { display: inline-block; writing-mode: inherit; text-orientation: inherit; color: inherit; }
 .poetry-item.visible { opacity: 1; }
 
@@ -202,21 +205,21 @@ canvas {
   z-index: 80;
   background: rgba(0,0,0,0); /* 透明但可接收点击 */
 }
-.settings-panel { font-size: 16px; /* +2px */ }
+.settings-panel { font-size: 14px; }
 .settings-title { color: #e8f6ff; font-weight: 700; margin-bottom: 4px; }
 .settings-row { display: flex; justify-content: space-between; align-items: center; color: #cfe7ff; padding: 4px 0; gap: 8px; }
 .settings-row text:first-child { white-space: nowrap; flex: 0 0 72px; }
 .settings-row .qty-group { flex: 1 1 auto; justify-content: flex-start; overflow: hidden; }
 
 /* 惯性滑条：更小的滑块，明确的滑轨颜色与间距 */
-.inertia-row .qty-group { padding: 8rpx 6rpx; }
-.inertia-slider { margin: 0 8rpx; width: 100%; }
+.inertia-row .qty-group { padding: 0; }
+.inertia-slider { margin: 0; width: 100%; }
 .settings-row .toggle-group { flex: 1 1 auto; overflow: hidden; }
 .toggle-group { display: flex; flex-wrap: nowrap; gap: 4px; }
-.toggle-btn { flex: 1 1 0; min-width: 0; padding: 0 6px; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; }
+.toggle-btn { flex: 1 1 0; min-width: 0; padding: 0 6px; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; white-space: nowrap; word-break: keep-all; }
 .toggle-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
 .qty-group { display: flex; flex-wrap: nowrap; gap: 4px; }
-.qty-btn { flex: 1 1 0; min-width: 0; height: 22px; line-height: 22px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; padding: 0 4px; }
+.qty-btn { flex: 1 1 0; min-width: 0; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; padding: 0 4px; white-space: nowrap; word-break: keep-all; }
 .qty-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
 
 /* 底部缩放条：统一胶囊风格（原样式恢复） */
@@ -253,6 +256,12 @@ canvas {
   position: fixed;
   z-index: 1300; /* 高于顶栏与诗句层 */
   background: rgba(255,255,255,0); /* 完全透明，仅用于接收点击 */
+  pointer-events: auto;
+}
+.brightness-sensor {
+  position: fixed;
+  z-index: 1400; /* 始终最前 */
+  background: rgba(255,255,255,0); /* 透明占位，拦截触控 */
   pointer-events: auto;
 }
 
@@ -382,4 +391,26 @@ canvas {
   opacity: 0;
   transition: opacity 500ms ease;
   pointer-events: none;
+}
+
+/* 地球加载提示：居中显示，简约风格 */
+.loading-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1000;
+}
+.loading-text {
+  color: rgba(232, 246, 255, 0.7);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(100, 181, 255, 0.5);
+  animation: pulse-text 2s infinite ease-in-out;
+}
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
