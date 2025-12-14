@@ -17,7 +17,7 @@ function getCanvas2D() {
 }
 
 export function makeTextSprite(THREE, text, params = {}) {
-  const font = params.font || 'bold 36px sans-serif';
+  const font = params.font || 'bold 34px sans-serif';
   const color = params.color || '#ffffff';
   const padding = params.padding ?? 12; // 增加默认边距，避免描边/阴影被裁切
   const bg = params.bg || 'transparent';

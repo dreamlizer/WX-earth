@@ -158,6 +158,7 @@ export const APP_CFG = {
     // 诗句移动速度（px/s）：值越大移动越快
     movePxPerSec: 8,
     // 句间交替时长（毫秒）：上一句淡出与下一句淡入的重叠时间
+    // 逻辑调整：Duration 现定义为“Start-to-Start”间隔。此参数仅决定重叠的视觉效果，不影响总时长。
     crossfadeMs: 800,
     // 屏幕安全边界（px）：与四边保持的最小距离，防止抛出屏幕
     safeMarginPx: 18,

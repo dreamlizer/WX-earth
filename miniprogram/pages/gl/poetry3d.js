@@ -7,21 +7,21 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
   group.name = 'POETRY_3D_LAYER';
   scene.add(group);
 
-  let enabled = false;
-  let a = null, b = null; // 两句交替
-  let cur = null; // 当前显示项（a/b）
-  let nextLines = [];
-  let idx = 0;
-  let tSwitch = 0;
-  let baseTime = 0; // 第一句的基准开始时间
-  let accumDuration = 0; // 累积的理论持续时间
+  let timeline = []; // 预计算的时间表
+  let activeSprites = new Map(); // 当前活动的 Sprites: index -> Sprite
+  let baseTime = 0; // 播放开始的绝对时间戳
+  let enabled = false; // 模块开关状态
+  let resumeMinStart = 0; // 恢复播放时：不补显示该时间之前 start 的句子
+
+  // 配置项
   let fadeInMs = Number(cfg.fadeInMs || 800);
-  let crossMs = Number(cfg.crossfadeMs || 800);
+  let fadeOutMs = Number(cfg.fadeOutMs || 800); 
+  let crossMs = Number(cfg.crossfadeMs || 800); 
   let displayMs = Number(cfg.displayMs || 7000);
   let preferLineDuration = !!cfg.preferLineDuration;
   let movePxPerSec = Number(cfg.movePxPerSec || 36);
   let safeMarginPx = Number(cfg.safeMarginPx || 18);
-  let behindOffset = Number(cfg.behindOffset || 0.08); // 距离地球交点之后的偏移（世界单位，球半径=1）
+  let behindOffset = Number(cfg.behindOffset || 0.08);
 
   const raycaster = new THREE.Raycaster();
   const tmpVec = new THREE.Vector3();
@@ -31,13 +31,11 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
   function toWorldBehind(xPx, yPx){
     const ndcX = (xPx / viewW) * 2 - 1;
     const ndcY = -((yPx / viewH) * 2 - 1);
-    // 通过屏幕点构造射线
     raycaster.setFromCamera({ x: ndcX, y: ndcY }, camera);
     const hit = earthMesh ? raycaster.intersectObject(earthMesh, true)[0] : null;
     camera.getWorldPosition(cameraPos);
     const origin = raycaster.ray.origin;
     const dir = raycaster.ray.direction;
-    // 路径：若射中地球，把点放在交点之后；否则放在离相机一定远处
     const dist = hit ? (hit.distance + behindOffset) : camera.position.length() * 1.2;
     tmpVec.copy(origin).add(tmpDir.copy(dir).multiplyScalar(Math.max(0.1, dist)));
     return tmpVec.clone();
@@ -47,14 +45,17 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
     const worldH = Number(cfg.worldHeight || 0.18);
     const sprite = makeTextSprite(THREE, text, {
       worldHeight: worldH,
-      // 关键：启用深度测试，renderOrder 设低，确保被地球遮挡
       depthTest: true,
       depthWrite: false,
       renderOrder: 0
     });
-    // 初始完全透明
     sprite.material.opacity = 0.0;
     return sprite;
+  }
+
+  function getBounds(){
+    const margin = Math.max(0, safeMarginPx);
+    return { x: margin, y: margin, w: viewW - margin * 2, h: viewH - margin * 2 };
   }
 
   function randomStart(bounds){
@@ -77,55 +78,27 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
     return { endX, endY };
   }
 
-  // 屏幕安全边界：上左右 margin，底部取地球画布下半区+额外 10% 高度的下沿
-  function getBounds(){
-    const margin = Math.max(0, safeMarginPx);
-    return { x: margin, y: margin, w: viewW - margin * 2, h: viewH - margin * 2 };
-  }
-
-  function showNext(useA, forceStartAt = 0){
-    if (!nextLines.length) return;
-    const item = nextLines[idx % nextLines.length];
-    idx++;
-    const bounds = getBounds();
-    const start = randomStart(bounds);
-    const durNow = preferLineDuration ? Number(item?.duration || displayMs) : Number(displayMs);
-    const end = computeMove(start, durNow, bounds);
-    const s = (useA ? (a = makeSprite(item.text), a) : (b = makeSprite(item.text), b));
-    group.add(s);
-    
-    const now = performance.now();
-    const startTime = forceStartAt || now;
-    
-    // 如果是首句，初始化基准时间
-    if (!baseTime) {
-      baseTime = startTime;
-      accumDuration = 0;
-    }
-
-    s.userData.screen = { x: start.x, y: start.y, endX: end.endX, endY: end.endY, t0: startTime, dur: durNow };
-    // 进入时淡入
-    s.material.opacity = 0.0;
-    cur = s;
-    
-    // 严格计算下一句的理论开始时间
-    accumDuration += durNow;
-    // 下一句应该在什么时候开始？ = 基准时间 + 累积时长 - 交叉淡入时间
-    // 这样能保证第 N 句的结束点严格对齐时间轴
-    tSwitch = baseTime + accumDuration - crossMs;
-  }
-
   function disposeSprite(s){
     if (!s) return;
     try { group.remove(s); s.material?.map?.dispose?.(); s.material?.dispose?.(); s.geometry?.dispose?.(); } catch(_){}
   }
 
   return {
-    setEnabled(on){ enabled = !!on; if (!enabled) { disposeSprite(a); disposeSprite(b); a = b = cur = null; baseTime = 0; accumDuration = 0; } },
+    setEnabled(on){ 
+      enabled = !!on; 
+      if (!enabled) { 
+        // 清空所有
+        activeSprites.forEach(s => disposeSprite(s));
+        activeSprites.clear();
+        baseTime = 0; 
+      } 
+    },
+    
     start(lines, conf){
-      nextLines = Array.isArray(lines) ? lines.map(l => ({ text: String(l.text||''), duration: Number(l.duration||displayMs) })).filter(x => x.text.length>0) : [];
+      // 更新配置
       if (conf) {
         fadeInMs = Number(conf.fadeInMs || fadeInMs);
+        fadeOutMs = Number(conf.fadeOutMs || fadeOutMs);
         crossMs = Number(conf.crossfadeMs || crossMs);
         displayMs = Number(conf.displayMs || displayMs);
         preferLineDuration = !!conf.preferLineDuration;
@@ -133,62 +106,166 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
         safeMarginPx = Number(conf.safeMarginPx || safeMarginPx);
         behindOffset = Number(conf.behindOffset || behindOffset);
       }
-      idx = 0; disposeSprite(a); disposeSprite(b); a = b = cur = null; 
-      baseTime = 0; accumDuration = 0; tSwitch = 0;
-      if (!nextLines.length) return; 
-      showNext(true);
-    },
-    stop(){ disposeSprite(a); disposeSprite(b); a = b = cur = null; baseTime = 0; accumDuration = 0; },
-    update(now){
-      if (!enabled) return;
-      // 交替切换
-      // 注意：如果浏览器卡顿导致 now 远超 tSwitch，也要立即切换，并修正下一句的 t0
-      if (tSwitch && now >= tSwitch){
-        // 旧句淡出
-        if (cur) { cur.userData.fadeOutUntil = now + Math.max(300, crossMs); }
-        
-        // 强制下一句的开始时间为理论时间 tSwitch，消除累积误差
-        // 但如果卡顿太久（超过2秒），就重置基准，避免下一句一出来就结束
-        let nextStart = tSwitch;
-        if (now - tSwitch > 2000) {
-           nextStart = now;
-           // 重置基准，防止"赶进度"式快进
-           const currentDur = preferLineDuration ? Number(nextLines[idx % nextLines.length]?.duration || displayMs) : displayMs;
-           baseTime = now - (accumDuration - currentDur + crossMs); // 倒推新的基准
-        }
-        
-        showNext(cur === a ? false : true, nextStart);
-      }
-      // 逐帧更新位置与透明度
-      [a, b].forEach(s => {
-        if (!s || !s.userData.screen) return;
-        const u = s.userData.screen;
-        // 使用相对于自身 t0 的时间
-        const elapsed = now - u.t0;
-        
-        // 如果还没到开始时间（预创建），则隐藏
-        if (elapsed < 0) {
-            s.visible = false;
-            return;
-        }
-        s.visible = true;
 
-        const t = Math.max(0, Math.min(1, elapsed / Math.max(1, u.dur)));
-        const x = u.x + (u.endX - u.x) * t;
-        const y = u.y + (u.endY - u.y) * t;
-        const world = toWorldBehind(x, y);
-        s.position.copy(world);
-        // 淡入/淡出
-        if (!s.userData.fadeOutUntil) {
-          const k = Math.max(0, Math.min(1, elapsed / Math.max(1, fadeInMs)));
-          s.material.opacity = Math.min(1.0, 0.05 + 0.95 * k);
-        } else {
-          const rem = Math.max(0, s.userData.fadeOutUntil - now);
-          const k = Math.max(0, Math.min(1, rem / Math.max(1, crossMs)));
-          s.material.opacity = Math.max(0, Math.min(1, 1.0 * k));
-          if (rem <= 0) { disposeSprite(s === a ? a : b); if (s === a) a = null; else b = null; s.userData.fadeOutUntil = 0; }
-        }
+      // 1. 清理旧状态
+      activeSprites.forEach(s => disposeSprite(s));
+      activeSprites.clear();
+      baseTime = 0;
+      timeline = [];
+      resumeMinStart = 0;
+
+      if (!Array.isArray(lines) || lines.length === 0) {
+        console.warn('[Poetry] Start called with empty lines!');
+        return;
+      }
+
+      // 2. 预计算时间轴 (Timeline)
+      const hasAbsStart = Array.isArray(lines) && lines.some(l => Number.isFinite(Number(l?.['start-time'])));
+      let accum = 0;
+      lines.forEach((l, i) => {
+        if (!l.text) return;
+        const dur = preferLineDuration ? Number(l.duration || displayMs) : displayMs;
+
+        const bounds = getBounds();
+        const startPos = randomStart(bounds);
+        const endPos = computeMove(startPos, dur, bounds);
+
+        const tStart = hasAbsStart ? Math.max(0, Number(l?.['start-time'] || 0)) : accum;
+        const tEnd = tStart + dur;
+        const tVisibleEnd = tEnd + crossMs;
+
+        timeline.push({
+          index: i,
+          text: String(l.text),
+          tStart,
+          tEnd,
+          tVisibleEnd,
+          screen: {
+            x: startPos.x, y: startPos.y,
+            endX: endPos.endX, endY: endPos.endY,
+            dur: dur
+          }
+        });
+
+        if (!hasAbsStart) { accum += dur; }
       });
+
+      // 标记开始：允许外部传入基准时间以便 Special 结束后继续按原时间轴
+      const overrideBase = (conf && typeof conf.baseTime === 'number' && conf.baseTime > 0) ? conf.baseTime : null;
+      baseTime = overrideBase || Date.now();
+      // 记录“恢复时刻”的已流逝时间，用于跳过过期句子
+      resumeMinStart = Math.max(0, Date.now() - baseTime);
+      enabled = true;
+
+      // [Debug] 输出完整时间表
+      const totalDur = timeline[timeline.length-1]?.tEnd || 0;
+      console.log(`[Poetry] Timeline Ready. Total lines: ${timeline.length}, Total duration: ${(totalDur/1000).toFixed(2)}s`);
+      console.table(timeline.map(t => ({
+        text: t.text.length > 10 ? t.text.slice(0,10)+'...' : t.text,
+        start: (t.tStart/1000).toFixed(2)+'s',
+        dur: (t.screen.dur/1000).toFixed(2)+'s',
+        end: (t.tEnd/1000).toFixed(2)+'s'
+      })));
+    },
+
+    stop(){ 
+      activeSprites.forEach(s => disposeSprite(s));
+      activeSprites.clear();
+      baseTime = 0; 
+      timeline = [];
+    },
+
+    update(now){
+      if (!enabled || !baseTime || timeline.length === 0) return;
+
+      // 计算当前播放进度 (ms)
+      // 如果希望支持循环播放，可以对 totalDuration 取模
+      const totalDuration = timeline[timeline.length - 1].tEnd;
+      // 这里暂不循环，或者由外部控制循环。假设外部会重新调 start。
+      // 为了安全，如果 now 远超 totalDuration + crossMs，可以视为结束。
+      
+      const elapsed = now - baseTime;
+
+      // 1. 找出当前应该显示的句子
+      // 条件：elapsed >= tStart && elapsed < tVisibleEnd
+      const visibleIndices = new Set();
+      
+      for (let i = 0; i < timeline.length; i++) {
+        const item = timeline[i];
+        // 优化：如果 item.tVisibleEnd 早就过了，跳过
+        if (elapsed > item.tVisibleEnd) continue;
+        // 优化：如果 item.tStart 还没到，后面的肯定也没到（因为是排序的），break
+        if (elapsed < item.tStart) break;
+
+        // 命中
+        visibleIndices.add(i);
+
+        // 如果还没有 Sprite，创建它
+        if (!activeSprites.has(i)) {
+          // 跳过补显示：若该句的 tStart 早于恢复时刻，则不创建
+          if (item.tStart < resumeMinStart) { continue; }
+          // [Debug] 实时播放日志
+          console.log(`[Poetry] Play #${i+1} @ ${(elapsed/1000).toFixed(2)}s: "${item.text}" (Duration: ${(item.screen.dur/1000).toFixed(2)}s)`);
+          
+          const s = makeSprite(item.text);
+          // 存入元数据，方便后续更新
+          s.userData.timelineItem = item;
+          group.add(s);
+          activeSprites.set(i, s);
+        }
+      }
+
+      // 2. 清理不再显示的句子
+      for (const [i, sprite] of activeSprites) {
+        if (!visibleIndices.has(i)) {
+          disposeSprite(sprite);
+          activeSprites.delete(i);
+        }
+      }
+
+      // 3. 更新所有活动句子的状态
+      for (const [i, sprite] of activeSprites) {
+        const item = sprite.userData.timelineItem;
+        // 句子内部的流逝时间
+        const localT = elapsed - item.tStart;
+        
+        // A. 运动 (只在 dur 期间运动，crossMs 期间保持在终点? 或者继续运动?)
+        // 原逻辑是：运动覆盖 duration。
+        // 我们可以让它继续匀速运动，保持动量。
+        // 速度 = dist / dur。 总运动时间 = dur + crossMs
+        // 还是保持简单：只在 dur 内运动，crossMs 停留在终点。
+        const moveProgress = Math.max(0, Math.min(1, localT / Math.max(1, item.screen.dur)));
+        const x = item.screen.x + (item.screen.endX - item.screen.x) * moveProgress;
+        const y = item.screen.y + (item.screen.endY - item.screen.y) * moveProgress;
+        
+        const world = toWorldBehind(x, y);
+        sprite.position.copy(world);
+
+        // B. 透明度 (Fade In / Fade Out)
+        // 阶段1: Fade In (0 -> fadeInMs)
+        // 阶段2: Hold
+        // 阶段3: Fade Out (tEnd -> tVisibleEnd) 注意：这里是用 tEnd 开始淡出
+        
+        let alpha = 1.0;
+
+        // 淡入
+        if (localT < fadeInMs) {
+           alpha = localT / Math.max(1, fadeInMs);
+        }
+        
+        // 淡出 (检查是否进入了 Cross 区域)
+        // Cross 区域开始于 item.tEnd
+        if (elapsed >= item.tEnd) {
+           const fadeOutElapsed = elapsed - item.tEnd;
+           const fadeOutDur = item.tVisibleEnd - item.tEnd; // 应该等于 crossMs
+           const k = Math.max(0, Math.min(1, fadeOutElapsed / Math.max(1, fadeOutDur)));
+           alpha = 1.0 - k; // 1 -> 0
+        }
+        
+        // 基础透明度限制 (0.05 ~ 1.0)
+        sprite.material.opacity = Math.max(0, Math.min(1, alpha));
+        sprite.visible = true;
+      }
     }
   };
 }

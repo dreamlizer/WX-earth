@@ -35,22 +35,15 @@ export class ZenModeManager {
       try { setZenMode(true); } catch(_){ }
       // 音频与诗句：进入禅定时启动 preset（中文1，英文4）
       const isEn = (this.page?.data?.lang === 'en');
-      let preset = this.page?.__zenPreset || (isEn ? 101 : 1);
-      if (isEn) {
-        try {
-          const map = this.page?.__poetryPresets || {};
-          const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
-          preset = (preset===1||preset===2||preset===3) ? (keys[0]||101) : preset;
-        } catch(_){ preset = (preset===1||preset===2||preset===3) ? 101 : preset; }
-      } else {
-        if (preset===101||preset===102||preset===103||preset>=104) preset = 1;
-      }
+      const current = this.page?.__zenPreset || (isEn ? 101 : 1);
+      const preset = this._resolvePresetForLang(current, isEn);
       this.page.__zenPreset = preset;
-      // 音频：英文仍使用 1–3 三首，映射 4→1、5→2、6→3
-      const audioPreset = isEn ? Math.max(1, preset - 100) : preset;
+      const audioPreset = this._resolveAudioPresetForLang(preset, isEn);
       try { this.page?._startZenAudio?.(audioPreset); } catch(_){ }
-      try { this.page?.__startPoetryViaMgr?.(preset, 0, { firstDelayMs: 1000 }); } catch(_){ }
-      try { this._ensureEndedListener(); } catch(_){ }
+      // 中文模式下用户反馈慢了 0.5s，因此将启动延迟从 1000ms 调整为 500ms
+      const startDelay = isEn ? 1000 : 500;
+      try { this.page?.__startPoetryViaMgr?.(preset, 0, { firstDelayMs: startDelay }); } catch(_){ }
+      try { this._ensureAudioListeners(); } catch(_){ }
     } catch(_){ }
   }
 
@@ -70,17 +63,7 @@ export class ZenModeManager {
     try {
       const isEn = (this.page?.data?.lang === 'en');
       const current = Number(this.page?.__zenPreset || (isEn ? 101 : 1));
-      let nextPreset = current;
-      if (isEn) {
-        try {
-          const map = this.page?.__poetryPresets || {};
-          const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
-          const idx = Math.max(0, keys.indexOf(current));
-          nextPreset = keys.length ? keys[(idx+1) % keys.length] : (current===101?102:(current===102?103:101));
-        } catch(_){ nextPreset = (current === 101 ? 102 : (current === 102 ? 103 : 101)); }
-      } else {
-        nextPreset = (current === 1 ? 2 : (current === 2 ? 3 : 1));
-      }
+      const nextPreset = this._resolveNextPreset(current, isEn);
       this.page.__zenPreset = nextPreset;
       const pmgr = this.page?.__getPoetryMgr?.();
       if (pmgr && typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { if (pmgr && typeof pmgr.stop === 'function') { pmgr.stop(); } }
@@ -93,17 +76,38 @@ export class ZenModeManager {
       // 新音乐：等待 1 秒后开始淡入（淡入 1 秒），新诗句：靠近淡出末尾切入（总淡出 2 秒，1 秒后启动，内部首句再延迟 1 秒 = 2 秒）
       try {
         const mgr = this.page?.__getZenMgr?.();
-        const audioPreset = isEn ? Math.max(1, nextPreset - 100) : nextPreset;
+        const audioPreset = this._resolveAudioPresetForLang(nextPreset, isEn);
         const localUrl = this.page?._getLocalAudio?.(audioPreset) || '';
         // 1s 延迟 + 1s 淡入
         if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(audioPreset, localUrl, 1000, 1000); }
         else { this.page?._startZenAudio?.(audioPreset); }
       } catch(_){ }
-      try { this._ensureEndedListener(); } catch(_){ }
+      try { this._ensureAudioListeners(); } catch(_){ }
       // 诗句：立即切换到新预设并强制从头开始（首句不延迟）
       try { this.page?.__startPoetryViaMgr?.(nextPreset, 0, { firstDelayMs: 0 }); } catch(_){ }
       // 需求调整：切换时不再显示“切到预设X”的提示
       // 为保持整洁，不设置 hoverText。
+    } catch(_){ }
+  }
+
+  switchToPreset(nextPreset){
+    try {
+      const isEn = (this.page?.data?.lang === 'en');
+      const p = Number(nextPreset) || (isEn ? 101 : 1);
+      this.page.__zenPreset = p;
+      const pmgr = this.page?.__getPoetryMgr?.();
+      if (pmgr && typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { if (pmgr && typeof pmgr.stop === 'function') { pmgr.stop(); } }
+      try { this.page?._stopZenAudio?.(2000); } catch(_){ }
+      try { this.page?.setData?.({ poetryFadeMs: 2000, 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
+      try {
+        const mgr = this.page?.__getZenMgr?.();
+        const audioPreset = this._resolveAudioPresetForLang(p, isEn);
+        const localUrl = this.page?._getLocalAudio?.(audioPreset) || '';
+      if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(audioPreset, localUrl, 1000, 1000); }
+      else { this.page?._startZenAudio?.(audioPreset); }
+    } catch(_){ }
+    try { this._ensureAudioListeners(); } catch(_){ }
+    try { this.page?.__startPoetryViaMgr?.(p, 0, { firstDelayMs: 0 }); } catch(_){ }
     } catch(_){ }
   }
 
@@ -123,6 +127,73 @@ export class ZenModeManager {
         zmgr.onEnded(() => this._onAudioEnded());
       }
     } catch(_){ }
+  }
+
+  _onAudioPlay(){
+    try {
+      const zmgr = this.page?.__getZenMgr?.();
+      if (!zmgr) return;
+      const delay = 2500;
+      setTimeout(() => {
+        try {
+          const pmgr = this.page?.__getPoetryMgr?.();
+          const posSec = Number(zmgr.getCurrentTime?.() || 0);
+          const posMs = Math.max(0, Math.floor(posSec * 1000));
+          pmgr?.forceAlignToAudioPosition?.(posMs);
+        } catch(_){ }
+      }, delay);
+    } catch(_){ }
+  }
+
+  _ensurePlayListener(){
+    try {
+      const zmgr = this.page?.__getZenMgr?.();
+      if (zmgr && typeof zmgr.onPlay === 'function') {
+        zmgr.onPlay(() => this._onAudioPlay());
+      }
+    } catch(_){ }
+  }
+
+  _ensureAudioListeners(){
+    try { this._ensureEndedListener(); } catch(_){ }
+    try { this._ensurePlayListener(); } catch(_){ }
+  }
+
+  _resolvePresetForLang(current, isEn){
+    try {
+      let preset = Number(current) || (isEn ? 101 : 1);
+      if (isEn) {
+        try {
+          const map = this.page?.__poetryPresets || {};
+          const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
+          const valid = (preset===1||preset===2||preset===3) ? (keys[0]||101) : preset;
+          return valid;
+        } catch(_){ return (preset===1||preset===2||preset===3) ? 101 : preset; }
+      } else {
+        if (preset===101||preset===102||preset===103||preset>=104) return 1;
+        return preset;
+      }
+    } catch(_){ return isEn ? 101 : 1; }
+  }
+
+  _resolveNextPreset(current, isEn){
+    try {
+      const cur = Number(current) || (isEn ? 101 : 1);
+      if (isEn) {
+        try {
+          const map = this.page?.__poetryPresets || {};
+          const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
+          const idx = Math.max(0, keys.indexOf(cur));
+          return keys.length ? keys[(idx+1) % keys.length] : (cur===101?102:(cur===102?103:101));
+        } catch(_){ return (cur === 101 ? 102 : (cur === 102 ? 103 : 101)); }
+      } else {
+        return (cur === 1 ? 2 : (cur === 2 ? 3 : 1));
+      }
+    } catch(_){ return isEn ? 102 : 2; }
+  }
+
+  _resolveAudioPresetForLang(preset, isEn){
+    try { return isEn ? Math.max(1, Number(preset||101) - 100) : Number(preset||1); } catch(_){ return isEn ? 1 : 1; }
   }
 }
 

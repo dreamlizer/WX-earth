@@ -23,6 +23,8 @@ export class ZenAudio {
     this.audio = null;
     this.delayUsed = false;
     this.preset = 1;
+    this._onPlayCb = null;
+    this._onPlayEpoch = 0;
   }
 
   updateFileIds(map){ this.fileIds = { ...this.fileIds, ...(map || {}) }; }
@@ -33,7 +35,16 @@ export class ZenAudio {
     a.loop = true; a.autoplay = false; a.obeyMuteSwitch = false;
     try {
       a.onError && a.onError(err => { try { console.error('[ZEN audio] onError:', err); } catch(_){ } });
-      a.onPlay && a.onPlay(() => { try { console.info('[ZEN audio] onPlay'); } catch(_){ } });
+      a.onPlay && a.onPlay(() => {
+        try {
+          this._onPlayEpoch = Date.now();
+          const ct = (typeof a.currentTime === 'number') ? a.currentTime : 0;
+          try { console.info('[ZEN audio] onPlay'); } catch(_){ }
+          if (typeof this._onPlayCb === 'function') {
+            try { this._onPlayCb({ epoch: this._onPlayEpoch, currentTime: ct }); } catch(_){ }
+          }
+        } catch(_){ }
+      });
       a.onCanplay && a.onCanplay(() => { try { console.info('[ZEN audio] onCanplay'); } catch(_){ } });
       if (typeof a.onEnded === 'function') {
         a.onEnded(() => { try { this._onEndedCb && this._onEndedCb(); } catch(_){ } });
@@ -216,6 +227,10 @@ export class ZenAudio {
   stop(){ try { this.audio?.stop?.(); } catch(_){} }
 
   onEnded(cb){ this._onEndedCb = cb; }
+
+  onPlay(cb){ this._onPlayCb = cb; }
+
+  getCurrentTime(){ try { const a = this.audio; return (typeof a?.currentTime === 'number') ? a.currentTime : 0; } catch(_){ return 0; } }
 }
 
 export function clearZenAudioSaved(){

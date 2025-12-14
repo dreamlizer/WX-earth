@@ -29,10 +29,10 @@ export function createLightingManager(ctx){
     try {
       const now = Date.now()
       if (now >= __shaderDiagNext) {
-        const d = mat.uniforms?.uDayTex?.value?.uuid
-        const n = mat.uniforms?.uNightTex?.value?.uuid
-        console.log('[shader:sync]', { dayUUID: d, nightUUID: n, exp: mat.uniforms?.uExposure?.value, gain: mat.uniforms?.uDaySideGain?.value })
-        __shaderDiagNext = now + 2000
+        // const d = mat.uniforms?.uDayTex?.value?.uuid
+        // const n = mat.uniforms?.uNightTex?.value?.uuid
+        // console.log('[shader:sync]', { dayUUID: d, nightUUID: n, exp: mat.uniforms?.uExposure?.value, gain: mat.uniforms?.uDaySideGain?.value })
+        __shaderDiagNext = now + 5000
       }
     } catch(_){ }
   }

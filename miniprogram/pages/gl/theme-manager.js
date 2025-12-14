@@ -20,7 +20,7 @@ export function applyTheme(opts) {
     // 规范化主题名称
     let currentTheme = (kind === 'day8k' || kind === 'night') ? kind : 'default';
 
-    try { console.log('[theme:set]', { kind: currentTheme, zenActive, matType: earthMesh?.material?.type }); } catch(_){ }
+    // try { console.log('[theme:set]', { kind: currentTheme, zenActive, matType: earthMesh?.material?.type }); } catch(_){ }
     
     // 如果是 Zen 模式，且 earthMesh 已经是 ShaderMaterial，则认为是 Shader 状态
     // 注意：这里不再负责切换 Shader/Phong 的“类型”，只负责更新当前材质的“内容”
@@ -83,7 +83,7 @@ function updateShaderTheme({ dayNightMat, currentTheme, earthDayTex, earthPureDa
     if (typeof ncfg.nightDaySideGain === 'number') setVal(u, 'uDaySideGain', Math.min(3.0, Math.max(0.7, ncfg.nightDaySideGain)));
     
     __nightThemeActive = true;
-    try { console.info('[theme:shader] night (pure)'); } catch(_){ }
+    // try { console.info('[theme:shader] night (pure)'); } catch(_){ }
   } 
   else {
     // 2. 恢复/设置正常模式
@@ -100,9 +100,9 @@ function updateShaderTheme({ dayNightMat, currentTheme, earthDayTex, earthPureDa
       // 正常的白天/高清切换
       if (dayTexForTheme) {
         setVal(u, 'uDayTex', dayTexForTheme);
-        try { console.info('[theme:shader] dayTex=', (currentTheme === 'day8k' ? 'pureDay' : 'default')); } catch(_){ }
+        // try { console.info('[theme:shader] dayTex=', (currentTheme === 'day8k' ? 'pureDay' : 'default')); } catch(_){ }
       } else {
-        try { console.warn('[theme:shader] 缺失白昼贴图，保持原值'); } catch(_){ }
+        // try { console.warn('[theme:shader] 缺失白昼贴图，保持原值'); } catch(_){ }
       }
     }
   }
@@ -128,9 +128,9 @@ function updatePhongTheme({ earthMesh, currentTheme, earthDayTex, earthPureDayTe
     m.map = mapTex;
     try { if (m.map) m.map.needsUpdate = true; } catch(_){}
     m.needsUpdate = true;
-    try { console.log('[theme:phong] switch map', { kind: currentTheme, uuid: mapTex.uuid }); } catch(_){ }
+    // try { console.log('[theme:phong] switch map', { kind: currentTheme, uuid: mapTex.uuid }); } catch(_){ }
   } else {
-    try { console.warn('[theme:phong] no texture available'); } catch(_){ }
+    // try { console.warn('[theme:phong] no texture available'); } catch(_){ }
   }
 
   // 如果从 Shader 降级下来，或者混合状态，重置 Shader 相关的状态变量
@@ -165,8 +165,8 @@ export function applyThemeWithState(opts) {
   return res;
 }
 
-export function applyZenMaterial({ THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, currentTheme, LIGHT_CFG, dirLightBase, camera, ambientLight, dirLight, useSimpleShader = false, workaroundTransparent = false, flipY = false }) {
-  // 兼容旧参数名
+export function applyZenMaterial(opts) {
+  const { THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, currentTheme, LIGHT_CFG, dirLightBase, camera, ambientLight, dirLight, useSimpleShader, workaroundTransparent } = opts || {};
   const _pureDayTex = earthPureDayTex || arguments[0]?.earthDay8kTex;
   
   const res = { earthOldMat: null, dayNightMat: null };
@@ -196,10 +196,19 @@ export function applyZenMaterial({ THREE, earthMesh, earthDayTex, earthPureDayTe
       );
       
       if (__dayNightMat) {
-        try { tuneZenMaterialUniforms(__dayNightMat, { LIGHT_CFG, dirLightBase, camera }); } catch(_){}
-        try { if (workaroundTransparent) { __dayNightMat.depthWrite = false; __dayNightMat.alphaTest = 0.001; __dayNightMat.transparent = true; } } catch(_){}
-        // 针对 PC 客户端的纹理翻转修复
-        try { if (flipY) setVal(__dayNightMat.uniforms, 'uFlipY', 1.0); } catch(_){}
+        try { tuneZenMaterialUniforms(__dayNightMat, { LIGHT_CFG, dirLightBase, camera }); } catch(_){ }
+        try {
+          if (workaroundTransparent) {
+            __dayNightMat.depthWrite = true;
+            __dayNightMat.alphaTest = 0.0;
+            __dayNightMat.transparent = false;
+          }
+        } catch(_){ }
+        
+        // PC 端强制 Shader 翻转 (已改为纹理矩阵修复，移除此处的 Shader 翻转)
+        // try { 
+        //   if (isPC) setVal(__dayNightMat.uniforms, 'uFlipY', 1.0); 
+        // } catch(_){ }
       }
       res.dayNightMat = __dayNightMat;
     } catch(e){ console.error('[theme] createDayNightMaterial failed', e); }

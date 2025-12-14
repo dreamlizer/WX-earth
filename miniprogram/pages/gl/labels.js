@@ -12,7 +12,7 @@ import { makeTextSprite } from './text-sprite.js';
 import * as _const from './label-constants.js';
 
 const LABEL_ALTITUDE   = _const?.LABEL_ALTITUDE   ?? 0.02;  // 标签相对球面抬升
-const GRID_SIZE        = _const?.GRID_SIZE        ?? 64;    // 屏幕碰撞网格像素
+const GRID_SIZE        = _const?.GRID_SIZE        ?? 56;    // 屏幕碰撞网格像素 (64->56: 允许更密集)
 let LABELS_BUDGET = _const?.MAX_LABELS_BUDGET ?? 22;        // 单帧最多渲染标签数（可动态调整）
 export function setLabelsBudget(n){
   const v = Number(n);
@@ -43,19 +43,19 @@ const COUNTRY_MIN_WINNERS = _const?.COUNTRY_MIN_WINNERS ?? 12; // 国家保底�
 const COUNTRY_TEXT_COLOR = _const?.COUNTRY_TEXT_COLOR ?? '#ffffff';
   const CITY_TEXT_COLOR = _const?.CITY_TEXT_COLOR ?? '#d7e1ea';
   const CITY_STROKE_WIDTH = _const?.CITY_STROKE_WIDTH ?? 2;
-  // 选中国家时的城市动态预算：近距多、远距少
-  const CITY_BUDGET_NEAR = _const?.CITY_BUDGET_NEAR ?? 14;
-  const CITY_BUDGET_MID  = _const?.CITY_BUDGET_MID  ?? 8;
-  const CITY_BUDGET_FAR  = _const?.CITY_BUDGET_FAR  ?? 3;
+  // 选中国家时的城市动态预算：近距多、远距少（大幅提升比率）
+  const CITY_BUDGET_NEAR = _const?.CITY_BUDGET_NEAR ?? 48; // 14 -> 48
+  const CITY_BUDGET_MID  = _const?.CITY_BUDGET_MID  ?? 24; // 8 -> 24
+  const CITY_BUDGET_FAR  = _const?.CITY_BUDGET_FAR  ?? 12; // 3 -> 12
 // 新增：城市标签字体可配置（粗细/字体族）——默认 400（Regular）
 const CITY_FONT_WEIGHT = _const?.CITY_FONT_WEIGHT ?? 400; // 取值：100/200/300/400/500/600/700...
 const CITY_FONT_FAMILY = _const?.CITY_FONT_FAMILY ?? 'sans-serif';
 // 城市标签的 LOD（相机距离阈值），参考 Win 版策略
-const LOD_CITIES_START_APPEAR = _const?.LOD_CITIES_START_APPEAR ?? 8.0; // 开始显示城市
-const LOD_CITIES_ALL_APPEAR   = _const?.LOD_CITIES_ALL_APPEAR   ?? 5.5; // 显示更多级别城市
+const LOD_CITIES_START_APPEAR = _const?.LOD_CITIES_START_APPEAR ?? 11.0; // 8.0 -> 11.0 (更早显示)
+const LOD_CITIES_ALL_APPEAR   = _const?.LOD_CITIES_ALL_APPEAR   ?? 8.5;  // 5.5 -> 8.5 (更早全开)
 // 屏幕像素级字号上下限（最终钳制）
-const FONT_MAX_SCREEN_PX_COUNTRY = _const?.FONT_MAX_SCREEN_PX_COUNTRY ?? 40;
-const FONT_MAX_SCREEN_PX_CITY    = _const?.FONT_MAX_SCREEN_PX_CITY    ?? 26;
+const FONT_MAX_SCREEN_PX_COUNTRY = _const?.FONT_MAX_SCREEN_PX_COUNTRY ?? 32; // 40 -> 32 (避免过大)
+const FONT_MAX_SCREEN_PX_CITY    = _const?.FONT_MAX_SCREEN_PX_CITY    ?? 24; // 26 -> 24
 const FONT_MIN_SCREEN_PX_COUNTRY = _const?.FONT_MIN_SCREEN_PX_COUNTRY ?? 26;
 const FONT_MIN_SCREEN_PX_CITY    = _const?.FONT_MIN_SCREEN_PX_CITY    ?? 20;
 // 记录初始相机距离，用于比例型远距判定（适配不同屏幕纵横比）
@@ -568,7 +568,8 @@ export function updateLabels(){
       if (_const?.ENABLE_CITY_LABELS === false) { continue; }
       const imp = Number(meta.importance || 1);
       if (camDistLOD > LOD_CITIES_START_APPEAR) { continue; }
-      if (imp < 2 && camDistLOD > LOD_CITIES_ALL_APPEAR) { continue; }
+      // 移除重要性过滤，允许更多城市在较远距离参与竞争（由预算和网格控制）
+      // if (imp < 2 && camDistLOD > LOD_CITIES_ALL_APPEAR) { continue; }
     }
 
     const sp = worldToScreen(world, ctx);

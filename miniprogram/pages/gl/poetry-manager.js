@@ -40,6 +40,12 @@ export class PoetryManager {
     this._timer = null;
     this._timer2 = null;
     this._idx = 0;
+    this._baseTime = 0;
+    this._timeline = [];
+    this._timers = [];
+    this._absSchedule = false;
+    this._showLineOn = null;
+    this._hasAbsStart = false;
   }
 
   // 暴露当前正在播放的诗句索引（用于外部“暂停后接续播放”）
@@ -51,7 +57,9 @@ export class PoetryManager {
       try { if (this.appCfg?.poetry?.use3D) { this.stopPoetry3D(); } } catch(_){ }
       clearTimeout(this._timer); clearTimeout(this._timer2);
       this._timer = null; this._timer2 = null;
-      this.setData({ 'poetryA.visible': false, 'poetryB.visible': false });
+      try { for (const t of (this._timers||[])) clearTimeout(t); } catch(_){}
+      this._timers = [];
+      this.setData({ 'poetryA.visible': false, 'poetryB.visible': false, poetryAFirst: false, poetryBFirst: false });
       const fadeMs = Number(this.appCfg?.poetry?.fadeInMs || 600);
       setTimeout(() => {
         this.setData({
@@ -68,10 +76,14 @@ export class PoetryManager {
       try { if (this.appCfg?.poetry?.use3D) { this.stopPoetry3D(); } } catch(_){ }
       clearTimeout(this._timer); clearTimeout(this._timer2);
       this._timer = null; this._timer2 = null; this._idx = 0;
+      try { for (const t of (this._timers||[])) clearTimeout(t); } catch(_){}
+      this._timers = [];
       this.setData({
         poetryFadeMs: 0,
         poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
-        poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false }
+        poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+        poetryAFirst: false,
+        poetryBFirst: false
       });
     } catch(_){ }
   }
@@ -88,14 +100,55 @@ export class PoetryManager {
       // 页面数据中的过渡时长需要同步
       // 统一使用 2 秒淡出；如需单独控制淡入，可在模板中区分 class（此处先满足需求）
       this.setData({ poetryFadeMs: Math.max(fadeInMs, 2000) });
+      this._hasShownFirstLine = false;
 
       // 诊断与正确性：不再在目标预设缺失时回退到 1，避免造成“切到第三首仍显示第一套”错觉。
       const lines = Array.isArray(presetsMap[preset]) ? presetsMap[preset] : [];
       try { console.info('[poetry] 开始播放', { preset, lines: (Array.isArray(lines)? lines.length : 0) }); } catch(_){}
       if (!Array.isArray(lines) || !lines.length) return;
+
+      const preferLine = !!cfg.preferLineDuration;
+      const firstDelayMs = Math.max(0, Number((opts && opts.firstDelayMs !== undefined) ? opts.firstDelayMs : 1000));
+      const hasAbsStart = Array.isArray(lines) && lines.some(l => Number.isFinite(Number(l?.['start-time'])));
+      this._timeline = [];
+      if (hasAbsStart) {
+        const arr = lines.map((l, idx) => {
+          if (!l || !l.text) return null;
+          const baseStart = Math.max(0, Number(l?.['start-time'] || 0));
+          const dur = Number(preferLine ? (l.duration || cfg.displayMs || 7000) : (cfg.displayMs || l.duration || 7000));
+          return { index: idx, text: String(l.text), tStart: firstDelayMs + baseStart, tEnd: firstDelayMs + baseStart + dur, dur };
+        }).filter(Boolean);
+        this._timeline = arr;
+      } else {
+        const order = Array.from({ length: lines.length }, (_, j) => (this._idx + j) % lines.length);
+        let accum = firstDelayMs;
+        for (let k = 0; k < order.length; k++) {
+          const idx = order[k];
+          const l = lines[idx];
+          if (!l || !l.text) continue;
+          const dur = Number(preferLine ? (l.duration || cfg.displayMs || 7000) : (cfg.displayMs || l.duration || 7000));
+          this._timeline.push({ index: idx, text: String(l.text), tStart: accum, tEnd: accum + dur, dur });
+          accum += dur;
+        }
+      }
+      this._hasAbsStart = !!hasAbsStart;
+      if (opts && opts.keepBaseTime && this._baseTime) {
+      } else {
+        this._baseTime = Date.now();
+      }
+      try {
+        const totalMs = this._timeline.length ? (this._timeline[this._timeline.length - 1].tEnd) : 0;
+        console.log(`[Poetry] Timeline Ready. Total lines: ${this._timeline.length}, Total duration: ${(totalMs/1000).toFixed(2)}s`);
+        console.table(this._timeline.map(t => ({
+          text: t.text.length > 10 ? t.text.slice(0,10)+'...' : t.text,
+          start: (t.tStart/1000).toFixed(2)+'s',
+          dur: (t.dur/1000).toFixed(2)+'s',
+          end: (t.tEnd/1000).toFixed(2)+'s'
+        })));
+      } catch(_){}
       // 3D 模式：交由 three.js 层渲染（被地球遮挡），关闭 DOM 叠加层
       if (cfg.use3D) {
-        try { this.startPoetry3D(lines, cfg); } catch(_){}
+        try { this.startPoetry3D(lines, { ...cfg, baseTime: this._baseTime }); } catch(_){ }
         try { this.setData({ 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){}
         return;
       }
@@ -117,6 +170,8 @@ export class PoetryManager {
         setText[useA ? 'poetryA.visible' : 'poetryB.visible'] = false;
         // 先将移动时长置为 0，避免把上一次残留的 transform 动画到初始位
         setText[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
+        const isFirstLine = !this._hasShownFirstLine;
+        setText[useA ? 'poetryAFirst' : 'poetryBFirst'] = !!isFirstLine;
         this.setData(setText);
         const rect = await this.measure(id);
       const itemW = Math.max(1, rect?.width || 80);
@@ -128,10 +183,16 @@ export class PoetryManager {
         ? __computeStartCenterEn(vp.windowWidth, vp.windowHeight, itemW, itemH, margin)
         : this.computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds, centerRatio));
         // 优先级开关：preferLineDuration=true 时以当前句的 showMs 为主，否则以配置 displayMs 为主
-        const preferLine = !!cfg.preferLineDuration;
-        const showDuration = Number(preferLine ? (showMs || cfg.displayMs || 7000) : (cfg.displayMs || showMs || 7000));
+        const preferLine2 = !!cfg.preferLineDuration;
+        const showDuration = Number(preferLine2 ? (showMs || cfg.displayMs || 7000) : (cfg.displayMs || showMs || 7000));
         const totalDuration = Math.max(0, showDuration + crossMs);
         const move = this.computeMove(start, itemW, itemH, moveSpeed, totalDuration, bounds);
+
+        try {
+          const elapsedSec = this._baseTime ? ((Date.now() - this._baseTime) / 1000) : 0;
+          this._played = (this._played || 0) + 1;
+          console.log(`[Poetry] Play #${this._played} @ ${elapsedSec.toFixed(2)}s: "${String(text)}" (Duration: ${(showDuration/1000).toFixed(2)}s)`);
+        } catch(_){}
 
         // 三阶段设置：
         // Phase1：无过渡地把 transform 重置为 0，并淡入显示
@@ -142,6 +203,7 @@ export class PoetryManager {
         phase1[useA ? 'poetryA.ty' : 'poetryB.ty'] = 0;
         phase1[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
         phase1[useA ? 'poetryA.visible' : 'poetryB.visible'] = true;
+        this._hasShownFirstLine = true;
         this.setData(phase1);
         await new Promise(r => setTimeout(r, 16)); // 等一帧确保初始样式应用
         // Phase2：启用位移过渡时长
@@ -152,39 +214,83 @@ export class PoetryManager {
 
         const nearEnd = Math.max(0, showDuration - crossMs);
         const endPos = { x: move.endX, y: move.endY };
-        // 独立定时：到达 nearEnd 时触发下一句的出现（不依赖旧句淡出是否完成）
-        this._timer2 = setTimeout(async () => {
-          const nextItem = lines[(this._idx + 1) % lines.length];
-          // 通过配置限制“下一句贴近上一句首字”的最大距离，避免飘到边缘
-          const limit = (typeof cfg.nextStartMaxDistancePx === 'number') ? cfg.nextStartMaxDistancePx : 20;
-          let nextStart = this.nearbyFrom(endPos, itemW, itemH, bounds, limit);
-          // 保护：如果发生异常（例如 NaN），回退到中心附近
-          if (!nextStart || isNaN(nextStart.x) || isNaN(nextStart.y)) {
-            nextStart = this.computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds, centerRatio);
-          }
-          if (isEn) {
-            const cx = Math.max(bounds.minX, Math.min(bounds.maxX - itemW, (vp.windowWidth - itemW) / 2));
-            const cy = Math.max(bounds.minY, Math.min(bounds.maxY - itemH, vp.windowHeight * 0.25 + Math.random() * vp.windowHeight * 0.15));
-            nextStart.x = Math.max(bounds.minX, Math.min(bounds.maxX - itemW, (nextStart.x + cx) * 0.5));
-            nextStart.y = Math.max(bounds.minY, Math.min(bounds.maxY - itemH, (nextStart.y + cy) * 0.5));
-          }
-          const ms = Number(preferLine ? (nextItem?.duration || cfg.displayMs || 7000) : (cfg.displayMs || 7000));
-          this._idx = (this._idx + 1) % lines.length;
-          await showLineOn(!useA, nextItem.text, ms, nextStart);
-        }, nearEnd);
+        if (!this._absSchedule) {
+          this._timer2 = setTimeout(async () => {
+            const nextItem = lines[(this._idx + 1) % lines.length];
+            const limit = (typeof cfg.nextStartMaxDistancePx === 'number') ? cfg.nextStartMaxDistancePx : 20;
+            let nextStart = this.nearbyFrom(endPos, itemW, itemH, bounds, limit);
+            if (!nextStart || isNaN(nextStart.x) || isNaN(nextStart.y)) {
+              nextStart = this.computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds, centerRatio);
+            }
+            if (isEn) {
+              const cx = Math.max(bounds.minX, Math.min(bounds.maxX - itemW, (vp.windowWidth - itemW) / 2));
+              const cy = Math.max(bounds.minY, Math.min(bounds.maxY - itemH, vp.windowHeight * 0.25 + Math.random() * vp.windowHeight * 0.15));
+              nextStart.x = Math.max(bounds.minX, Math.min(bounds.maxX - itemW, (nextStart.x + cx) * 0.5));
+              nextStart.y = Math.max(bounds.minY, Math.min(bounds.maxY - itemH, (nextStart.y + cy) * 0.5));
+            }
+            const ms = Number(preferLine ? (nextItem?.duration || cfg.displayMs || 7000) : (cfg.displayMs || 7000));
+            this._idx = (this._idx + 1) % lines.length;
+            await showLineOn(!useA, nextItem.text, ms, nextStart);
+          }, nearEnd);
+        }
         // 独立定时：在本句完整显示时长到达后，开始旧句淡出
         this._timer = setTimeout(() => {
           const hide = {}; hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false; this.setData(hide);
         }, showDuration);
       };
+      this._showLineOn = showLineOn;
 
-      const item0 = lines[this._idx % lines.length];
-      const firstDelayMs = Math.max(0, Number((opts && opts.firstDelayMs !== undefined) ? opts.firstDelayMs : 1000));
-      setTimeout(() => {
-        const preferLine = !!cfg.preferLineDuration;
-        const ms0 = Number(preferLine ? (item0?.duration || cfg.displayMs || 7000) : (cfg.displayMs || 7000));
-        showLineOn(true, item0.text, ms0);
-      }, firstDelayMs);
+      if (hasAbsStart) {
+        this._absSchedule = true;
+        this._timers = [];
+        let useA = true;
+        const elapsedNow = this._baseTime ? Math.max(0, Date.now() - this._baseTime) : 0;
+        for (let i = 0; i < this._timeline.length; i++) {
+          const item = this._timeline[i];
+          if (item.tStart < elapsedNow) { continue; }
+          const delay = Math.max(0, item.tStart - elapsedNow);
+          const h = setTimeout(() => {
+            this._idx = item.index;
+            showLineOn(useA, item.text, item.dur);
+            useA = !useA;
+          }, delay);
+          this._timers.push(h);
+        }
+      } else {
+        this._absSchedule = false;
+        const item0 = lines[this._idx % lines.length];
+        setTimeout(() => {
+          const preferLine3 = !!cfg.preferLineDuration;
+          const ms0 = Number(preferLine3 ? (item0?.duration || cfg.displayMs || 7000) : (cfg.displayMs || 7000));
+          showLineOn(true, item0.text, ms0);
+        }, firstDelayMs);
+      }
     } catch(_){ }
+  }
+
+  forceAlignToAudioPosition(posMs = 0){
+    try {
+      if (!this._absSchedule || !Array.isArray(this._timeline) || !this._timeline.length || typeof this._showLineOn !== 'function') return false;
+      const pos = Math.max(0, Number(posMs || 0));
+      this._baseTime = Date.now() - pos;
+      try { for (const t of (this._timers || [])) clearTimeout(t); } catch(_){}
+      this._timers = [];
+      let useA = true;
+      const elapsedNow = this._baseTime ? Math.max(0, Date.now() - this._baseTime) : 0;
+      for (let i = 0; i < this._timeline.length; i++) {
+        const item = this._timeline[i];
+        if (item.tStart < elapsedNow) { continue; }
+        const delay = Math.max(0, item.tStart - elapsedNow);
+        const h = setTimeout(() => {
+          try {
+            this._idx = item.index;
+            this._showLineOn(useA, item.text, item.dur);
+            useA = !useA;
+          } catch(_){ }
+        }, delay);
+        this._timers.push(h);
+      }
+      return true;
+    } catch(_){ return false; }
   }
 }

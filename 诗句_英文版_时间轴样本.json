@@ -1,0 +1,17 @@
+{
+  "_id": "preset_3E_timeline_sample",
+  "preset": 6,
+  "lines": [
+    { "text": "", "duration": 3000, "start-time": 0 },
+    { "text": "Out of Darkness", "duration": 9000, "start-time": 3000 },
+    { "text": "", "duration": 10000, "start-time": 12000 },
+    { "text": "", "duration": 1000, "start-time": 22000 },
+    { "text": "Listen to my voice", "duration": 4500, "start-time": 23000 },
+    { "text": "Calling you", "duration": 5000, "start-time": 27500 },
+    { "text": "Pulling you out of darkness", "duration": 9000, "start-time": 32500 },
+    { "text": "Hear the devil's cry of sin", "duration": 8600, "start-time": 41500 },
+    { "text": "Always turn your back on him", "duration": 10000, "start-time": 50100 },
+    { "text": "", "duration": 10000, "start-time": 60100 }
+  ],
+  "updatedAt": 1764689677000
+}

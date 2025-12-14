@@ -103,12 +103,22 @@ Page({
     suggestions: [],
     // 禅定模式开关（仅UI显隐与面板关闭，不改变渲染逻辑）
     zenMode: false,
+    presetListOpen: false,
+    presetList: [],
+    currentPreset: 1,
+    presetListRight: 8,
+    presetListTop: 0,
+    presetLatched: false,
+    presetPinnedId: null,
+    presetPinnedDy: 0,
+    presetCollapsed: false,
+    presetListOpacity: 1,
     // 禅定诗句当前文本（进入禅定后循环显示）
     poetryFadeMs: 600,
     // 诗句字号（来自配置）
-    poetryFontSizePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Number(APP_CFG.poetry.fontSizePx) : 16,
+    poetryFontSizePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Math.max(8, Number(APP_CFG.poetry.fontSizePx) - 2) : 14,
     // 英文/中文切换时用于还原的基准字号
-    poetryFontSizeBasePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Number(APP_CFG.poetry.fontSizePx) : 16,
+    poetryFontSizeBasePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Math.max(8, Number(APP_CFG.poetry.fontSizePx) - 2) : 14,
     // 诗句移动与交替配置（从 config.js 读取并缓存，便于绑定与逻辑使用）
     poetryCrossfadeMs: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.crossfadeMs)) ? Number(APP_CFG.poetry.crossfadeMs) : 1000,
     poetryMovePxPerSec: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.movePxPerSec)) ? Number(APP_CFG.poetry.movePxPerSec) : 36,
@@ -119,6 +129,8 @@ Page({
     // 双层容器（A/B）用于句间交替与位移
     poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
     poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+    poetryAFirst: false,
+    poetryBFirst: false,
     // 诗句残影层：由 _startPoetry 按配置生成，按偏移/透明度渲染
   // 移除拖影层：保留纯文字项以降低资源消耗
     // 云端音频 FileID（只走云端，不再回退本地）
@@ -145,7 +157,7 @@ Page({
     // Special 展示状态（水平排布、轻微放大、淡入/缓慢移动/淡出）
     specialVisible: false,
     specialText: '',
-    specialFontSizePx: (APP_CFG && APP_CFG.poetry && APP_CFG.poetry.special && Number(APP_CFG.poetry.special.fontSizePx)) ? Number(APP_CFG.poetry.special.fontSizePx) : 36,
+    specialFontSizePx: (APP_CFG && APP_CFG.poetry && APP_CFG.poetry.special && Number(APP_CFG.poetry.special.fontSizePx)) ? Math.max(8, Number(APP_CFG.poetry.special.fontSizePx) - 2) : 34,
     // 淡入默认 1 秒（进入时）；淡出默认 2 秒（离开时）
     specialFadeMs: (APP_CFG && APP_CFG.poetry && APP_CFG.poetry.special && Number(APP_CFG.poetry.special.fadeInMs)) ? Number(APP_CFG.poetry.special.fadeInMs) : 1000,
     specialMoveMs: (APP_CFG && APP_CFG.poetry && APP_CFG.poetry.special && Number(APP_CFG.poetry.special.displayMs)) ? Number(APP_CFG.poetry.special.displayMs) : 10000,
@@ -449,12 +461,147 @@ Page({
       const times2 = [80, 200, 360];
       times2.forEach(ms => { setTimeout(() => { try { this.updateBrightnessSensor(); } catch(_){} }, ms); });
     } catch(_){ }
+    try { this.__closePresetList(); } catch(_){ }
   },
 
-  // “切”按钮：后续用于切换音乐与诗句组合，这里先占位
-  onToggleCut(){
-    // 委托给禅定管理器：统一预设切换、音频/诗句启动与轻提示
-    try { return this.__getZenModeMgr().toggleCut(); } catch(_){}
+  // “定”按钮：展开/收起预设列表
+  async onToggleCut(){
+    try {
+      if (!this.data.zenMode) return;
+      const isEn = (this.data?.lang === 'en');
+      const ids = isEn ? [101,102,103] : [1,2,3];
+      // 列表未打开：打开并淡入
+      if (!this.data.presetListOpen) {
+        if (!this.__presetLabels) { try { await this.preloadPresetLabelsCloud(); } catch(_){ } }
+        const labels = this.__presetLabels || {};
+        const cur = Number(this.__zenPreset || (isEn ? 101 : 1));
+        const list = this.__buildPresetList(ids, cur, labels);
+        this.setData({ presetListOpen: true, presetList: list, currentPreset: cur, presetPinnedId: null, presetPinnedDy: 0, presetCollapsed: false, presetLatched: true, presetListOpacity: 0 });
+        try {
+          const q = wx.createSelectorQuery();
+          q.select('.cut-btn').boundingClientRect(rect => {
+            try {
+              const vp = this.__getViewport();
+              const vw = Number(vp?.windowWidth || 360);
+              const right = Math.max(0, vw - Number(rect?.right || vw));
+              const top = Math.max(0, Number(rect?.bottom || 0) + 6);
+              this.setData({ presetListRight: right, presetListTop: top });
+            } catch(_){ }
+          }).exec();
+        } catch(_){ }
+        // 容器淡入
+        setTimeout(() => { try { this.setData({ presetListOpacity: 1 }); } catch(_){ } }, 16);
+        // 启动 15 秒无操作自动折叠
+        try { this.__startPresetIdleTimer?.(); } catch(_){ }
+        return;
+      }
+      // 列表已打开：在“全列表”和“仅当前”两态间切换
+      if (this.data.presetCollapsed) {
+        // 展开：重建完整列表（当前置顶），其他项以白字淡入
+        try {
+          if (!this.__presetLabels) { await this.preloadPresetLabelsCloud(); }
+        } catch(_){ }
+        const labels = this.__presetLabels || {};
+        const cur = Number(this.__zenPreset || (isEn ? 101 : 1));
+        const list = this.__buildPresetList(ids, cur, labels);
+        this.setData({ presetCollapsed: false, presetList: list });
+        try { this.__startPresetIdleTimer?.(); } catch(_){ }
+      } else {
+        // 折叠：其他歌名淡出，仅保留当前
+        this.setData({ presetCollapsed: true, presetLatched: true });
+        try { this.__clearPresetIdleTimer?.(); } catch(_){ }
+        try {
+          const curId = Number(this.__zenPreset || (this.data.lang === 'en' ? 101 : 1));
+          setTimeout(() => {
+            try {
+              const list = Array.isArray(this.data.presetList) ? this.data.presetList : [];
+              const first = list.find(it => it.id === curId) || list.find(it => it.id === this.data.currentPreset);
+              const only = first || (list[0] || null);
+              if (only) this.setData({ presetList: [only] });
+            } catch(_){ }
+          }, 1000);
+        } catch(_){ }
+      }
+    } catch(_){ }
+  },
+  onPickPreset(e){
+    try {
+      const ds = e?.currentTarget?.dataset || {};
+      const id = Number(ds?.id || 0);
+      if (!id) return;
+      if (String(ds?.disabled) === 'true' || (this.data.presetLatched && id === this.data.currentPreset)) return;
+      this.setData({ currentPreset: id, presetLatched: true, presetPinnedId: id, presetPinnedDy: 0, presetCollapsed: true });
+      try { this.__startPresetIdleTimer?.(); } catch(_){ }
+      setTimeout(() => {
+        try {
+          const list = Array.isArray(this.data.presetList) ? this.data.presetList : [];
+          const firstId = list.length ? list[0].id : id;
+          const q = wx.createSelectorQuery();
+          q.select(`#preset-item-${firstId}`).boundingClientRect();
+          q.select(`#preset-item-${id}`).boundingClientRect();
+          q.exec(res => {
+            try {
+              const topA = (res && res[0] && typeof res[0].top === 'number') ? res[0].top : 0;
+              const topB = (res && res[1] && typeof res[1].top === 'number') ? res[1].top : topA;
+              const dy = Math.max(-2000, Math.min(2000, topA - topB));
+              setTimeout(() => { try { this.setData({ presetPinnedDy: dy }); } catch(_){ } }, 900);
+              setTimeout(() => {
+                try {
+                  const first = list.find(it => it.id === id);
+                  const others = list.filter(it => it.id !== id);
+                  const newList = first ? [first, ...others] : list;
+                  this.setData({ presetList: newList, presetPinnedId: null, presetPinnedDy: 0 });
+                  const only = first || newList[0];
+                  if (only) this.setData({ presetList: [only] });
+                } catch(_){ }
+              }, 1900);
+            } catch(_){ }
+          });
+        } catch(_){ }
+      }, 30);
+      const mgr = this.__getZenModeMgr();
+      if (mgr && typeof mgr.switchToPreset === 'function') { mgr.switchToPreset(id); }
+    } catch(_){ }
+  },
+  __presetIdleTimer: 0,
+  __clearPresetIdleTimer(){ try { if (this.__presetIdleTimer) clearTimeout(this.__presetIdleTimer); } catch(_){ } this.__presetIdleTimer = 0; },
+  __startPresetIdleTimer(){
+    try {
+      this.__clearPresetIdleTimer();
+      const delay = 15000;
+      this.__presetIdleTimer = setTimeout(() => {
+        try {
+          if (this.data.presetListOpen && !this.data.presetCollapsed) {
+            this.setData({ presetCollapsed: true, presetLatched: true });
+            const curId = Number(this.__zenPreset || (this.data.lang === 'en' ? 101 : 1));
+            setTimeout(() => {
+              try {
+                const list = Array.isArray(this.data.presetList) ? this.data.presetList : [];
+                const first = list.find(it => it.id === curId) || list.find(it => it.id === this.data.currentPreset);
+                const only = first || (list[0] || null);
+                if (only) this.setData({ presetList: [only] });
+              } catch(_){ }
+            }, 1000);
+          }
+        } catch(_){ }
+      }, delay);
+    } catch(_){ }
+  },
+  __buildPresetList(ids, cur, labels){
+    try {
+      const list = ids
+        .map(id => ({ id, label: labels[id] }))
+        .filter(it => typeof it.label === 'string' && it.label.length > 0);
+      const first = list.find(it => it.id === cur);
+      const others = list.filter(it => it.id !== cur);
+      return first ? [first, ...others] : list;
+    } catch(_){ return []; }
+  },
+  __closePresetList(){
+    try {
+      this.__clearPresetIdleTimer?.();
+      this.setData({ presetListOpen: false, presetCollapsed: false, presetLatched: false, presetPinnedId: null, presetPinnedDy: 0, presetListOpacity: 0 });
+    } catch(_){ }
   },
   onToggleNight(e){ const on = !!(e?.detail?.value); this.setData({ nightMode: on }); setNightMode(on); },
   // 新增：主题三选按钮事件（白昼/默认/夜景）
@@ -537,7 +684,7 @@ Page({
         const preset = Number(doc?.preset || 1);
         // 保留空文本行：用于调度时间，不做过滤
         const lines = Array.isArray(doc?.lines) ? doc.lines
-          .map(l => ({ text: String(l?.text ?? ''), duration: Number(l?.duration || 7000) })) : [];
+          .map(l => ({ text: String(l?.text ?? ''), duration: Number(l?.duration || 7000), ['start-time']: Number.isFinite(Number(l?.['start-time'])) ? Number(l?.['start-time']) : undefined })) : [];
         if (lines.length) map[preset] = lines;
       }
       return map;
@@ -880,8 +1027,8 @@ Page({
           // 先更新过渡时长，下一帧再切不可见，避免“闪没”
           this.setData({ specialFadeMs: outMs });
           setTimeout(() => { try { this.setData({ specialVisible: false }); } catch(_){ } }, 16);
-          // 淡出完成后接续播放
-          setTimeout(() => { try { this.__startPoetryViaMgr(this.__zenPreset || 1, this.__poetryResumeIdx || 0); } catch(_){} }, outMs);
+          // 淡出完成后接续播放：保留原始基准时间，继续按 start-time 时间轴播放
+          setTimeout(() => { try { this.__startPoetryViaMgr(this.__zenPreset || 1, this.__poetryResumeIdx || 0, { keepBaseTime: true }); } catch(_){} }, outMs);
         } catch(_){ }
       }, displayMs);
     } catch(_){ }
@@ -966,7 +1113,39 @@ Page({
   },
   onToggleLang(){
     try { this.__getPanelMgr()?.fadeOutOpenPanels?.(); } catch(_){ }
+    try { this.setData({ presetListOpen: false }); } catch(_){ }
+    try { this.__clearPresetIdleTimer?.(); } catch(_){ }
     return this.__getLabelsMgr().onToggleLang();
+  },
+
+  async preloadPresetLabelsCloud(){
+    if (APP_CFG?.cloud?.enabled === false || !(wx && wx.cloud)) { return; }
+    let map = {};
+    try {
+      const { result } = await wx.cloud.callFunction({ name: 'poetrySets', data: { type: 'list' } });
+      const arr = result && Array.isArray(result.data) ? result.data : [];
+      const m = {}; const labels = {};
+      for (const doc of arr) {
+        const preset = Number(doc?.preset || NaN);
+        if (!isNaN(preset)) {
+          const lines = Array.isArray(doc?.lines) ? doc.lines.map(l => ({ text: String(l?.text || ''), duration: Number(l?.duration || 7000), ['start-time']: Number.isFinite(Number(l?.['start-time'])) ? Number(l?.['start-time']) : undefined })) : [];
+          if (lines.length) m[preset] = lines;
+          if (typeof doc?._id === 'string') labels[preset] = doc._id;
+        }
+      }
+      if (Object.keys(m).length) { this.__poetryPresets = { ...this.__poetryPresets, ...m }; }
+      this.__presetLabels = { ...(this.__presetLabels||{}), ...labels };
+    } catch(_){ }
+    if (wx.cloud && wx.cloud.database) {
+      try {
+        const db = wx.cloud.database();
+        const r = await db.collection('poetry_sets').limit(100).field({ _id: true, preset: true }).get();
+        const arr2 = Array.isArray(r?.data) ? r.data : [];
+        const labels2 = {};
+        for (const d of arr2) { const p = Number(d?.preset || NaN); if (!isNaN(p) && typeof d?._id === 'string') labels2[p] = d._id; }
+        this.__presetLabels = { ...(this.__presetLabels||{}), ...labels2 };
+      } catch(_){ }
+    }
   },
   rebuildLabelsByLang(lang, featuresArg){
     return this.__getLabelsMgr().rebuildLabelsByLang(lang, featuresArg);

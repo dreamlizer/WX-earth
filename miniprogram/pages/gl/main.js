@@ -304,6 +304,67 @@ export function boot(page) {
 
     // 纹理与数据加载
     const loader = new THREE.TextureLoader();
+    const loadTextureWithRetry = async (name, urlProvider, applyFn, { maxAttempts = 3, baseDelayMs = 800, timeoutMs = 15000 } = {}) => {
+      return new Promise((resolve) => {
+        let attempt = 0;
+        let finished = false;
+        let lastFallback = ''; // Capture fallback URL
+
+        const loadFallback = () => {
+          if (finished) return;
+          if (!lastFallback) { resolve(false); return; }
+          console.warn('[texture] Retry failed, switching to fallback:', name);
+          loader.load(lastFallback, (tex) => {
+             if (finished) return;
+             finished = true;
+             try { applyFn(tex); } catch(_){}
+             resolve(true);
+          }, undefined, () => {
+             if (finished) return;
+             finished = true;
+             resolve(false);
+          });
+        };
+
+        const tryOnce = async () => {
+          attempt += 1;
+          let res = null;
+          try { res = await urlProvider(attempt > 1); } catch(_){}
+          const u = (res && res.url) ? res.url : '';
+          if (res && res.fallback) lastFallback = res.fallback;
+
+          let watchdog = setTimeout(() => {
+            if (finished) return;
+            console.warn('[texture] Timeout:', name, 'attempt:', attempt);
+            if (attempt < maxAttempts) {
+              const delay = Math.max(200, baseDelayMs * Math.pow(2, attempt - 1));
+              setTimeout(tryOnce, delay);
+            } else {
+              loadFallback();
+            }
+          }, timeoutMs);
+
+          loader.load(u, (tex) => {
+            if (finished) { clearTimeout(watchdog); return; }
+            clearTimeout(watchdog);
+            try { applyFn(tex); } catch(_){}
+            finished = true;
+            resolve(true);
+          }, undefined, () => {
+            if (finished) { clearTimeout(watchdog); return; }
+            clearTimeout(watchdog);
+            console.warn('[texture] Load failed:', name, 'attempt:', attempt);
+            if (attempt < maxAttempts) {
+              const delay = Math.max(200, baseDelayMs * Math.pow(2, attempt - 1));
+              setTimeout(tryOnce, delay);
+            } else {
+              loadFallback();
+            }
+          });
+        };
+        tryOnce();
+      });
+    };
     // --- 平台探测与兼容性设置 ---
     // 复用 boot 开头的 sys (wx.getSystemInfoSync)
     const sysInfo = sys || {};
@@ -313,6 +374,17 @@ export function boot(page) {
     // Mate X3 可能在 system 字段不返回 Harmony，需补充 model 检测
     const __isHarmony = /Harmony/i.test(sysInfo.system || '') || /Mate\s*X3/i.test(sysInfo.model || '');
     
+    // 鸿蒙系统兼容性修复：禁用 ImageBitmap，强制使用 Image 加载纹理
+    // 解决 Mate X3 等设备上地球贴图可能为空白（空心）的问题
+    if (__isHarmony) {
+      try {
+        console.warn('[HarmonyOS] Compatibility Mode: Disabling ImageBitmap');
+        const g = (typeof global !== 'undefined' ? global : (typeof window !== 'undefined' ? window : {}));
+        // 强制移除全局 createImageBitmap，使 Three.js 回退到标准 Image 加载
+        if (g.createImageBitmap) g.createImageBitmap = undefined;
+      } catch(e) { console.warn('[HarmonyOS] Failed to disable ImageBitmap', e); }
+    }
+    
     // 判定是否为开发工具：检查 environment, brand, 或 platform 为 devtools
     const __isDevtools = String(sysInfo.environment || '').toLowerCase() === 'devtools' || 
                          String(sysInfo.brand || '').toLowerCase() === 'devtools' || 
@@ -320,34 +392,47 @@ export function boot(page) {
                          
     // 判定是否为 PC 客户端 (Windows/Mac) 且非 DevTools
     // PC 客户端的 WebGL 纹理坐标系常与移动端相反，导致贴图倒置
-    const __isPCClient = (sysPlatform === 'windows' || sysPlatform === 'mac') && !__isDevtools;
+    // 增强判定：检查 system 字段是否包含 Windows/macOS，以防 platform 字段不准确
+    const __isPCClient = !__isDevtools && (
+      sysPlatform === 'windows' || 
+      sysPlatform === 'mac' || 
+      /Windows/i.test(sysInfo.system || '') || 
+      /macOS/i.test(sysInfo.system || '')
+    );
     
     // 修复贴图倒置：PC 客户端需要特殊处理
     // 注意：flipY 属性在 PC 客户端可能被忽略，因此我们使用 repeat/offset 和 shader uniform 双重保险
-    const TEX_FLIP_Y = true; // 保持默认 true，PC 端通过 repeat.y = -1 修正
+    const TEX_FLIP_Y = true; // 保持默认 true
 
     // 辅助函数：针对 PC 客户端修正纹理
     const fixTexture = (tex) => {
+      // PC 端 texture.flipY 可能被底层忽略，且 Shader 修复未覆盖默认 MeshPhongMaterial
+      // 因此使用 Texture Matrix 直接翻转纹理坐标，这是全材质通用的终极方案
       if (__isPCClient && tex) {
         try {
-          // 方案变更：用户反馈 repeat/offset 依然反向。
-          // 尝试直接关闭 flipY。通常 WebGL 纹理默认 flipY=true，如果 PC 端反了，可能是因为不需要 flipY。
-          tex.flipY = false;
-          
-          // 暂时移除 repeat/offset 修正，避免冲突
-          // tex.wrapS = THREE.RepeatWrapping;
-          // tex.wrapT = THREE.RepeatWrapping;
-          // tex.repeat.set(1, -1);
-          // tex.offset.set(0, 1);
-          
+          // 停止自动矩阵更新
+          tex.matrixAutoUpdate = false;
+          // 手动构造翻转矩阵：Y轴翻转 + Y轴位移
+          // 相当于 scale(1, -1) translate(0, 1)
+          // Matrix3 构造顺序：n11, n12, n13, n21, n22, n23, n31, n32, n33 (列优先？Three.js set 是行优先)
+          // Three.js Texture Matrix: 
+          // [ sx  0  tx ]
+          // [ 0  sy  ty ]
+          // [ 0   0   1 ]
+          // 我们需要 sy = -1, ty = 1
+          tex.matrix.set(
+            1, 0, 0,
+            0, -1, 1,
+            0, 0, 1
+          );
           tex.needsUpdate = true;
-          console.warn('[texture] PC Fix: set flipY=false');
+          console.warn('[texture] PC Fix: Applied Texture Matrix Flip');
         } catch(e) { console.warn('[texture] fixTexture failed', e); }
       }
     };
     
     try {
-      if (__isPCClient) console.log('[main] PC Client detected, applying texture fix (repeat/offset)');
+      if (__isPCClient) console.log('[main] PC Client detected (Strict Mode)');
       // 复用判定结果
       const isDevtools = __isDevtools;
       const forceCloud = !!getApp()?.globalData?.forceCloudTextures;
@@ -369,170 +454,92 @@ export function boot(page) {
       } catch(_){ }
     };
     
-    // 串行加载纹理，避免iOS并发压力导致失败
     const loadTexturesSequentially = async () => {
       try {
-        // 1. 优先加载默认白昼（最关键）
-        const dayRes = await getTextureUrl('earth');
-        await new Promise((resolve) => {
-          logSrc('earth', dayRes.url, dayRes.fallback, 'start');
-          loader.load(dayRes.url, (tex) => {
-            if (!state) return; // 页面已销毁，中止
+        const dayLoaded = await loadTextureWithRetry('earth', (force) => getTextureUrl('earth', !!force), (tex) => {
+          if (!state) return;
+          tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
+          try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
+          try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
+          fixTexture(tex);
+          earthDayTex = tex;
+          dumpTextureInfo('earth', earthDayTex);
+          if (!earthMesh) {
+            const mat = new THREE.MeshPhongMaterial({ map: earthDayTex, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8), transparent: true, opacity: 0 });
+            earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), mat);
+            try { earthMesh.renderOrder = 10; } catch(_){}
+            earthMesh.name = 'EARTH';
+            earthMesh.visible = false;
+            globeGroup.add(earthMesh);
+          } else if (currentTheme === 'default') {
+            earthMesh.material.map = earthDayTex;
+            earthMesh.material.needsUpdate = true;
+          }
+          try {
+            // 移除 isPC 参数，因为现在使用通用 Texture Matrix 修复，不需要 Shader 再次翻转
+            applyThemeWithState({ THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, APP_CFG, zenActive, kind: currentTheme, themeState });
+          } catch(_){}
+          try { if (!TROPIC_GROUP) { TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); TROPIC_GROUP.visible = false; } } catch(_){}
+          if (earthMesh) {
+            earthMesh.visible = true;
+            tweener.to(earthMesh.material, { opacity: 1 }, 1200, t => t * (2 - t), null, () => {
+              __earthReady = true;
+              setTimeout(() => { try { if (TROPIC_GROUP) TROPIC_GROUP.visible = true; } catch(_){} try { if (BORDER_GROUP) BORDER_GROUP.visible = true; } catch(_){} }, 1000);
+            });
+            try { page.setData({ loading: false }); } catch(_){}
+          }
+        }, { maxAttempts: 3, baseDelayMs: 800 });
+        if (!dayLoaded) {
+          if (!earthMesh) {
+            earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ color: 0x888888, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
+            earthMesh.name = 'EARTH';
+            globeGroup.add(earthMesh);
+          }
+          try { if (!TROPIC_GROUP) { TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); TROPIC_GROUP.visible = false; } } catch(_){}
+        }
+
+        try {
+          await loadTextureWithRetry('earth_day', (force) => getTextureUrl('earth_day', !!force), (tex) => {
             tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
             try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
             try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
-            fixTexture(tex); // 针对 PC 端修正
-            earthDayTex = tex;
-            dumpTextureInfo('earth', earthDayTex);
-            
-            // 立即初始化地球网格（初始不可见，避免空心地球闪现）
-            if (!earthMesh) {
-              const mat = new THREE.MeshPhongMaterial({ 
-                map: earthDayTex, 
-                shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8),
-                transparent: true, // 开启透明以支持淡入
-                opacity: 0,        // 初始透明度为 0
-              });
-              earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), mat);
-              earthMesh.name = 'EARTH'; 
-              earthMesh.visible = false; // 初始完全隐藏
-              globeGroup.add(earthMesh);
-            } else if (currentTheme === 'default') {
-              earthMesh.material.map = earthDayTex;
-              earthMesh.material.needsUpdate = true;
-            }
+            fixTexture(tex);
+            earthPureDayTex = tex;
+            dumpTextureInfo('earth_day (纯白昼)', earthPureDayTex);
+            try { applyThemeWithState({ THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, APP_CFG, zenActive, kind: currentTheme, themeState }); } catch(_){}
+          }, { maxAttempts: 2, baseDelayMs: 800 });
+        } catch(_){}
 
-            try {
-              applyThemeWithState({
-                THREE,
-                earthMesh,
-                earthDayTex,
-                earthPureDayTex,
-                earthNightTex,
-                APP_CFG,
-                zenActive,
-                kind: currentTheme,
-                themeState,
-                // flipY: __isPCClient // 已在纹理层面修正，Shader 不需再翻转
-              });
-            } catch(_){ }
-            try { if (!TROPIC_GROUP) { TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); TROPIC_GROUP.visible = false; } } catch(_){}
-            
-            // 贴图就绪，开始淡入地球并隐藏 Loading 提示
-            if (earthMesh) {
-                earthMesh.visible = true;
-                // 使用 tweener 淡入 opacity 0 -> 1
-                tweener.to(earthMesh.material, { opacity: 1 }, 1200, t => t * (2 - t), null, () => {
-                    __earthReady = true;
-                    setTimeout(() => {
-                      try { if (TROPIC_GROUP) TROPIC_GROUP.visible = true; } catch(_){}
-                      try { if (BORDER_GROUP) BORDER_GROUP.visible = true; } catch(_){}
-                    }, 1000);
-                });
-                // 通知页面隐藏 loading
-                try { page.setData({ loading: false }); } catch(_){}
-            }
-
-            resolve();
-          }, undefined, () => {
-            // 失败时的兜底逻辑：创建一个灰色球体
-            if (!earthMesh) {
-              earthMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS, 48, 48), new THREE.MeshPhongMaterial({ color: 0x888888, shininess: (LIGHT_CFG.earthMaterial?.shininess ?? 8) }));
-              earthMesh.name = 'EARTH'; globeGroup.add(earthMesh);
-            }
-            try { if (!TROPIC_GROUP) { TROPIC_GROUP = makeEquatorAndTropics(THREE, globeGroup); TROPIC_GROUP.visible = false; } } catch(_){}
-            resolve();
-          });
-        });
-
-        // 2. 加载夜景
-        const nightRes = await getTextureUrl('earth_night');
-        await new Promise((resolve) => {
-          logSrc('earth_night', nightRes.url, nightRes.fallback, 'start');
-          loader.load(nightRes.url, (tex) => {
-            tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
-            try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
-            fixTexture(tex); // 针对 PC 端修正
-            earthNightTex = tex;
-            dumpTextureInfo('earth_night', earthNightTex);
-            applyThemeWithState({ THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, APP_CFG, zenActive, kind: currentTheme, themeState });
-            resolve();
-          }, undefined, () => resolve());
-        });
-
-        // 3. 延迟加载纯白昼和云层（非关键路径）
         setTimeout(async () => {
-          // 纯白昼
           try {
-            const pureDayRes = await getTextureUrl('earth_day');
-            // iOS 强校验：如果拿到了路径但文件可能损坏，增加一次重试逻辑
-            const loadPureDay = (url, retry = 0) => {
-               loader.load(url, (tex) => {
-                  tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
-                  try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
-                  try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
-                  fixTexture(tex); // 针对 PC 端修正
-                  earthPureDayTex = tex;
-                  dumpTextureInfo('earth_day (纯白昼)', earthPureDayTex);
-                  try { console.log('[texture] earth_day 加载成功！', { uuid: tex.uuid, width: tex.image?.width, retry }); } catch(_){}
-                  // 加载成功后，立即刷新一次主题，确保如果当前是 Day8k 模式能立即生效
-                  try {
-                    applyThemeWithState({ THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, APP_CFG, zenActive, kind: currentTheme, themeState });
-                  } catch(_){}
-               }, undefined, (err) => {
-                  try { console.error('[texture] earth_day 加载失败', err, 'retry=', retry); } catch(_){}
-                  // 如果是 iOS 且还有重试机会，尝试清除缓存并重新获取
-                  // 增加重试次数到 3 次，并更激进地清理缓存
-                  if (__isIOS && retry < 3) {
-                      try { 
-                          console.warn('[texture] iOS retry: clearing ALL caches for earth_day, retry=', retry);
-                          // 彻底清除内存缓存和本地文件
-                          clearTextureCache(); 
-                          clearTextureSaved(['earth_day']);
-                          
-                          // 稍作延迟后重试
-                          setTimeout(() => {
-                              // 关键修改：重试时强制走网络 (preferNetwork=true)，绕过可能损坏的本地文件系统缓存
-                              getTextureUrl('earth_day', true).then(res2 => {
-                                  console.warn('[texture] retrying with NETWORK url:', res2.url);
-                                  loadPureDay(res2.url, retry + 1);
-                              });
-                          }, 300 + retry * 200); // 递增延迟
-                      } catch(e){ console.error('[texture] retry failed', e); }
-                  } else if (__isIOS) {
-                      // 最终失败提示
-                      wx.showToast({ title: '白昼图加载失败', icon: 'none', duration: 2000 });
-                  }
-               });
-            };
-            loadPureDay(pureDayRes.url);
-          } catch(e){ console.error(e); }
-
-          // 云层
+            await loadTextureWithRetry('earth_night', (force) => getTextureUrl('earth_night', !!force), (tex) => {
+              tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
+              try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
+              fixTexture(tex);
+              earthNightTex = tex;
+              dumpTextureInfo('earth_night', earthNightTex);
+              try { applyThemeWithState({ THREE, earthMesh, earthDayTex, earthPureDayTex, earthNightTex, APP_CFG, zenActive, kind: currentTheme, themeState }); } catch(_){}
+            }, { maxAttempts: 2, baseDelayMs: 800 });
+          } catch(_){}
           try {
-            const cloudRes = await getTextureUrl('cloud');
-            if (cloudRes && cloudRes.url) {
-              logSrc('cloud', cloudRes.url, cloudRes.fallback, 'start');
-              loader.load(cloudRes.url, (tex) => {
-                tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
-                try { tex.flipY = false; tex.needsUpdate = true; } catch(_){}
-                fixTexture(tex); // 针对 PC 端修正 (云层通常不需要 flipY=true，但 PC 端如果整体反了，云层可能也反了)
-                
-                if (!cloudMesh) {
-                    cloudMat = new THREE.MeshPhongMaterial({ map: tex, color: 0xffffff, transparent: true, opacity: 0.28, depthWrite: false, depthTest: true });
-                    cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat);
-                    cloudMesh.name = 'CLOUD';
-                    try { cloudMesh.visible = !!(page && page.data && page.data.showCloud); } catch(_){ cloudMesh.visible = false; }
-                    globeGroup.add(cloudMesh);
-                } else {
-                    cloudMesh.material.map = tex;
-                    cloudMesh.material.needsUpdate = true;
-                }
-                dumpTextureInfo('cloud', tex);
-              });
-            }
-          } catch(e){}
-        }, 500); // 500ms 延迟
+            await loadTextureWithRetry('cloud', (force) => getTextureUrl('cloud', !!force), (tex) => {
+              tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
+              try { tex.flipY = false; tex.needsUpdate = true; } catch(_){}
+              fixTexture(tex);
+              if (!cloudMesh) {
+                cloudMat = new THREE.MeshPhongMaterial({ map: tex, color: 0xffffff, transparent: true, opacity: 0.28, depthWrite: false, depthTest: true });
+                cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(RADIUS + 0.012, 64, 64), cloudMat);
+                cloudMesh.name = 'CLOUD';
+                try { cloudMesh.visible = !!(page && page.data && page.data.showCloud); } catch(_){ cloudMesh.visible = false; }
+                globeGroup.add(cloudMesh);
+              } else {
+                cloudMesh.material.map = tex;
+                cloudMesh.material.needsUpdate = true;
+              }
+              dumpTextureInfo('cloud', tex);
+            }, { maxAttempts: 2, baseDelayMs: 800 });
+          } catch(_){}
+        }, 500);
 
       } catch(e) {
         console.error('[texture] 序列加载失败', e);
@@ -640,11 +647,11 @@ export function boot(page) {
                 const strength = mat.uniforms?.uBreathStrength?.value ?? 0;
                 const t = mat.uniforms?.time?.value ?? 0;
                 const breathMul = 1.0 + strength * Math.sin(t * speed);
-                console.info('[star breath]', {
-                  speed: Number(speed).toFixed(3), strength: Number(strength).toFixed(3),
-                  time: Number(t).toFixed(3), mul: Number(breathMul).toFixed(3), opacity: Number(mat.uniforms?.uOpacity?.value ?? 0).toFixed(3),
-                  visible: !!starCtl.mesh.visible,
-                });
+                // console.info('[star breath]', {
+                //   speed: Number(speed).toFixed(3), strength: Number(strength).toFixed(3),
+                //   time: Number(t).toFixed(3), mul: Number(breathMul).toFixed(3), opacity: Number(mat.uniforms?.uOpacity?.value ?? 0).toFixed(3),
+                //   visible: !!starCtl.mesh.visible,
+                // });
               } catch(_){}
             }
           } else {
@@ -864,6 +871,7 @@ export function boot(page) {
                     __earthOldMat = res0.earthOldMat;
                     themeState.setMat(res0.dayNightMat);
                     earthMesh.material = res0.dayNightMat;
+                    try { earthMesh.renderOrder = 10; } catch(_){}
                     earthMesh.material.needsUpdate = true;
                     shaderApplied = true;
                   } catch(e){ shaderApplied = false; }
@@ -1240,15 +1248,35 @@ export function selectCountryByCode(code){
         if (!earthMesh || !earthMesh.material) { if (cb) cb(); return; }
         const mat = earthMesh.material;
         const ease = (t) => t * (2 - t);
-        if (mat.type === 'ShaderMaterial' && mat.uniforms && mat.uniforms.uOpacity) {
-          mat.transparent = true;
-          const u = mat.uniforms.uOpacity;
-          const from = Number(u.value || 1);
-          tweener.to(u, { value: to }, dur, ease, null, () => { if (to >= 0.999) { try { mat.transparent = true; } catch(_){} } if (cb) cb(); });
+        if (mat.type === 'ShaderMaterial' && mat.uniforms) {
+          const hasOpacity = !!mat.uniforms.uOpacity;
+          const hasExposure = !!mat.uniforms.uExposure;
+          if (__isHarmony && hasExposure) {
+            try {
+              const uExp = mat.uniforms.uExposure;
+              if (to < 0.999 && typeof uExp.value === 'number' && mat.userData) {
+                if (typeof mat.userData.__expBackup !== 'number') mat.userData.__expBackup = uExp.value;
+              }
+              const targetExp = (to >= 0.999)
+                ? (typeof mat.userData?.__expBackup === 'number' ? mat.userData.__expBackup : 1.0)
+                : 0.0;
+              tweener.to(uExp, { value: targetExp }, dur, ease, null, () => { if (cb) cb(); });
+              return;
+            } catch(_){}
+          }
+          if (hasOpacity) {
+            mat.transparent = true;
+            const u = mat.uniforms.uOpacity;
+            tweener.to(u, { value: to }, dur, ease, null, () => { if (to >= 0.999) { try { mat.transparent = true; } catch(_){} } if (cb) cb(); });
+          } else {
+            mat.transparent = true;
+            const cur = Number(mat.opacity || 1);
+            tweener.to(mat, { opacity: to }, dur, ease, null, () => { if (to >= 0.999) { try { mat.transparent = true; } catch(_){} } if (cb) cb(); });
+          }
         } else {
           mat.transparent = true;
-          const from = Number(mat.opacity || 1);
-          tweener.to(mat, { opacity: to }, dur, ease, null, () => { if (to >= 0.999) { try { /*保留透明以支持后续淡入*/ mat.transparent = true; } catch(_){} } if (cb) cb(); });
+          const cur = Number(mat.opacity || 1);
+          tweener.to(mat, { opacity: to }, dur, ease, null, () => { if (to >= 0.999) { try { mat.transparent = true; } catch(_){} } if (cb) cb(); });
         }
       } catch(_) { if (cb) cb(); }
     };

@@ -133,6 +133,29 @@ canvas {
   grid-row: 2;
 }
 
+.preset-list {
+  position: fixed;
+  right: 8px;
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px + 80rpx + 6px);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity 300ms ease;
+}
+.preset-item { color: #ffffff; padding: 0; text-align: right; }
+.preset-item { transition: transform 1000ms ease, opacity 1000ms ease; }
+.preset-item.active { font-weight: 700; }
+.preset-text { white-space: nowrap; font-style: italic; font-size: 26rpx; }
+.preset-item.active .preset-text { font-size: 32rpx; color: #e6f0ff; }
+.preset-item.faded { opacity: 0.28; }
+.preset-item.fadeout { opacity: 0; pointer-events: none; }
+.preset-item.breathing .preset-text { animation: preset-breath 5.2s ease-in-out infinite; }
+@keyframes preset-breath {
+  0%, 100% { opacity: 0.78; }
+  50% { opacity: 1; }
+}
+
 /* 禅定诗句盒：右上角显示，跟随顶部安全区与工具栏布局 */
 .poetry-box {
   /* 旧右上角诗句盒不再使用，改为独立层 */
@@ -166,7 +189,8 @@ canvas {
 }
 .poetry-item.horizontal { writing-mode: horizontal-tb; text-orientation: mixed; font-style: italic; }
 .poetry-item.horizontal .poetry-text { white-space: pre; display: block; text-align: center; }
-.poetry-text { display: inline-block; writing-mode: inherit; text-orientation: inherit; color: inherit; }
+.poetry-text { display: inline-block; writing-mode: inherit; text-orientation: inherit; color: inherit; letter-spacing: 0.5rpx; }
+.poetry-text.first-line { font-weight: 700; }
 .poetry-item.visible { opacity: 1; }
 
 /* 已移除 PC 预览缩放控件 */

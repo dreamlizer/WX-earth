@@ -35,15 +35,15 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uWaveNoiseSpeed: { value: 0.05 },
     uWaterNormalPerturb: { value: 0.06 },
     uOpacity: { value: 1.0 },
-    uFlipY: { value: 0.0 }, // 0.0: normal, 1.0: flip Y (for PC Client)
+    // uFlipY: { value: 0.0 }, // 移除 PC 端翻转修正，改为 Texture Matrix 修复
   };
 
   const vertexShader = `
     varying vec2 vUv;
     varying vec3 vWorldPos;
-    uniform float uFlipY;
+    // uniform float uFlipY;
     void main() {
-      vUv = vec2(uv.x, mix(uv.y, 1.0 - uv.y, uFlipY));
+      vUv = uv; // mix(uv.y, 1.0 - uv.y, uFlipY));
       vec4 wp = modelMatrix * vec4(position, 1.0);
       vWorldPos = wp.xyz;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
