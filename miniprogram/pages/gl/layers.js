@@ -31,6 +31,7 @@ export function createScene(canvas, dpr, width, height) {
 
   const scene  = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
+  scene.add(camera);
 
   const vFov  = camera.fov * Math.PI / 180;
   const distV = RADIUS / Math.tan(vFov/2);

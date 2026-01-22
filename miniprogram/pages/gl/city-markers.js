@@ -12,7 +12,7 @@ const HIGHLIGHT_SCALE = 1.35; // 被选中城市点的放大比例
 const BASE_SCALE = 1.0;       // 默认缩放
 const HIGHLIGHT_OPACITY_BOOST = 1.25; // 高亮时透明度提升系数（上限 0.95）
 
-const MARKER_DEBUG_LOG = true; // 临时诊断开关
+const MARKER_DEBUG_LOG = false; // 临时诊断开关
 
 let markerGroup = null;
 let THREE_CTX = null; // 由 init 注入的 THREE
@@ -82,11 +82,17 @@ function createMarkers() {
 
 export function updateCityMarkers(camera, currentTime) {
   if (!markerGroup || !camera) return;
-
-  const delta = currentTime - lastUpdateTime;
   lastUpdateTime = currentTime;
 
   const cameraPosition = camera.position;
+  const camX = cameraPosition.x, camY = cameraPosition.y, camZ = cameraPosition.z;
+  const camLen = Math.max(1e-6, Math.sqrt(camX*camX + camY*camY + camZ*camZ));
+  const invCamLen = 1 / camLen;
+  const breathe = 0.85 + 0.15 * Math.sin(currentTime / 900);
+  const baseOpacity = MARKER_OPACITY;
+  const children = markerGroup.children || [];
+  const tmp = updateCityMarkers.__tmp || (updateCityMarkers.__tmp = { world: null });
+  if (!tmp.world) tmp.world = new THREE_CTX.Vector3();
 
   // 清理过期高亮
   if (highlightUntil.size) {
@@ -94,21 +100,21 @@ export function updateCityMarkers(camera, currentTime) {
     for (const [id, ts] of highlightUntil) { if (!ts || ts <= now) highlightUntil.delete(id); }
   }
 
-  markerGroup.children.forEach(marker => {
-    const worldPosition = new THREE_CTX.Vector3();
+  for (let i = 0; i < children.length; i++) {
+    const marker = children[i];
+    const worldPosition = tmp.world;
     marker.getWorldPosition(worldPosition);
-    const distance = cameraPosition.distanceTo(worldPosition);
+    const wx = worldPosition.x, wy = worldPosition.y, wz = worldPosition.z;
+    const dx = camX - wx, dy = camY - wy, dz = camZ - wz;
+    const distance = Math.max(1e-6, Math.sqrt(dx*dx + dy*dy + dz*dz));
 
-    // 根据距离调整透明度：远时更淡，近时略显
-    const baseOpacity = MARKER_OPACITY;
-    const distFactor = Math.min(1, Math.max(0, (distance - 1.6) / 4.5)); // 距离越远越淡
+    const distFactor = Math.min(1, Math.max(0, (distance - 1.6) / 4.5));
 
-    // 背面弱化：当相机与点的向量点积为负时，进一步降低（避免穿透球体的误感）
-    const facingDot = worldPosition.clone().normalize().dot(cameraPosition.clone().normalize());
-    const backFade = facingDot < 0 ? 0.35 : 1.0; // 背面仅保留微弱闪烁
+    const worldLen = Math.max(1e-6, Math.sqrt(wx*wx + wy*wy + wz*wz));
+    const invWorldLen = 1 / worldLen;
+    const facingDot = (wx*camX + wy*camY + wz*camZ) * invWorldLen * invCamLen;
+    const backFade = facingDot < 0 ? 0.35 : 1.0;
 
-    // 呼吸效果：低幅度慢速，保持“若隐若现”
-    const breathe = 0.85 + 0.15 * Math.sin(currentTime / 900);
     let currentOpacity = baseOpacity * (1 - distFactor) * breathe * backFade;
 
     // 颜色：处于高亮集合则切换为高亮色（不改变尺寸）
@@ -130,7 +136,7 @@ export function updateCityMarkers(camera, currentTime) {
     if (Math.abs(marker.material.opacity - finalOpacity) > 0.001) {
       marker.material.opacity = finalOpacity;
     }
-  });
+  }
 }
 
 export function disposeCityMarkers() {

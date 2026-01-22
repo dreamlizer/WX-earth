@@ -1,22 +1,41 @@
 <!-- 统一顶部工具栏：语言 | 时间 | 设置 -->
 <view class="top-bar">
   <view id="langBtn" class="top-icon-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleLang" role="button">{{lang === 'zh' ? '中' : 'EN'}}</view>
-  <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}}" bindtap="onTapTimePill">{{currentTime}}</text>
+  <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onTapTimePill">{{currentTime}}</text>
   <view class="top-icon-btn settings-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSettings" role="button">⚙</view>
   <!-- 第二行：左侧“切”按钮（与右侧“禅”按钮对称） -->
   <!-- 恢复原搜索放大镜；禅模式下隐藏但占位，避免布局跳动 -->
   <view class="top-icon-btn search-btn {{zenMode ? 'inert' : ''}} {{settingsOpen ? 'fading-out' : ''}}" bindtap="onToggleSearch" role="button"></view>
   <!-- 第二行：右侧“禅”按钮（位于设置按钮正下方） -->
-  <view class="top-icon-btn zen-btn" bindtap="onToggleZenMode" role="button">禅</view>
+  <view class="top-icon-btn zen-btn {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleZenMode" role="button">禅</view>
   <!-- 第一行第三列：“切”按钮常驻，通过 inert 类淡入淡出（禅定下可见） -->
-  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}}" bindtap="onToggleCut" role="button">定</view>
+  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleCut" role="button">定</view>
   <!-- 提示信息（可选）：与时间保持同一行，不占宽度 -->
-  <view class="top-tip {{hoverText ? 'visible' : ''}} {{zenMode ? 'inert' : ''}}">{{hoverText}}</view>
+  <view class="top-tip {{hoverText ? 'visible' : ''}} {{zenMode ? 'inert' : ''}} {{moonVoyageActive ? 'fading-out' : ''}}">{{hoverText}}</view>
   <!-- 禅定诗句改为独立层：双容器交替，支持淡入淡出与位移 -->
 </view>
 
+<!-- 登月模式时间显示：右上角长按4秒切换显隐 -->
+<view wx:if="{{moonVoyageActive}}" class="moon-timer-container" bindtouchstart="onMoonTimerTouchStart" bindtouchend="onMoonTimerTouchEnd" bindtouchcancel="onMoonTimerTouchEnd">
+  <text class="moon-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonTimerText}}</text>
+  <text class="moon-phase-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonPhaseText}}</text>
+</view>
+
+<view wx:if="{{moonVoyageActive}}" class="moon-lyrics" style="bottom: {{moonLyricBottomPx}}px;">
+  <text class="moon-lyrics-text {{moonLyricA.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out, transform {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricA.text}}</text>
+  <text class="moon-lyrics-text {{moonLyricB.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out, transform {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricB.text}}</text>
+</view>
+
+<!-- 登月模式入口：右下角按钮（禅定模式下淡入显示，避免 wx:if 造成“闪现”） -->
+<view class="top-icon-btn moon-btn {{zenBtnVisible ? 'visible' : ''}}" bindtap="onEnterMoonVoyage" role="button">
+  <image wx:if="{{moonBtnUrl}}" class="moon-btn-img" src="{{moonBtnUrl}}" mode="aspectFill"></image>
+  <text wx:else>🌖</text>
+</view>
+<!-- 调试热区：长按10倍速 (位于左下角，与右下角登月按钮平行) -->
+<view class="moon-debug-hotspot {{zenMode ? 'visible' : ''}}" bindtouchstart="onSpeedTouchStart" bindtouchend="onSpeedTouchEnd" bindtouchcancel="onSpeedTouchEnd"></view>
+
 <!-- 预设列表（禅定模式下，“定”按钮下方展开） -->
-<view wx:if="{{zenMode && presetListOpen}}" class="preset-list" style="right: {{presetListRight}}px; top: {{presetListTop}}px; opacity: {{presetListOpacity}};">
+<view wx:if="{{zenMode && presetListOpen && !moonVoyageActive}}" class="preset-list" style="right: {{presetListRight}}px; top: {{presetListTop}}px; opacity: {{presetListOpacity}};">
   <view wx:for="{{presetList}}" wx:key="id" id="preset-item-{{item.id}}" class="preset-item {{currentPreset===item.id?'active':''}} {{presetLatched && currentPreset===item.id?'breathing':''}} {{presetLatched && presetCollapsed && currentPreset!==item.id?'fadeout':''}}" data-id="{{item.id}}" data-disabled="{{presetLatched && currentPreset===item.id}}" style="transform: translate3d(0, {{presetPinnedId===item.id ? presetPinnedDy : 0}}px, 0);" bindtap="onPickPreset">
     <text class="preset-text">{{item.label}}</text>
   </view>
@@ -32,7 +51,7 @@
       catchtouchstart="onBrightnessTouchStart" catchtouchmove="onBrightnessTouchMove" catchtouchend="onBrightnessTouchEnd" catchtouchcancel="onBrightnessTouchEnd"></view>
 
 <!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
-<view wx:if="{{zenMode}}" class="poetry-layer">
+<view wx:if="{{zenMode && !moonVoyageActive}}" class="poetry-layer">
   <view id="poetryA" class="poetry-item {{lang==='en'?'horizontal':''}} {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryFadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
     <text class="poetry-text {{poetryAFirst?'first-line':''}}">{{poetryA.text}}</text>
   </view>
@@ -47,7 +66,7 @@
 </view>
 
 <!-- Special 文本独立层：覆盖全屏显示，淡入/缓慢移动后淡出 -->
-<view wx:if="{{zenMode}}" class="special-layer">
+<view wx:if="{{zenMode && !moonVoyageActive}}" class="special-layer">
   <view id="specialText" class="special-item {{specialVisible?'visible':''}}" style="left: {{specialX}}px; top: {{specialY}}px; font-size: {{specialFontSizePx}}px; transition: transform {{specialMoveMs}}ms linear, opacity {{specialFadeMs}}ms ease-in-out; transform: translate3d({{specialTx}}px, {{specialTy}}px, 0) scale({{specialScale}});">
     <text class="special-text">{{specialText}}</text>
   </view>
@@ -86,16 +105,7 @@
     </view>
   </view>
   <view class="settings-row">
-    <text>城市数量</text>
-    <view class="qty-group">
-      <view class="qty-btn {{cityTier==='none'?'active':''}}" data-val="none" bindtap="onSetCityTier" role="button">无</view>
-      <view class="qty-btn {{cityTier==='key'?'active':''}}" data-val="key" bindtap="onSetCityTier" role="button">重点</view>
-      <view class="qty-btn {{cityTier==='default'?'active':''}}" data-val="default" bindtap="onSetCityTier" role="button">默认</view>
-      <view class="qty-btn {{cityTier==='more'?'active':''}}" data-val="more" bindtap="onSetCityTier" role="button">更多</view>
-    </view>
-  </view>
-  <view class="settings-row">
-    <text>标签数量</text>
+    <text>标签密度</text>
     <view class="qty-group">
       <view class="qty-btn {{labelQty==='none'?'active':''}}" data-val="none" bindtap="onSetLabelQty" role="button">无</view>
       <view class="qty-btn {{labelQty==='few'?'active':''}}" data-val="few" bindtap="onSetLabelQty" role="button">少</view>
@@ -148,15 +158,31 @@
           bindchange="onZoomChange" />
 </view>
 
-<!-- 国家信息面板遮罩：点击除语言按钮外的任意处关闭（与设置面板一致） -->
-<!-- 允许穿透拖动：去掉 catchtouchmove，保留点击关闭 -->
-<view wx:if="{{countryPanelOpen}}" class="country-mask {{countryPanelFading?'fading-out':''}}" bindtap="onCloseCountryPanel" bindtouchstart="onMaskTouchStart" bindtouchmove="onMaskTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
+<!-- 国家信息面板遮罩：已移除点击关闭功能，完全交由 Canvas 内部的点击检测来决定（点中空白处关闭，点中已选国家保持） -->
+<!-- 保留该层仅为了可能的触摸事件转发（虽然 Canvas 自身也能捕获，但为了保险起见保留结构并设为穿透） -->
+<view wx:if="{{countryPanelOpen}}" class="country-mask {{countryPanelFading?'fading-out':''}}" style="pointer-events: none;" bindtouchstart="onMaskTouchStart" bindtouchmove="onMaskTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
 
 <!-- 国家信息面板：点击国家后显示（保持画布可旋转；遮罩负责关闭） -->
-<view class="country-panel {{countryPanelFading?'fading-out':''}}" wx:if="{{countryPanelOpen}}" style="top: {{countryPanelTop}}px" bindtouchstart="onPanelTouchStart" bindtouchmove="onPanelTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+<!-- 移除 style="top: ..."，改为完全由 CSS 控制位置 -->
+<view class="country-panel {{lang==='en'?'lang-en':''}} {{countryPanelFading?'fading-out':''}}" wx:if="{{countryPanelOpen}}" bindtouchstart="onPanelTouchStart" bindtouchmove="onPanelTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
   <view class="country-title">{{countryInfo.name || '未知'}}{{countryInfo.titleTzSuffix || ''}}</view>
   <view class="country-row"><text class="k">{{labels.capital}}</text><text class="v">{{countryInfo.capital || '--'}}</text></view>
   <view class="country-row"><text class="k">{{labels.area}}</text><text class="v">{{countryInfo.areaKm2 || '--'}} km²</text></view>
   <view class="country-row"><text class="k">{{labels.population}}</text><text class="v">{{countryInfo.population || '--'}}</text></view>
   <view class="country-row"><text class="k">{{labels.gdp}}</text><text class="v">{{lang==='zh' ? (countryInfo.gdp || '--') + ' 万亿美元' : (countryInfo.gdp || '--') + ' USD trillion'}}</text></view>
   </view>
+
+<cover-view
+  wx:if="{{globalBlackMask}}"
+  class="global-black-mask"
+  style="opacity: {{globalBlackMaskOpacity}}; transition: opacity {{globalBlackMaskFadeMs}}ms linear;"
+  catchtouchstart="onCatchTouchMove"
+  catchtouchmove="onCatchTouchMove"
+  catchtouchend="onCatchTouchMove"
+  catchtouchcancel="onCatchTouchMove"
+/>
+
+<!-- 登月模式柔和 Toast -->
+<view class="moon-toast {{moonToastVisible ? 'visible' : ''}}" style="opacity: {{moonToastOpacity}};">
+  <text>{{moonToastText}}</text>
+</view>

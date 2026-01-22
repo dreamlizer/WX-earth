@@ -36,6 +36,120 @@ canvas {
   /* 提升层级：确保顶部时区提示位于国家面板和遮罩之上 */
   z-index: 1200;
 }
+
+.moon-timer-container {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: 20rpx;
+  width: 320rpx;
+  height: 140rpx;
+  z-index: 1301;
+  /* background: rgba(255,0,0,0.3); */
+}
+
+.moon-timer {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: 20rpx;
+  z-index: 1300;
+  height: 64rpx;
+  line-height: 64rpx;
+  padding: 0 18rpx;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.78);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 24rpx;
+  box-sizing: border-box;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+  font-size: 30rpx;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+.moon-timer.visible { opacity: 1; }
+
+.moon-phase-timer {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px + 72rpx);
+  right: 20rpx;
+  z-index: 1300;
+  height: 52rpx;
+  line-height: 52rpx;
+  padding: 0 16rpx;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.68);
+  border: 2px solid rgba(120,170,220,0.42);
+  border-radius: 22rpx;
+  box-sizing: border-box;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+  font-size: 24rpx;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+.moon-phase-timer.visible { opacity: 1; }
+
+.moon-lyrics {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 1300;
+  pointer-events: none;
+  display: block;
+}
+
+/* 登月模式柔和 Toast */
+.moon-toast {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 22, 36, 0.85);
+  border: 1px solid rgba(120, 170, 220, 0.3);
+  color: #e8f6ff;
+  padding: 24rpx 48rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  letter-spacing: 2rpx;
+  opacity: 0;
+  transition: opacity 800ms ease-in-out;
+  pointer-events: none;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.4);
+}
+.moon-toast.visible {
+  /* opacity managed via inline style for precise control */
+}
+.moon-lyrics-text {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate3d(-50%, 10px, 0);
+  display: block;
+  max-width: 96%;
+  padding: 12rpx 18rpx;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.38);
+  border: none;
+  border-radius: 18rpx;
+  box-sizing: border-box;
+  font-size: 30rpx;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.4;
+  white-space: pre;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  opacity: 0;
+  text-shadow: 0 0 14px rgba(20,40,60,0.55);
+  will-change: opacity, transform;
+}
+.moon-lyrics-text.visible { opacity: 1; transform: translate3d(-50%, 0, 0); }
 .top-icon-btn {
   width: 80rpx;  /* 与右侧齿轮统一尺寸（约 40px） */
   height: 80rpx;
@@ -54,8 +168,67 @@ canvas {
   /* 禅模式切换时的淡入淡出 */
   transition: opacity var(--ui-fade-ms, 320ms) ease;
 }
+/* 禅定模式下显示：右下角登月按钮 */
+.moon-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 80rpx;
+  z-index: 1500;
+  background: transparent !important;
+  color: #e8f6ff !important;
+  border: none !important;
+  /* 保持与 top-icon-btn 一致的圆角和尺寸 */
+  border-radius: 28rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  font-weight: 700;
+  /* 移除白色光晕，保持低调 */
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1000ms ease, transform 200ms ease;
+  padding: 0;
+  overflow: hidden;
+}
+.moon-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 2000ms;
+}
+.moon-btn:active {
+  transform: scale(0.92);
+}
+
+.moon-btn-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.moon-debug-hotspot {
+  position: fixed;
+  bottom: 80rpx;
+  left: 40rpx;
+  width: 100rpx;
+  height: 100rpx;
+  background: transparent;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1000ms ease;
+}
+.moon-debug-hotspot.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* 放大齿轮按钮尺寸与字号 */
 .settings-btn { font-size: 36rpx; }
+
 .time-pill {
   height: 80rpx;
   line-height: 80rpx;
@@ -217,6 +390,19 @@ canvas {
   z-index: 90;
 }
 
+.global-black-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  background: #000;
+  opacity: 0;
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
 /* 禅模式下保留网格占位但隐藏视觉与交互 */
 .inert {
   opacity: 0;
@@ -229,7 +415,6 @@ canvas {
   z-index: 80;
   background: rgba(0,0,0,0); /* 透明但可接收点击 */
 }
-.settings-panel { font-size: 14px; }
 .settings-title { color: #e8f6ff; font-weight: 700; margin-bottom: 4px; }
 .settings-row { display: flex; justify-content: space-between; align-items: center; color: #cfe7ff; padding: 4px 0; gap: 8px; }
 .settings-row text:first-child { white-space: nowrap; flex: 0 0 72px; }
@@ -311,7 +496,7 @@ canvas {
 .special-item .special-text {
   display: inline-block;
   writing-mode: horizontal-tb; /* 特殊文本水平排布 */
-  letter-spacing: 0.5px;
+  letter-spacing: 4px;        /* 字间距加大，适配大字号 */
   white-space: nowrap;        /* 不换行，四字短句保持一行 */
   word-break: keep-all;       /* 避免把中文拆分到下一行 */
 }
@@ -321,8 +506,12 @@ canvas {
 .country-panel {
   position: fixed;
   left: 50%;
-  /* top 改为由页面数据驱动（index.wxml 内联样式），此处保留回退为自动 */
-  top: auto;
+  /* 由 top: auto 改为固定位置，与“禅”按钮行对齐 */
+  /* 计算逻辑：安全区 + 顶部工具栏高度 + 间距 */
+  /* 工具栏第一行 80rpx + 间距 8px + 第二行 80rpx = 约 160rpx + 8px */
+  /* 直接对齐到第二行按钮（禅）的上沿，或者略微下移 */
+  /* 这里设定为：安全区 + 8px + 第一行80rpx + 间距8px = 第二行起始位置 */
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 8px);
   transform: translateX(-50%);
   /* 与顶部时间胶囊一致：690rpx - 左(40px→80rpx) - 右(44px→88rpx) - 2个列间距(10px*2→20px→40rpx) */
   width: calc(690rpx - 80rpx - 88rpx - 40rpx);
@@ -348,6 +537,11 @@ canvas {
   align-items: center;
   column-gap: 4px; /* 标签与值间距缩小约 50% */
   margin: 2px 0;   /* 行距缩小约 60% → 更紧凑 */
+}
+/* 英文模式下调整标签列宽，防止 Population 重叠 */
+.country-panel.lang-en .country-row {
+  grid-template-columns: 88px minmax(0, 1fr);
+  column-gap: 8px;
 }
 .country-row .k { color: #9cc3e9; white-space: nowrap; word-break: keep-all; }
 .country-row .v { color: #e8f6ff; white-space: nowrap; word-break: keep-all; }
@@ -434,7 +628,17 @@ canvas {
   text-shadow: 0 0 10px rgba(100, 181, 255, 0.5);
   animation: pulse-text 2s infinite ease-in-out;
 }
+
 @keyframes pulse-text {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
+}
+
+/* 全局黑屏遮罩：用于场景切换过渡 */
+.global-black-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  width: 100%; height: 100%;
+  background: #000;
+  z-index: 99999; /* 极高层级，覆盖所有 UI */
 }

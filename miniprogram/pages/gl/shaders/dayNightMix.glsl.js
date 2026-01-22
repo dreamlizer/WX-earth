@@ -6,6 +6,8 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
   const uniforms = {
     uDayTex: { value: dayTex || null },
     uNightTex: { value: nightTex || null },
+    uDayUvMat: { value: new THREE.Matrix3() },
+    uNightUvMat: { value: new THREE.Matrix3() },
     uLightDirWorld: { value: new THREE.Vector3(1, 0, 0) },
     uGlobeCenterWorld: { value: new THREE.Vector3(0, 0, 0) },
     uCameraPosWorld: { value: new THREE.Vector3(0, 0, 5) },
@@ -52,11 +54,13 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
 
   // 简化版 Shader：去除高光、噪声、水面扰动，只保留最核心的 mix
   const fragmentShaderSimple = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying vec3 vWorldPos;
     uniform sampler2D uDayTex;
     uniform sampler2D uNightTex;
+    uniform mat3 uDayUvMat;
+    uniform mat3 uNightUvMat;
     uniform vec3 uLightDirWorld;
     uniform vec3 uGlobeCenterWorld;
     uniform float uSoftness;
@@ -78,12 +82,15 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       // t = pow(t, uMixPower); // 简化：移除幂次
       t = clamp(0.5 + (t - 0.5) * uDayNightContrast, 0.0, 1.0);
 
-      vec4 day = texture2D(uDayTex, vUv);
+      vec2 uvDay = (uDayUvMat * vec3(vUv, 1.0)).xy;
+      vec2 uvNight = (uNightUvMat * vec3(vUv, 1.0)).xy;
+
+      vec4 day = texture2D(uDayTex, uvDay);
       // day.rgb = pow(day.rgb, vec3(uDayContrast)); // 简化：移除 Gamma/Contrast
       float dayGain = mix(1.0, uDaySideGain, t);
       day.rgb *= dayGain;
       
-      vec4 night = texture2D(uNightTex, vUv);
+      vec4 night = texture2D(uNightTex, uvNight);
       night.rgb *= uNightDarkness;
       
       vec4 color = mix(night, day, t);
@@ -95,11 +102,13 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
   `;
 
   const fragmentShader = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying vec3 vWorldPos;
     uniform sampler2D uDayTex;
     uniform sampler2D uNightTex;
+    uniform mat3 uDayUvMat;
+    uniform mat3 uNightUvMat;
     uniform vec3 uLightDirWorld;
     uniform vec3 uGlobeCenterWorld;
     uniform vec3 uCameraPosWorld;
@@ -142,14 +151,17 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       // 围绕 0.5 做线性拉伸以拉开日夜对比（>1 更极端）
       t = clamp(0.5 + (t - 0.5) * uDayNightContrast, 0.0, 1.0);
 
-      vec4 day = texture2D(uDayTex, vUv);
-      vec4 dayRaw = texture2D(uDayTex, vUv);
+      vec2 uvDay = (uDayUvMat * vec3(vUv, 1.0)).xy;
+      vec2 uvNight = (uNightUvMat * vec3(vUv, 1.0)).xy;
+
+      vec4 day = texture2D(uDayTex, uvDay);
+      vec4 dayRaw = texture2D(uDayTex, uvDay);
       // 白天对比：伽马调整（>1 提升对比）
       day.rgb = pow(day.rgb, vec3(uDayContrast));
       // 白天侧增益：仅随 t 在白天侧逐步放大亮度（避免终止线硬切）
       float dayGain = mix(1.0, uDaySideGain, t);
       day.rgb *= dayGain;
-      vec4 night = texture2D(uNightTex, vUv);
+      vec4 night = texture2D(uNightTex, uvNight);
       // 夜侧暗度：乘法调整（<1 更暗）
       night.rgb *= uNightDarkness;
       vec4 color = mix(night, day, t);
@@ -163,7 +175,7 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       float specMask = 1.0;
       if (uSpecularUseTex > 0.5) {
         // 贴图的 R 通道作为高光强度遮罩（常见于 ocean 高光）
-        specMask = texture2D(uSpecularTex, vUv).r;
+        specMask = texture2D(uSpecularTex, uvDay).r;
       }
       if (uSpecularAutoMask > 0.5) {
         float waterness = max(0.0, dayRaw.b - max(dayRaw.r, dayRaw.g));
@@ -184,10 +196,12 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       // 终止线附近再额外柔化，避免硬边闪烁
       specBase *= smoothstep(0.05, 0.35, d);
       float nv = max(dot(Np, V), 0.0);
-      float fresnel = pow(1.0 - nv, 5.0);
+      // 华为 Mali GPU 修复：避免 1.0 - nv 为微小负数导致 pow(NaN)
+      float fresnelBase = max(0.0, 1.0 - nv);
+      float fresnel = pow(fresnelBase, 5.0);
       float strengthBoost = mix(1.0, uWaterSpecularStrength, specMask);
       float fresnelBoost = 1.0 + (specMask * uWaterFresnel * fresnel);
-      vec2 np = vUv * uWaveNoiseScale + vec2(uTime * uWaveNoiseSpeed);
+      vec2 np = uvDay * uWaveNoiseScale + vec2(uTime * uWaveNoiseSpeed);
       float waveNoise = fract(sin(dot(np, vec2(12.9898, 78.233))) * 43758.5453);
       float waveBoost = 1.0 + specMask * uWaveNoiseStrength * (waveNoise - 0.5) * 2.0;
       vec3 specular = uSpecularColor * (uSpecularStrength * strengthBoost * fresnelBoost * waveBoost * specBase * specMask);
@@ -214,6 +228,20 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     depthTest: true,
     depthWrite: true,
   });
+
+  const __id = new THREE.Matrix3();
+  const __tmp = new THREE.Matrix3();
+  const __updateUvMat = (tex, uniformVal) => {
+    if (!uniformVal) return;
+    if (!tex || !tex.matrix) { uniformVal.copy(__id); return; }
+    try { if (tex.matrixAutoUpdate && typeof tex.updateMatrix === 'function') tex.updateMatrix(); } catch(_){ }
+    try { __tmp.copy(tex.matrix); uniformVal.copy(__tmp); } catch(_){ uniformVal.copy(__id); }
+  };
+
+  mat.onBeforeRender = () => {
+    try { __updateUvMat(mat.uniforms.uDayTex.value, mat.uniforms.uDayUvMat.value); } catch(_){ }
+    try { __updateUvMat(mat.uniforms.uNightTex.value, mat.uniforms.uNightUvMat.value); } catch(_){ }
+  };
 
   return mat;
 }

@@ -2,7 +2,15 @@ export function createLightingManager(ctx){
   const { THREE, globeGroup, camera, dirLight, ambientLight, LIGHT_CFG, tweener } = ctx
   const __center = new THREE.Vector3()
   const __lightDir = new THREE.Vector3()
+  const __uvId = new THREE.Matrix3()
+  const __uvTmp = new THREE.Matrix3()
   let __shaderDiagNext = 0
+  function __copyUvMatFromTex(tex, outMat){
+    if (!outMat) return
+    if (!tex || !tex.matrix) { outMat.copy(__uvId); return }
+    try { if (tex.matrixAutoUpdate && typeof tex.updateMatrix === 'function') tex.updateMatrix() } catch(_){ }
+    try { __uvTmp.copy(tex.matrix); outMat.copy(__uvTmp) } catch(_){ try { outMat.copy(__uvId) } catch(__){} }
+  }
   function updateDirLight(zenActive){
     if (zenActive) {
       const d = camera.position.length()
@@ -20,6 +28,11 @@ export function createLightingManager(ctx){
     mat.uniforms.uGlobeCenterWorld.value.copy(__center)
     try { mat.uniforms.uCameraPosWorld.value.copy(camera.position) } catch(_){ }
     try { if (mat.uniforms.uTime) mat.uniforms.uTime.value = Date.now() * 0.001 } catch(_){ }
+    try {
+      const u = mat.uniforms || {}
+      if (u.uDayUvMat && u.uDayUvMat.value && u.uDayTex) __copyUvMatFromTex(u.uDayTex.value, u.uDayUvMat.value)
+      if (u.uNightUvMat && u.uNightUvMat.value && u.uNightTex) __copyUvMatFromTex(u.uNightTex.value, u.uNightUvMat.value)
+    } catch(_){ }
     try {
       const cfg = LIGHT_CFG.zen || {}
       if (mat.uniforms.uExposure && typeof cfg.exposure === 'number') mat.uniforms.uExposure.value = Math.min(2.5, Math.max(0.7, cfg.exposure))

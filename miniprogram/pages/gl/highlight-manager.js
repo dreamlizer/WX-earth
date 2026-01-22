@@ -86,12 +86,6 @@ export function createHighlightManager(ctx){
 
   const updatePerFrame = (now) => {
     try {
-      if (fading && fading.material) {}
-    } catch(_){}
-    try {
-      if (fading && fading.material) {}
-    } catch(_){}
-    try {
       if (fading) {
         const fadeMs = Math.max(0, Number(APP_CFG?.highlight?.fadeOutMs || 500))
         const rest = Math.max(0, fadeEnd - now)

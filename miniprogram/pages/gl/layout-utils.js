@@ -40,28 +40,46 @@ export function computeSettingsPanelFrame(timeRect, settingsRect){
 }
 export function computeEggSensorFrame(pill, cutRect, zenRect, { margin = 6, tapTolerancePx = 22, safeTop = 0 } = {}){
   if (!pill) return { left: 0, top: 0, width: 0, height: 0, visible: false };
-  const zenRight = zenRect ? Math.round(zenRect.right) : Math.round(pill.left);
-  const cutLeft = cutRect ? Math.round(cutRect.left) : Math.round(pill.right);
-  const leftBound = Math.max(0, zenRight + margin);
-  const rightBound = Math.max(leftBound, cutLeft - margin);
-  const width = Math.max(0, rightBound - leftBound);
-  const top = Math.max(0, Math.round(safeTop));
-  const stripBottom = Math.min(
-    cutRect ? Math.round(cutRect.bottom) : top + 80,
-    zenRect ? Math.round(zenRect.bottom) : top + 80
-  ) - margin;
-  const height = Math.max(16, stripBottom - top);
-  if (width < 20) {
-    const tol = Number(tapTolerancePx) || 22;
-    const pillLeft = Math.max(0, Math.round(pill.left) - tol);
-    const pillRight = Math.round(pill.right) + tol;
-    const leftSafe = Math.max(pillLeft, leftBound);
-    const rightSafe = Math.min(pillRight, rightBound);
-    const w2 = Math.max(0, rightSafe - leftSafe);
-    const h2 = Math.max(16, (stripBottom - top));
-    return { left: leftSafe, top, width: w2, height: h2, visible: true };
+
+  // 1. 基础区域：围绕时间胶囊扩大点击范围
+  const tol = Number(tapTolerancePx) || 22;
+  let left = Math.max(0, Math.round(pill.left) - tol);
+  let right = Math.round(pill.right) + tol;
+  let top = Math.max(0, Math.round(safeTop)); // 顶部通常贴顶
+  let bottom = Math.round(pill.bottom) + tol;
+
+  // 2. 避让活跃按钮 (Cut/Zen)，防止遮挡导致无法操作
+  // 活跃按钮通常在 Zen Mode 下是可见的，且层级在 Sensor 之下（DOM 顺序 Sensor 在后，故覆盖）
+  const buttons = [];
+  if (cutRect) buttons.push(cutRect);
+  if (zenRect) buttons.push(zenRect);
+
+  buttons.forEach(btn => {
+    // 简单判定：按钮在左边还是右边？
+    // 如果按钮中心在胶囊中心左侧，则视为左侧障碍
+    const pillCx = (pill.left + pill.right) / 2;
+    const btnCx = (btn.left + btn.right) / 2;
+    
+    if (btnCx < pillCx) {
+      // 左侧按钮：Sensor 左边界不能小于按钮右边界 + margin
+      left = Math.max(left, Math.round(btn.right) + margin);
+    } else {
+      // 右侧按钮：Sensor 右边界不能大于按钮左边界 - margin
+      right = Math.min(right, Math.round(btn.left) - margin);
+    }
+  });
+
+  // 3. 校验最终尺寸
+  const width = Math.max(0, right - left);
+  const height = Math.max(0, bottom - top);
+  
+  // 如果宽度过小（比如左右按钮夹得太紧），则强制不可见或最小尺寸（视需求）
+  // 这里允许稍微小一点，只要大于 0
+  if (width < 10 || height < 10) {
+    return { left: 0, top: 0, width: 0, height: 0, visible: false };
   }
-  return { left: leftBound, top, width, height, visible: true };
+
+  return { left, top, width, height, visible: true };
 }
 
 // 亮度调节竖条：位于“禅”按钮下方，垂直长度约为屏幕高度的 1/3

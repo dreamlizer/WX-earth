@@ -1,6 +1,8 @@
 // 云端贴图 URL 提供器（稳定、可回退、可缓存）
 // 用途：通过云存储 fileID -> 临时 HTTPS URL（CDN），失败则回退到本地图片。
 
+import { getSystemInfo } from './sys-info.js';
+
 const CACHE_KEY = '__texture_urls_cache_v1';
 const SAVED_PATHS_KEY = '__texture_saved_paths_v1';
 const TTL_MS = 12 * 60 * 60 * 1000; // 12 小时：临时链接有效期通常较短，定期刷新
@@ -101,14 +103,14 @@ export async function getTextureUrl(name, preferNetwork = false) {
   try { forceCloud = !!getApp()?.globalData?.forceCloudTextures; } catch(_){ }
   const isDevtools = (() => {
     try {
-      const info = wx.getSystemInfoSync();
+      const info = getSystemInfo();
       // WeChat DevTools 下 platform 会是 'windows' 或 'devtools'
       const p = (info?.platform || '').toLowerCase();
       return p === 'windows' || p === 'devtools' || p === 'mac';
     } catch(_) { return false; }
   })();
   const isIOS = (() => {
-    try { const info = wx.getSystemInfoSync(); const p = (info?.platform || '').toLowerCase(); return p === 'ios'; } catch(_) { return false; }
+    try { const info = getSystemInfo(); const p = (info?.platform || '').toLowerCase(); return p === 'ios'; } catch(_) { return false; }
   })();
 
   let fallback = FALLBACK_MAP[name];
@@ -184,6 +186,7 @@ export async function getTextureUrl(name, preferNetwork = false) {
     const url = item?.tempFileURL;
     try { console.log('[texture] tempURL', name, { status: item?.status, errMsg: item?.errMsg, url }); } catch(_){}
     if (typeof url === 'string' && url.startsWith('http')) {
+      const cache = readCache();
       cache[name] = { url, exp: now() + TTL_MS };
       writeCache(cache);
       return { url, fallback };
@@ -199,6 +202,7 @@ export async function getTextureUrl(name, preferNetwork = false) {
     try { console.log('[texture] fallback downloadFile', name, { path: p1 }); } catch(_){ }
     if (p1) {
       const saved = await savePermanentFromTemp(p1, name, fallback);
+      const cache = readCache();
       if (saved) {
         cache[name] = { url: saved, exp: now() + TTL_MS };
         writeCache(cache);
@@ -224,7 +228,7 @@ export async function getTextureUrl(name, preferNetwork = false) {
 export async function prefetchTextureUrls(names = ['earth','earth_night','cloud']){
   // DevTools 跳过云预取，除非显式开启 forceCloudTextures
   try {
-    const info = wx.getSystemInfoSync() || {};
+    const info = getSystemInfo() || {};
     const isDev = String(info.environment || '').toLowerCase() === 'devtools';
     const forceCloud = !!getApp()?.globalData?.forceCloudTextures;
     if (isDev && !forceCloud) return;
@@ -239,7 +243,7 @@ export async function prefetchTextureUrls(names = ['earth','earth_night','cloud'
 export async function ensureOfflineTextures(names = ['earth','earth_night','cloud']){
   // DevTools 跳过云下载持久化，除非显式开启 forceCloudTextures
   try {
-    const info = wx.getSystemInfoSync() || {};
+    const info = getSystemInfo() || {};
     const isDev = String(info.environment || '').toLowerCase() === 'devtools';
     const forceCloud = !!getApp()?.globalData?.forceCloudTextures;
     if (isDev && !forceCloud) return;

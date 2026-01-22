@@ -1,3 +1,5 @@
+import { getSystemInfo } from './pages/gl/sys-info.js';
+
 // app.js
 App({
   onLaunch: function () {
@@ -15,7 +17,7 @@ App({
     } else {
       // 始终初始化云开发；env 为空时使用默认环境（第一个创建的环境）
       try {
-        const envInfo = wx.getSystemInfoSync?.() || {};
+        const envInfo = getSystemInfo?.() || {};
         const isDevtools = String(envInfo.environment || '').toLowerCase() === 'devtools';
         if (!isDevtools || this.globalData.forceCloudTextures) {
           wx.cloud.init({

@@ -28,31 +28,35 @@ export function renderWithBloom(opts) {
           _composer = comp; _bloomPass = bloom;
         } else {
           const rt = new THREE.WebGLRenderTarget(width, height, { samples: 0 });
+          
+          // 优化：预创建复用对象，避免每帧 new
+          const quadScene = new THREE.Scene();
+          const quadCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+          const mat = new THREE.MeshBasicMaterial({
+            map: rt.texture,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+            depthWrite: false
+          });
+          const geo = new THREE.PlaneGeometry(2,2);
+          const mesh = new THREE.Mesh(geo, mat);
+          quadScene.add(mesh);
+
           _bloomPass = {
             setParams({ strength, threshold, radius }) { this.strength=strength; this.threshold=threshold; this.radius=radius; },
             strength: 0.6, threshold: 0.8, radius: 0.2,
+            dispose() { try { rt.dispose(); geo.dispose(); mat.dispose(); } catch(_){} },
             render() {
               const oldExposure = (renderer.toneMappingExposure ?? 1.0);
               try { renderer.toneMappingExposure = oldExposure * (APP_CFG?.bloom?.fallbackBoost ?? 1.15); } catch(_){}
               renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene, camera);
               renderer.setRenderTarget(null);
               try {
-                const quadScene = new THREE.Scene();
-                const quadCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
-                const mat = new THREE.MeshBasicMaterial({
-                  map: rt.texture,
-                  transparent: true,
-                  opacity: Math.min(1.0, this.strength),
-                  blending: THREE.AdditiveBlending,
-                  depthTest: false,
-                  depthWrite: false
-                });
-                const geo = new THREE.PlaneGeometry(2,2);
-                const mesh = new THREE.Mesh(geo, mat);
-                quadScene.add(mesh);
+                mat.opacity = Math.min(1.0, this.strength);
                 renderer.render(quadScene, quadCam);
-                geo.dispose(); mat.dispose();
-              } catch(_){ }
+              } catch(e){ console.warn('[bloom-fallback] render error', e); }
               try { renderer.toneMappingExposure = oldExposure; } catch(_){}
             }
           };

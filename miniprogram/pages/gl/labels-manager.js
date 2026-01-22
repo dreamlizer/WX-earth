@@ -1,6 +1,6 @@
 // 负责：语言切换、标签数量与城市级别、标签重建与城市淡点初始化
 import { getCountries, getRenderContext } from './main.js';
-import { initLabels, setLabelsBudget } from './labels.js';
+import { initLabels, setLabelsBudget, clearForcedLabel, forceHideAllMeshes } from './labels.js';
 import { initCityMarkers } from './city-markers.js';
 import { ENABLE_CITY_LABELS, INTERACTION_DEBUG_LOG, LABELS_DEBUG_LOG } from './label-constants.js';
 import { cities } from '../../assets/data/cities_data.js';
@@ -10,21 +10,47 @@ export class LabelsManager {
 
   onSetLabelQty(e){
     const v = e?.currentTarget?.dataset?.val || e?.detail?.value || 'default';
-    let n = 22; // 默认
-    if (v === 'none') n = 0; else if (v === 'few') n = 10; else if (v === 'many') n = 60; else n = 22;
-    this.page.setData({ labelQty: v }); setLabelsBudget(n);
+    
+    let n = 22; 
+    let tier = 'default';
+
+    if (v === 'none') {
+      n = 0;
+      tier = 'none';
+    } else if (v === 'few') {
+      n = 10;
+      tier = 'key';
+    } else if (v === 'many') {
+      n = 60;
+      tier = 'more';
+    } else {
+      // default
+      n = 22;
+      tier = 'default';
+    }
+
+    this.page.setData({ labelQty: v, cityTier: tier });
+    setLabelsBudget(n);
+    this.rebuildLabelsByLang(this.page.data.lang);
   }
 
-  onSetCityTier(e){
-    const v = e?.currentTarget?.dataset?.val || e?.detail?.value || 'more';
-    this.page.setData({ cityTier: v });
-    this.rebuildLabelsByLang(this.page.data.lang);
+  forceHideAll() {
+    setLabelsBudget(0);
+    clearForcedLabel();
+    forceHideAllMeshes();
+  }
+  
+  restore(qty) {
+    const v = qty || this.page.data.labelQty || 'default';
+    let n = 22;
+    if (v === 'none') n = 0; else if (v === 'few') n = 10; else if (v === 'many') n = 60; else n = 22;
+    setLabelsBudget(n);
   }
 
   onToggleLang(){
     try {
       if (this.page?.data?.settingsOpen) { this.page.__getPanelMgr?.().closeSettings?.(); }
-      if (this.page?.data?.countryPanelOpen) { this.page.onCloseCountryPanel?.(); }
+      // 调整：切换语言时不关闭国家面板，而是就地刷新
       try { this.page.updateTopOffsets?.(); } catch(_){ }
     } catch(_){ }
     const next = this.page.data.lang === 'zh' ? 'en' : 'zh';
@@ -36,6 +62,26 @@ export class LabelsManager {
     this.page.setData({ lang: next, labels, poetryFontSizePx: next === 'en' ? enPx : zhPx });
     try { this.page.updateCountryTitleSuffix && this.page.updateCountryTitleSuffix(); } catch(_){}
     this.rebuildLabelsByLang(next);
+
+    // 尝试刷新当前打开的国家面板（如果有）
+    try {
+      if (this.page.data.countryPanelOpen && this.page.data.countryInfo?.code) {
+        const code = String(this.page.data.countryInfo.code).toUpperCase();
+        const features = this.page._features || [];
+        const feature = features.find(f => {
+           const p = f.props || {};
+           const c = p.ISO_A3 || p.ISO_A2 || p.ISO || p.CC || p.ISO2;
+           return c && String(c).toUpperCase() === code;
+        });
+        // 即使没有 feature (rare)，也可以传 null 让其关闭？不，最好保持原样。
+        // 但这里我们只在有 feature 时刷新。
+        if (feature) {
+          // 强制刷新
+          this.page.__getCountryMgr().onCountryPicked(feature, true);
+        }
+      }
+    } catch(_){ }
+
     // 若处于禅定模式：切换对应语言的诗句预设组（中文1，英文4）
     try {
       if (this.page?.data?.zenMode) {
@@ -203,5 +249,27 @@ export class LabelsManager {
       try { if (INTERACTION_DEBUG_LOG) console.warn('[cities] 云端读取失败，回退本地：', e); } catch(_){}
       this.page._citiesCloud = null;
     }
+  }
+
+  // 开发者工具控制台调用：将本地 cities 数据分批写入云数据库（应急）
+  async pushCitiesToCloudLocal(chunkSize = 200){
+    try {
+      const arr = (Array.isArray(cities) ? cities : []).map(x => ({
+        name_en: x.name_en || '',
+        name_zh: x.name_zh || '',
+        lat: Number(x.lat),
+        lon: Number(x.lon),
+        country_code: String(x.country_code || '').toUpperCase(),
+        importance: typeof x.importance === 'number' ? x.importance : 1,
+      })).filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lon));
+      let done = 0;
+      for (let i = 0; i < arr.length; i += chunkSize) {
+        const batch = arr.slice(i, i + chunkSize);
+        const { result } = await wx.cloud.callFunction({ name: 'citiesImport', data: { type: 'bulkUpsert', items: batch } });
+        done += batch.length;
+        try { console.log(`[import] 已写入 ${done}/${arr.length}`, result); } catch(_){}
+      }
+      try { console.log('[import] 完成'); } catch(_){}
+    } catch (e) { console.warn('[import] 失败：', e); }
   }
 }

@@ -50,6 +50,9 @@ export class PanelManager {
   closePendingPanels(){
     try {
       if (this.page.__pendingPanelsClose) {
+        // 尝试清除可能已存在的关闭定时器（避免多重触发）
+        if (this.page.__panelCloseTimer) { clearTimeout(this.page.__panelCloseTimer); this.page.__panelCloseTimer = null; }
+
         const ms = Number(this.page?.data?.panelFadeMs || 500);
         const needSettings = !!(this.page?.data?.settingsOpen);
         const needCountry = !!(this.page?.data?.countryPanelOpen);
@@ -57,7 +60,9 @@ export class PanelManager {
         if (needSettings) updates.settingsFading = true;
         if (needCountry) updates.countryPanelFading = true;
         this.page.setData(updates);
-        setTimeout(() => {
+        
+        // 使用页面统一的 timer 引用，以便在重新点击国家时能被 cancelPanelCloseTimer 取消
+        this.page.__panelCloseTimer = setTimeout(() => {
           try {
             const next = { hoverText: '' };
             if (needSettings) { next.settingsOpen = false; next.settingsFading = false; }
@@ -65,6 +70,7 @@ export class PanelManager {
             next.searchOpen = false;
             this.page.setData(next);
             this.page.updateTopOffsets && this.page.updateTopOffsets();
+            this.page.__panelCloseTimer = null;
           } catch(_){ }
         }, ms);
         this.page.__pendingPanelsClose = false;
@@ -88,5 +94,37 @@ export class PanelManager {
         } catch(_){ }
       }, ms);
     } catch(_){ }
+  }
+
+  closeCountryPanel(){
+    try {
+      if (this.page.data.countryPanelOpen) {
+        // 清除可能已存在的定时器，防止冲突
+        if (this.page.__panelCloseTimer) { clearTimeout(this.page.__panelCloseTimer); this.page.__panelCloseTimer = null; }
+        
+        const ms = Number(this.page.data.panelFadeMs || 500);
+        this.page.setData({ countryPanelFading: true, hoverText: '' });
+        
+        this.page.__panelCloseTimer = setTimeout(() => { 
+          try { 
+            this.page.setData({ countryPanelOpen: false, countryPanelFading: false }); 
+            this.page.updateTopOffsets && this.page.updateTopOffsets(); 
+            this.page.__panelCloseTimer = null;
+          } catch(_){ } 
+        }, ms);
+      } else {
+        this.page.setData({ countryPanelOpen: false, hoverText: '' });
+        try { this.page.updateTopOffsets && this.page.updateTopOffsets(); } catch(_){ }
+      }
+    } catch(_){ }
+  }
+
+  cancelCloseTimer(){
+    try {
+      if (this.page.__panelCloseTimer) {
+        clearTimeout(this.page.__panelCloseTimer);
+        this.page.__panelCloseTimer = null;
+      }
+    } catch(_){}
   }
 }

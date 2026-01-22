@@ -22,12 +22,12 @@ export function applyTheme(opts) {
 
     // try { console.log('[theme:set]', { kind: currentTheme, zenActive, matType: earthMesh?.material?.type }); } catch(_){ }
     
-    // 如果是 Zen 模式，且 earthMesh 已经是 ShaderMaterial，则认为是 Shader 状态
-    // 注意：这里不再负责切换 Shader/Phong 的“类型”，只负责更新当前材质的“内容”
-    // 类型的切换由 external (main.js) 的 setZenMode / applyZenMaterial 控制
-    if (zenActive) {
-      // Zen 模式下，如果已经是 ShaderMaterial，尝试更新 Shader Uniforms
-      if (__dayNightMat && earthMesh?.material === __dayNightMat) {
+    // 判定是否正在使用 Zen Shader 材质（即使 zenActive=false，如果在退出动画中，材质可能仍是 Shader）
+    const isUsingShader = __dayNightMat && earthMesh?.material === __dayNightMat;
+
+    if (zenActive || isUsingShader) {
+      // Zen 模式下(或退出动画中)，如果已经是 ShaderMaterial，尝试更新 Shader Uniforms
+      if (isUsingShader) {
         return updateShaderTheme({ 
           dayNightMat: __dayNightMat, 
           currentTheme, 
@@ -148,6 +148,57 @@ export function createThemeState() {
       s.savedDayTexForShader = res?.savedDayTexForShader || null; 
       s.nightThemeActive = !!(res?.nightThemeActive); 
     }
+  };
+}
+
+export function createThemeController({ refs, APP_CFG, THREE, debugLog }) {
+  const themeState = createThemeState();
+  let currentTheme = 'default';
+
+  const refresh = () => {
+    try {
+      const zenActive = refs.zenActive();
+      const earthMesh = refs.earthMesh();
+      const earthDayTex = refs.earthDayTex();
+      const earthPureDayTex = refs.earthPureDayTex();
+      const earthNightTex = refs.earthNightTex();
+      
+      applyThemeWithState({
+        THREE,
+        earthMesh,
+        earthDayTex,
+        earthPureDayTex,
+        earthNightTex,
+        APP_CFG,
+        zenActive,
+        kind: currentTheme,
+        themeState
+      });
+    } catch(e) { console.error('[ThemeController] refresh failed', e); }
+  };
+
+  const setTheme = (kind) => {
+    try {
+      currentTheme = (kind === 'day8k' || kind === 'night') ? kind : 'default';
+      themeState.setTheme(currentTheme);
+      
+      if (debugLog) {
+         try { console.log('[theme:set]', { kind: currentTheme, zenActive: refs.zenActive(), hasDay: !!refs.earthDayTex() }); } catch(_){}
+      }
+      
+      refresh();
+      
+      if (debugLog) {
+         try { console.log('[theme:applied]', { kind: currentTheme }); } catch(_){}
+      }
+    } catch(err){ console.error('[ThemeController] set theme failed', err); }
+  };
+
+  return {
+    setTheme,
+    refresh,
+    get currentTheme() { return currentTheme; },
+    get themeState() { return themeState; }
   };
 }
 

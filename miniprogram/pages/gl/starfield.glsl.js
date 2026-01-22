@@ -1,6 +1,152 @@
 // starfield.glsl.js
 // 职责：在小程序 threejs-miniprogram 环境下创建“低干扰、缓慢闪烁”的星空背景
 
+import { PERF_HIDE_STAR_ON_ON_DRAG } from './label-constants.js';
+
+export function createStarfieldMaterial(THREE, initialConfig = {}) {
+  const vertexShader = (initialConfig && initialConfig.scrollEnabled) ? `
+    attribute float size;
+    attribute float twinkleSpeed;
+    attribute float twinkleOffset;
+    attribute float groupId;
+    uniform float time;
+    uniform float uSizeScale;
+    uniform float uScrollSpeed;
+    uniform float uZMin;
+    uniform float uZMax;
+    uniform float uBeltZMin;
+    uniform float uBeltZMax;
+    varying vec3 vColor;
+    varying float vTwinkle;
+    varying float vPhase;
+    void main() {
+      vColor = color;
+      vPhase = twinkleOffset + position.x * 0.17 + position.y * 0.11;
+      vTwinkle = 0.5 * (1.0 + sin(time * twinkleSpeed + vPhase));
+
+      float zMin = (groupId > 0.5) ? uBeltZMin : uZMin;
+      float zMax = (groupId > 0.5) ? uBeltZMax : uZMax;
+      float len = max(1e-6, abs(zMax - zMin));
+      float zFar = min(zMin, zMax);
+      float zLocal = position.z + time * uScrollSpeed;
+      float rel = zLocal - zFar;
+      float wrapped = mod(rel, len);
+      float z = zFar + wrapped;
+
+      vec4 mvPosition = modelViewMatrix * vec4( vec3(position.x, position.y, z), 1.0 );
+      gl_PointSize = size * uSizeScale * ( 600.0 / -mvPosition.z );
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  ` : `
+    attribute float size;
+    attribute float twinkleSpeed;
+    attribute float twinkleOffset;
+    uniform float time;
+    uniform float uSizeScale;
+    varying vec3 vColor;
+    varying float vTwinkle;
+    varying float vPhase;
+    void main() {
+      vColor = color;
+      vPhase = twinkleOffset + position.x * 0.17 + position.y * 0.11;
+      vTwinkle = 0.5 * (1.0 + sin(time * twinkleSpeed + vPhase));
+      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+      gl_PointSize = size * uSizeScale * ( 600.0 / -mvPosition.z );
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `;
+
+  const fragmentShader = (initialConfig && initialConfig.opacityAffectsColor) ? `
+    varying vec3 vColor;
+    varying float vTwinkle;
+    varying float vPhase;
+    uniform float uOpacity;
+    uniform float time;
+    uniform float uBrightnessGain;
+    uniform float uCorePower;
+    uniform float uGlowFactor;
+    uniform float uBreathSpeed;
+    uniform float uBreathStrength;
+    void main() {
+      vec2 uv = gl_PointCoord - vec2(0.5, 0.5);
+      float r = length(uv);
+      if ( r > 0.5 ) discard;
+      float core = 1.0 - smoothstep(0.0, 0.16, r);
+      core = pow(core, uCorePower);
+      float glow = 1.0 - smoothstep(0.16, 0.5, r);
+      float breath = 0.5 + 0.5 * sin(time * uBreathSpeed + vPhase);
+      float breathMul = 1.0 + uBreathStrength * (breath - 0.5) * 2.0;
+      float intensity = (core + glow * uGlowFactor) * vTwinkle * breathMul * uBrightnessGain;
+      float alpha = clamp(uOpacity * (core + glow * 0.5), 0.0, 1.0);
+      gl_FragColor = vec4( vColor * intensity * uOpacity, alpha );
+    }
+  ` : `
+    varying vec3 vColor;
+    varying float vTwinkle;
+    varying float vPhase;
+    uniform float uOpacity;
+    uniform float time;
+    uniform float uBrightnessGain;
+    uniform float uCorePower;
+    uniform float uGlowFactor;
+    uniform float uBreathSpeed;
+    uniform float uBreathStrength;
+    void main() {
+      vec2 uv = gl_PointCoord - vec2(0.5, 0.5);
+      float r = length(uv);
+      if ( r > 0.5 ) discard;
+      float core = 1.0 - smoothstep(0.0, 0.16, r);
+      core = pow(core, uCorePower);
+      float glow = 1.0 - smoothstep(0.16, 0.5, r);
+      float breath = 0.5 + 0.5 * sin(time * uBreathSpeed + vPhase);
+      float breathMul = 1.0 + uBreathStrength * (breath - 0.5) * 2.0;
+      float intensity = (core + glow * uGlowFactor) * vTwinkle * breathMul * uBrightnessGain;
+      float alpha = clamp(uOpacity * (core + glow * 0.5), 0.0, 1.0);
+      gl_FragColor = vec4( vColor * intensity, alpha );
+    }
+  `;
+
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0.0 },
+      uOpacity: { value: 1.0 },
+      uSizeScale: { value: 1.8 },
+      uBrightnessGain: { value: 2.2 },
+      uCorePower: { value: 4.0 },
+      uGlowFactor: { value: 0.25 },
+      uBreathSpeed: { value: 0.5 },
+      uBreathStrength: { value: 0.25 },
+      uScrollSpeed: { value: 0.0 },
+      uZMin: { value: -60.0 },
+      uZMax: { value: -260.0 },
+      uBeltZMin: { value: -110.0 },
+      uBeltZMax: { value: -190.0 }
+    },
+    vertexShader,
+    fragmentShader,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    transparent: true,
+    vertexColors: true,
+  });
+
+  const u = material.uniforms || {};
+  if (u.uOpacity && typeof initialConfig.starOpacity === 'number') u.uOpacity.value = initialConfig.starOpacity;
+  if (u.uSizeScale && typeof initialConfig.starSizeScale === 'number') u.uSizeScale.value = initialConfig.starSizeScale;
+  if (u.uBrightnessGain && typeof initialConfig.starBrightnessGain === 'number') u.uBrightnessGain.value = initialConfig.starBrightnessGain;
+  if (u.uBreathSpeed && typeof initialConfig.starBreathSpeed === 'number') u.uBreathSpeed.value = initialConfig.starBreathSpeed;
+  if (u.uBreathStrength && typeof initialConfig.starBreathStrength === 'number') u.uBreathStrength.value = initialConfig.starBreathStrength;
+  if (u.uCorePower && typeof initialConfig.starCorePower === 'number') u.uCorePower.value = initialConfig.starCorePower;
+  if (u.uGlowFactor && typeof initialConfig.starGlowFactor === 'number') u.uGlowFactor.value = initialConfig.starGlowFactor;
+  if (u.uScrollSpeed && typeof initialConfig.scrollSpeed === 'number') u.uScrollSpeed.value = initialConfig.scrollSpeed;
+  if (u.uZMin && typeof initialConfig.zMin === 'number') u.uZMin.value = initialConfig.zMin;
+  if (u.uZMax && typeof initialConfig.zMax === 'number') u.uZMax.value = initialConfig.zMax;
+  if (u.uBeltZMin && typeof initialConfig.beltZMin === 'number') u.uBeltZMin.value = initialConfig.beltZMin;
+  if (u.uBeltZMax && typeof initialConfig.beltZMax === 'number') u.uBeltZMax.value = initialConfig.beltZMax;
+
+  return material;
+}
+
 export function createStarfield(THREE) {
   // 兼容旧版 threejs-miniprogram：优先使用 Float32BufferAttribute；
   // BufferGeometry 可能只支持 addAttribute（老版本）或 setAttribute（新版本）
@@ -165,15 +311,101 @@ export function tickStarfield(starfield, now, dtSec, targetOpacity){
     return { opacity: next, visible: starfield.visible };
   } catch(_){ return { opacity: 0.0, visible: false }; }
 }
-export function createStarfieldController(THREE, scene){
+export function createStarfieldController(THREE, scene, initialConfig = {}){
   const mesh = createStarfield(THREE);
-  if (mesh) { mesh.renderOrder = -1; mesh.visible = false; try { scene.add(mesh); } catch(_){ } }
+  if (mesh) { 
+    mesh.renderOrder = -1; 
+    mesh.visible = false; 
+    try { scene.add(mesh); } catch(_){ } 
+    
+    // 应用初始配置
+    if (initialConfig && mesh.material && mesh.material.uniforms) {
+      const u = mesh.material.uniforms;
+      if (u.uSizeScale && typeof initialConfig.starSizeScale === 'number') u.uSizeScale.value = initialConfig.starSizeScale;
+      if (u.uBrightnessGain && typeof initialConfig.starBrightnessGain === 'number') u.uBrightnessGain.value = initialConfig.starBrightnessGain;
+      if (u.uBreathSpeed && typeof initialConfig.starBreathSpeed === 'number') u.uBreathSpeed.value = initialConfig.starBreathSpeed;
+      if (u.uBreathStrength && typeof initialConfig.starBreathStrength === 'number') u.uBreathStrength.value = initialConfig.starBreathStrength;
+    }
+  }
+  
   let target = 0.0;
+  let baseTarget = 0.0;
+  let isDragging = false;
+  
+  // 诊断状态
+  let __breathDiagUntil = 0;
+  let __breathLogNext = 0;
+  let __starLogNext = 0;
+  let __starLogNextMiss = 0;
+  let __starUniformWarned = false;
+  const STAR_LOG = false; // 内部开关，或通过配置传入
+
   return {
-    mesh,
-    setTargetOpacity(v){ try { target = Math.max(0, Math.min(1, Number(v)||0)); } catch(_){ target = 0.0; } },
-    applyZen(cfg){ try { applyZenStarUniforms(mesh, cfg||{}); } catch(_){ } },
-    applyNormal(cfg){ try { applyNormalStarUniforms(mesh, cfg||{}); } catch(_){ } },
-    tick(now, dt){ return tickStarfield(mesh, now, dt, target); }
+            mesh,
+            setTargetOpacity(v){ 
+              try { 
+                baseTarget = Math.max(0, Math.min(1, Number(v)||0)); 
+                if (!isDragging || !PERF_HIDE_STAR_ON_ON_DRAG) {
+                  target = baseTarget;
+                }
+              } catch(_){ target = 0.0; } 
+            },
+            applyZen(cfg){ try { applyZenStarUniforms(mesh, cfg||{}); } catch(_){ } },
+            applyNormal(cfg){ try { applyNormalStarUniforms(mesh, cfg||{}); } catch(_){ } },
+            
+            setDragging(dragging) {
+              try {
+                isDragging = !!dragging;
+                if (PERF_HIDE_STAR_ON_ON_DRAG && isDragging) {
+                  target = 0.0;
+                } else {
+                  target = baseTarget;
+                }
+              } catch(_){}
+            },
+
+            enableBreathDiagnostics(durationMs = 12000) {
+      try { __breathDiagUntil = Date.now() + durationMs; } catch(_){}
+    },
+
+    tick(now, dtSec){ 
+      // 1. 调用基础更新逻辑
+      const res = tickStarfield(mesh, now, dtSec, target);
+      
+      // 2. 诊断与日志逻辑 (移植自 main.js)
+      try {
+        if (mesh && mesh.material) {
+          const mat = mesh.material;
+          if ((!mat.uniforms || !mat.uniforms.uOpacity) && !__starUniformWarned && STAR_LOG) {
+            __starUniformWarned = true;
+            try { console.warn('[star] warn: uOpacity uniform missing on material'); } catch(_){}
+          }
+          
+          if (STAR_LOG && now >= __starLogNext) { 
+            __starLogNext = now + 1000; 
+            try { console.log('[star] tick:', { target: Number(target.toFixed?.(3) || target), cur: Number(res.opacity?.toFixed?.(3) || res.opacity || 0), visible: !!res.visible }); } catch(_){} 
+          }
+
+          // 诊断：在窗口期内采样“呼吸乘子”
+          if (now <= __breathDiagUntil && now >= __breathLogNext) {
+            __breathLogNext = now + 1500;
+            try {
+              const speed = mat.uniforms?.uBreathSpeed?.value ?? 0;
+              const strength = mat.uniforms?.uBreathStrength?.value ?? 0;
+              const t = mat.uniforms?.time?.value ?? 0;
+              const breathMul = 1.0 + strength * Math.sin(t * speed);
+              // console.info('[star breath]', { speed, strength, time: t, mul: breathMul });
+            } catch(_){}
+          }
+        } else {
+          if (STAR_LOG && now >= __starLogNextMiss) {
+            __starLogNextMiss = now + 2000;
+            try { console.warn('[star] not ready:', { hasObj: !!mesh, hasMat: !!(mesh && mesh.material) }); } catch(_){}
+          }
+        }
+      } catch(_){}
+
+      return res;
+    }
   };
 }

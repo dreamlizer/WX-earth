@@ -15,3 +15,140 @@
   ],
   "updatedAt": 1764689677000
 }
+{
+  "_id": "Moon",
+  "preset": 999,
+  "lines": [
+    {
+      "text": "Fly me to the moon",
+      "duration": 2690.0,
+      "start-time": 26070.0
+    },
+    {
+      "text": "And let me play among the stars.",
+      "duration": 5820.0,
+      "start-time": 28760.0
+    },
+    {
+      "text": "Let me see what spring, is like on Jupiter and Mars.",
+      "duration": 7300.0,
+      "start-time": 34580.0
+    },
+    {
+      "text": "In other words, hold my hand",
+      "duration": 8130.0,
+      "start-time": 41880.0
+    },
+    {
+      "text": "In other words, darling kiss me.",
+      "duration": 8220.0,
+      "start-time": 50010.0
+    },
+    {
+      "text": "Fill my heart with song",
+      "duration": 2970.0,
+      "start-time": 58440.0
+    },
+    {
+      "text": "And let me sing forever more.",
+      "duration": 5700.0,
+      "start-time": 61410.0
+    },
+    {
+      "text": "You are all I long for, all I worship and adore.",
+      "duration": 7340.0,
+      "start-time": 67110.0
+    },
+    {
+      "text": "In other words, please be true",
+      "duration": 8050.0,
+      "start-time": 74450.0
+    },
+    {
+      "text": "In other words, I love you.",
+      "duration": 41050.0,
+      "start-time": 82500.0
+    },
+    {
+      "text": "Fly me to the moon",
+      "duration": 2850.0,
+      "start-time": 123550.0
+    },
+    {
+      "text": "And let me play among the stars.",
+      "duration": 5790.0,
+      "start-time": 126400.0
+    },
+    {
+      "text": "Let me see what spring, is like on Jupiter and Mars.",
+      "duration": 7360.0,
+      "start-time": 132190.0
+    },
+    {
+      "text": "In other words, hold my hand",
+      "duration": 8140.0,
+      "start-time": 139550.0
+    },
+    {
+      "text": "In other words, darling kiss me.",
+      "duration": 8480.0,
+      "start-time": 147690.0
+    },
+    {
+      "text": "Fill my heart with song",
+      "duration": 2650.0,
+      "start-time": 156100.0
+    },
+    {
+      "text": "And let me sing forever more.",
+      "duration": 5970.0,
+      "start-time": 158750.0
+    },
+    {
+      "text": "You are all I long for, all I worship and adore.",
+      "duration": 7350.0,
+      "start-time": 164720.0
+    },
+    {
+      "text": "In other words, please be true",
+      "duration": 8200.0,
+      "start-time": 172070.0
+    },
+    {
+      "text": "In other words, I love you.",
+      "duration": 40930.0,
+      "start-time": 180270.0
+    },
+    {
+      "text": "Fill my heart with song",
+      "duration": 2770.0,
+      "start-time": 221200.0
+    },
+    {
+      "text": "And let me sing forever more.",
+      "duration": 5850.0,
+      "start-time": 223970.0
+    },
+    {
+      "text": "You are all I long for, all I worship and adore.",
+      "duration": 7240.0,
+      "start-time": 229820.0
+    },
+    {
+      "text": "In other words, please be true",
+      "duration": 8260.0,
+      "start-time": 237060.0
+    },
+    {
+      "text": "In other words, I love you.",
+      "duration": 8050.0,
+      "start-time": 245320.0
+    },
+    {
+      "text": "In other words, I love you.",
+      "duration": 9470.0,
+      "start-time": 253370.0
+    }
+  ],
+  "updatedAt": 1764689677000
+}

@@ -3,7 +3,14 @@ export function createRenderLoop(canvasRef){
   let paused = false;
   const frame = (tick) => {
     if (paused) return;
-    try { tick(); } catch(_){ }
+    try { tick(); } catch(e){ 
+      // 节流打印，避免刷屏
+      const now = Date.now();
+      if (now - (frame.lastError || 0) > 2000) {
+         console.error('[RenderLoop] tick failed:', e); 
+         frame.lastError = now;
+      }
+    }
     const c = canvasRef?.();
     try {
       if (c && typeof c.requestAnimationFrame === 'function') {
@@ -13,7 +20,10 @@ export function createRenderLoop(canvasRef){
       } else {
         rafId = setTimeout(() => frame(tick), 16);
       }
-    } catch(_){ rafId = setTimeout(() => frame(tick), 16); }
+    } catch(e){ 
+       console.warn('[RenderLoop] raf failed, fallback to timeout', e);
+       rafId = setTimeout(() => frame(tick), 16); 
+    }
   };
   const start = (tick) => { paused = false; frame(tick); };
   const stop = () => {

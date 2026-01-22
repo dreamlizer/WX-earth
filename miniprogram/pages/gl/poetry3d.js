@@ -121,7 +121,10 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
 
       // 2. 预计算时间轴 (Timeline)
       const hasAbsStart = Array.isArray(lines) && lines.some(l => Number.isFinite(Number(l?.['start-time'])));
-      let accum = 0;
+      const firstDelayMs = Number(conf?.firstDelayMs || 0);
+      const offsetMs = Number(conf?.offsetMs || 0);
+      const scheduleShiftMs = Math.max(0, firstDelayMs + offsetMs);
+      let accum = scheduleShiftMs;
       lines.forEach((l, i) => {
         if (!l.text) return;
         const dur = preferLineDuration ? Number(l.duration || displayMs) : displayMs;
@@ -130,7 +133,8 @@ export function createPoetry3D(THREE, scene, camera, earthMesh, viewW, viewH, cf
         const startPos = randomStart(bounds);
         const endPos = computeMove(startPos, dur, bounds);
 
-        const tStart = hasAbsStart ? Math.max(0, Number(l?.['start-time'] || 0)) : accum;
+        const baseStart = Math.max(0, Number(l?.['start-time'] || 0));
+        const tStart = hasAbsStart ? Math.max(0, scheduleShiftMs + baseStart) : accum;
         const tEnd = tStart + dur;
         const tVisibleEnd = tEnd + crossMs;
 

@@ -16,6 +16,14 @@ export function createTimezoneManager(opts) {
   } = opts || {}
 
   const stable = { last: null, count: 0, since: 0 }
+  const __vCenter = new THREE.Vector3(0, 0, RADIUS)
+  const __eCenter = new THREE.Euler(0, 0, 0, 'XYZ')
+  const __vFallback = new THREE.Vector3(0, 0, RADIUS)
+  const __eFallback = new THREE.Euler(0, 0, 0, 'XYZ')
+  let __lastRotX = NaN
+  let __lastRotY = NaN
+  let __lastComputedTZ = null
+  let __lastComputeAt = 0
 
   function updateAfterSelection(hit, lat, lon) {
     let tzName = null
@@ -43,9 +51,34 @@ export function createTimezoneManager(opts) {
   }
 
   function computeCenterTZ(rotX, rotY) {
-    const v = new THREE.Vector3(0, 0, RADIUS)
-    v.applyEuler(new THREE.Euler(rotX, rotY, 0, 'XYZ'))
-    const [clon, clat] = convertVec3ToLatLon(v.x, v.y, v.z)
+    const touch = touchRef() || {}
+    const now = Date.now()
+
+    const minInterval = touch.isDragging ? 80 : 200
+    const dx = Math.abs((rotX || 0) - (__lastRotX || 0))
+    const dy = Math.abs((rotY || 0) - (__lastRotY || 0))
+    const rotStable = isFinite(__lastRotX) && isFinite(__lastRotY) && dx < 0.001 && dy < 0.001
+
+    if (__lastComputedTZ && rotStable && (now - __lastComputeAt) < minInterval) {
+      if (__lastComputedTZ === stable.last) {
+        stable.count++
+      } else {
+        stable.last = __lastComputedTZ
+        stable.count = 1
+        stable.since = now
+      }
+      const frameThreshold = touch.isDragging ? 2 : 3
+      const timeThreshold = touch.isDragging ? 250 : 400
+      if (stable.count >= frameThreshold || (now - stable.since) >= timeThreshold) {
+        return __lastComputedTZ
+      }
+      return null
+    }
+
+    __vCenter.set(0, 0, RADIUS)
+    __eCenter.set(rotX, rotY, 0, 'XYZ')
+    __vCenter.applyEuler(__eCenter)
+    const [clon, clat] = convertVec3ToLatLon(__vCenter.x, __vCenter.y, __vCenter.z)
     let tzByCountry = null
     const search = searchRef()
     const countries = countriesRef() || []
@@ -63,17 +96,19 @@ export function createTimezoneManager(opts) {
       const abs = Math.abs(off)
       computedTZ = `Etc/GMT${sign}${abs}`
     }
+    __lastRotX = rotX
+    __lastRotY = rotY
+    __lastComputeAt = now
+    __lastComputedTZ = computedTZ
     if (computedTZ === stable.last) {
       stable.count++
     } else {
       stable.last = computedTZ
       stable.count = 1
-      stable.since = Date.now()
+      stable.since = now
     }
-    const touch = touchRef() || {}
     const frameThreshold = touch.isDragging ? 2 : 3
     const timeThreshold = touch.isDragging ? 250 : 400
-    const now = Date.now()
     if (stable.count >= frameThreshold || (now - stable.since) >= timeThreshold) {
       return computedTZ
     }
@@ -93,20 +128,22 @@ export function createTimezoneManager(opts) {
     if ((now - (page.lastTimeUpdate || 0) > throttle) || page.lastTimeUpdate === 0) {
       page.lastTimeUpdate = now
       const dt = new Date(now)
-      let timeStrFull = formatTime(dt, page.currentTZ ?? active)
-      let timeStrMinute = formatTime(dt, page.currentTZ ?? active)?.replace(/^(\d{2}:\d{2}).*$/, '$1')
+      const tzUse = page.currentTZ ?? active
+      let timeStrFull = formatTime(dt, tzUse)
+      let timeStrMinute = timeStrFull ? timeStrFull.replace(/^(\d{2}:\d{2}).*$/, '$1') : ''
       try {
         const looksInvalid = !timeStrFull || !/\d{2}:\d{2}/.test(timeStrFull)
         if (looksInvalid) {
-          const v = new THREE.Vector3(0, 0, RADIUS)
-          v.applyEuler(new THREE.Euler(touch.rotX || 0, touch.rotY || 0, 0, 'XYZ'))
-          const [clon] = convertVec3ToLatLon(v.x, v.y, v.z)
+          __vFallback.set(0, 0, RADIUS)
+          __eFallback.set(touch.rotX || 0, touch.rotY || 0, 0, 'XYZ')
+          __vFallback.applyEuler(__eFallback)
+          const [clon] = convertVec3ToLatLon(__vFallback.x, __vFallback.y, __vFallback.z)
           const off = Math.round(normalizeLon(clon) / 15)
           const sign = off >= 0 ? '-' : '+'
           const abs = Math.abs(off)
           const etcTZ = `Etc/GMT${sign}${abs}`
           timeStrFull = formatTime(dt, etcTZ)
-          timeStrMinute = formatTime(dt, etcTZ)?.replace(/^(\d{2}:\d{2}).*$/, '$1')
+          timeStrMinute = timeStrFull ? timeStrFull.replace(/^(\d{2}:\d{2}).*$/, '$1') : ''
         }
       } catch(_){}
       let nextStr = timeStrFull
