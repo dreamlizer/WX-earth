@@ -298,6 +298,38 @@ canvas {
 .cut-btn {
   grid-column: 3 / span 1;
   grid-row: 2;
+  position: relative; /* 为内部 Toast 定位 */
+  overflow: visible !important; /* 允许 Toast 超出按钮显示 */
+}
+/* 切歌时显示的歌名（位于按钮上方） */
+.cut-btn-toast {
+  position: absolute;
+  bottom: 110%; /* 位于按钮上方 */
+  left: 50%;
+  transform: translateX(-50%) translateY(12rpx); /* 初始位移：略微下沉 */
+  background: rgba(10, 22, 36, 0.85);
+  color: #e8f6ff;
+  font-size: 26rpx;
+  font-style: italic; /* 斜体 */
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  border: 1px solid rgba(120, 170, 220, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.3);
+
+  /* 优雅的淡入淡出 */
+  opacity: 0;
+  transition: opacity 600ms ease, transform 600ms cubic-bezier(0.21, 0.61, 0.35, 1);
+}
+.cut-btn-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cut-btn-label {
+  display: none; /* 废弃旧样式 */
 }
 
 /* “禅”按钮：置于第二行第一列（语言按钮下方） */

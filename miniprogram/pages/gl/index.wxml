@@ -9,7 +9,10 @@
   <!-- 第二行：右侧“禅”按钮（位于设置按钮正下方） -->
   <view class="top-icon-btn zen-btn {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleZenMode" role="button">禅</view>
   <!-- 第一行第三列：“切”按钮常驻，通过 inert 类淡入淡出（禅定下可见） -->
-  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleCut" role="button">定</view>
+  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleCut" role="button">
+    <text>定</text>
+    <view class="cut-btn-toast {{zenToastVisible ? 'visible' : ''}}">{{zenToastText}}</view>
+  </view>
   <!-- 提示信息（可选）：与时间保持同一行，不占宽度 -->
   <view class="top-tip {{hoverText ? 'visible' : ''}} {{zenMode ? 'inert' : ''}} {{moonVoyageActive ? 'fading-out' : ''}}">{{hoverText}}</view>
   <!-- 禅定诗句改为独立层：双容器交替，支持淡入淡出与位移 -->
@@ -35,7 +38,7 @@
 <view class="moon-debug-hotspot {{zenMode ? 'visible' : ''}}" bindtouchstart="onSpeedTouchStart" bindtouchend="onSpeedTouchEnd" bindtouchcancel="onSpeedTouchEnd"></view>
 
 <!-- 预设列表（禅定模式下，“定”按钮下方展开） -->
-<view wx:if="{{zenMode && presetListOpen && !moonVoyageActive}}" class="preset-list" style="right: {{presetListRight}}px; top: {{presetListTop}}px; opacity: {{presetListOpacity}};">
+<view wx:if="{{false}}" class="preset-list" style="right: {{presetListRight}}px; top: {{presetListTop}}px; opacity: {{presetListOpacity}};">
   <view wx:for="{{presetList}}" wx:key="id" id="preset-item-{{item.id}}" class="preset-item {{currentPreset===item.id?'active':''}} {{presetLatched && currentPreset===item.id?'breathing':''}} {{presetLatched && presetCollapsed && currentPreset!==item.id?'fadeout':''}}" data-id="{{item.id}}" data-disabled="{{presetLatched && currentPreset===item.id}}" style="transform: translate3d(0, {{presetPinnedId===item.id ? presetPinnedDy : 0}}px, 0);" bindtap="onPickPreset">
     <text class="preset-text">{{item.label}}</text>
   </view>

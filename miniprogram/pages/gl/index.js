@@ -373,7 +373,9 @@ Page({
   // “定”按钮：展开/收起预设列表
   async onToggleCut(){
     try { if (this.__isMoonLocked()) return; } catch(_){ }
-    try { return this.__getZenModeMgr().toggleList(); } catch(_){ }
+    // 旧逻辑：return this.__getZenModeMgr().toggleList();
+    // 新逻辑：直接切歌
+    try { return this.__getZenModeMgr().switchNextPreset(); } catch(_){ }
   },
   onPickPreset(e){
     try { if (this.__isMoonLocked()) return; } catch(_){ }

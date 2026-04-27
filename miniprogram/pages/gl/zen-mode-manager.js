@@ -104,6 +104,21 @@ export class ZenModeManager {
       const isEn = (this.page?.data?.lang === 'en');
       const current = Number(this.page?.__zenPreset || (isEn ? 101 : 1));
       const nextPreset = ZenPoetry.resolveNextPreset(this.page, current, isEn);
+
+      // 显示歌名 Toast (覆盖在按钮上)
+      const labels = this.page.__presetLabels || {};
+      const label = labels[nextPreset] || (isEn ? 'Track ' + nextPreset : '曲目 ' + nextPreset);
+
+      this.page.setData({
+        zenToastVisible: true,
+        zenToastText: label
+      });
+
+      clearTimeout(this.page._zenToastTimer);
+      this.page._zenToastTimer = setTimeout(() => {
+        this.page.setData({ zenToastVisible: false });
+      }, 3000); // 3秒后恢复显示“定”
+
       this.switchToPreset(nextPreset);
     } catch(_){ }
   }
