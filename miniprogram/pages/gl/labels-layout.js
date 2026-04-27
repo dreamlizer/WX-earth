@@ -8,11 +8,18 @@ export const LabelsLayout = {
   makeGrid(width, height, cell = GRID_SIZE) {
     const cols = Math.max(1, Math.ceil(width  / cell));
     const rows = Math.max(1, Math.ceil(height / cell));
-    const occ  = new Array(rows * cols).fill(0);
-    return { cols, rows, cell, occ };
+    const size = rows * cols;
+    let grid = LabelsLayout.__grid;
+    if (!grid || grid.cols !== cols || grid.rows !== rows || grid.cell !== cell || !grid.occ || grid.occ.length !== size) {
+      grid = { cols, rows, cell, occ: new Array(size).fill(0) };
+      LabelsLayout.__grid = grid;
+      return grid;
+    }
+    grid.occ.fill(0);
+    return grid;
   },
 
-  worldToScreen(worldPos, ctx) {
+  worldToScreen(worldPos, ctx, out) {
     const { THREE, camera, width, height } = ctx;
     const clip = LabelsLayout.__clip || (LabelsLayout.__clip = new THREE.Vector4());
     
@@ -26,12 +33,22 @@ export const LabelsLayout = {
 
     const x = (ndcX * 0.5 + 0.5) * width;
     const y = (-ndcY * 0.5 + 0.5) * height;
-    return { x, y, ndcX, ndcY };
+    const res = out || {};
+    res.x = x;
+    res.y = y;
+    res.ndcX = ndcX;
+    res.ndcY = ndcY;
+    return res;
   },
 
-  estimatePixelSize(mesh, worldPos, ctx) {
+  estimatePixelSize(mesh, worldPos, ctx, out) {
     const { camera, height } = ctx;
-    if (!mesh || !worldPos || !height) return { w: GRID_SIZE, h: GRID_SIZE };
+    const res = out || {};
+    if (!mesh || !worldPos || !height) {
+      res.w = GRID_SIZE;
+      res.h = GRID_SIZE;
+      return res;
+    }
     
     const fov = camera.fov;
     if (LabelsLayout.__fov !== fov || !LabelsLayout.__tanHalfFov) {
@@ -50,7 +67,9 @@ export const LabelsLayout = {
     const hpx = Math.abs(mesh.scale.y * pxPerWorldUnit);
     const wpx = Math.abs(mesh.scale.x * pxPerWorldUnit);
     
-    return { w: Math.max(1, wpx), h: Math.max(1, hpx) };
+    res.w = Math.max(1, wpx);
+    res.h = Math.max(1, hpx);
+    return res;
   },
 
   tryOccupy(grid, x, y, w=1, h=1) {

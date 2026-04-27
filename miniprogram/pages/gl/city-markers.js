@@ -21,6 +21,8 @@ let lastUpdateTime = 0;
 // 额外：高亮控制
 const markersById = new Map(); // id -> Mesh
 const highlightUntil = new Map(); // id -> timestamp(ms)
+const highlightedWorldPositions = [];
+const highlightedWorldEntries = new Map(); // id -> { id, world }
 
 // 初始化城市标记：传入 THREE 与 globeGroup，避免与小程序 Canvas 绑定失配
 export function initCityMarkers(THREE, globeGroup, cities) {
@@ -40,6 +42,8 @@ export function initCityMarkers(THREE, globeGroup, cities) {
   citiesData = cities || [];
   markersById.clear();
   highlightUntil.clear();
+  highlightedWorldPositions.length = 0;
+  highlightedWorldEntries.clear();
   createMarkers();
 }
 
@@ -152,6 +156,7 @@ export function disposeCityMarkers() {
   THREE_CTX = null;
   try { markersById.clear(); } catch(_){}
   try { highlightUntil.clear(); } catch(_){}
+  try { highlightedWorldPositions.length = 0; highlightedWorldEntries.clear(); } catch(_){}
 }
 
 // 外部调用：让某城市点在一段时间内“变色高亮”（不变大）
@@ -168,6 +173,8 @@ export function highlightCityMarker(id, durationMs = 3000) {
 // 外部调用：清除所有城市高亮
 export function clearCityHighlights() {
   highlightUntil.clear();
+  highlightedWorldPositions.length = 0;
+  highlightedWorldEntries.clear();
   for (const m of markersById.values()) {
     try { m?.material?.color?.setHex?.(MARKER_COLOR); } catch(_){}
   }
@@ -175,19 +182,26 @@ export function clearCityHighlights() {
 
 // 提供当前处于高亮状态的城市的世界坐标，供标签系统做“避让”
 export function getHighlightedWorldPositions() {
-  const res = [];
+  highlightedWorldPositions.length = 0;
   try {
     const now = Date.now();
     for (const [id, until] of highlightUntil) {
-      if (!until || until <= now) continue;
+      if (!until || until <= now) {
+        try { highlightUntil.delete(id); highlightedWorldEntries.delete(id); } catch(_){}
+        continue;
+      }
       const m = markersById.get(id);
       if (!m) continue;
-      const wp = new THREE_CTX.Vector3();
-      try { m.getWorldPosition(wp); } catch(_){ continue; }
-      res.push({ id, world: wp });
+      let entry = highlightedWorldEntries.get(id);
+      if (!entry) {
+        entry = { id, world: new THREE_CTX.Vector3() };
+        highlightedWorldEntries.set(id, entry);
+      }
+      try { m.getWorldPosition(entry.world); } catch(_){ continue; }
+      highlightedWorldPositions.push(entry);
     }
   } catch(_){ }
-  return res;
+  return highlightedWorldPositions;
 }
 
 // 新增：统一控制城市光点的可见性（拖动时临时隐藏，静止后恢复）

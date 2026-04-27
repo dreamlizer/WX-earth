@@ -59,7 +59,8 @@ export function createTimezoneManager(opts) {
     const dy = Math.abs((rotY || 0) - (__lastRotY || 0))
     const rotStable = isFinite(__lastRotX) && isFinite(__lastRotY) && dx < 0.001 && dy < 0.001
 
-    if (__lastComputedTZ && rotStable && (now - __lastComputeAt) < minInterval) {
+    if (__lastComputedTZ && (now - __lastComputeAt) < minInterval) {
+      if (!rotStable) return null
       if (__lastComputedTZ === stable.last) {
         stable.count++
       } else {

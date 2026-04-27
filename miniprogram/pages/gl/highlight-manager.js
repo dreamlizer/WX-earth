@@ -1,5 +1,3 @@
-import { convertLatLonToVec3 } from './geography.js'
-
 export function createHighlightManager(ctx){
   const { THREE, globeGroup, camera, APP_CFG, highlightLayer, RADIUS, onAutoCleared } = ctx
   let group = null
@@ -8,6 +6,22 @@ export function createHighlightManager(ctx){
   let feature = null
   let lastCheck = 0
   let belowCount = 0
+  const __center = new THREE.Vector3()
+  const __camPos = new THREE.Vector3()
+  const __worldP = new THREE.Vector3()
+  const __normal = new THREE.Vector3()
+  const __viewDir = new THREE.Vector3()
+  const __toRad = (d) => d * Math.PI / 180
+  const __setLatLonVec3 = (out, lon, lat, radius = 1) => {
+    const phi = __toRad(90 - lat)
+    const theta = __toRad(lon + 180)
+    out.set(
+      -radius * Math.sin(phi) * Math.cos(theta),
+      radius * Math.cos(phi),
+      radius * Math.sin(phi) * Math.sin(theta)
+    )
+    return out
+  }
 
   const dispose = (grp) => {
     if (!grp) return
@@ -17,16 +31,15 @@ export function createHighlightManager(ctx){
   const estimateFrontRatio = (f) => {
     if (!f || !globeGroup || !camera) return 1.0
     try {
-      const center = new THREE.Vector3(); globeGroup.getWorldPosition(center)
-      const camPos = camera.position.clone()
+      globeGroup.getWorldPosition(__center)
+      __camPos.copy(camera.position)
       let total = 0, front = 0
       const addPoint = (lon, lat) => {
-        const v = convertLatLonToVec3(lon, lat, RADIUS + 0.001)
-        const p = new THREE.Vector3(v.x, v.y, v.z)
-        try { p.applyQuaternion(globeGroup.quaternion) } catch(_){}
-        const worldP = p.add(center)
-        const normal = worldP.clone().sub(center).normalize()
-        const viewDir = camPos.clone().sub(worldP).normalize()
+        __setLatLonVec3(__worldP, lon, lat, RADIUS + 0.001)
+        try { __worldP.applyQuaternion(globeGroup.quaternion) } catch(_){}
+        __worldP.add(__center)
+        const normal = __normal.copy(__worldP).sub(__center).normalize()
+        const viewDir = __viewDir.copy(__camPos).sub(__worldP).normalize()
         const dot = normal.dot(viewDir)
         if (dot > 0) front++
         total++

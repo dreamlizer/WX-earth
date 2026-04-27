@@ -6,6 +6,8 @@ import { getSystemInfo } from './sys-info.js';
 const CACHE_KEY = '__texture_urls_cache_v1';
 const SAVED_PATHS_KEY = '__texture_saved_paths_v1';
 const TTL_MS = 12 * 60 * 60 * 1000; // 12 小时：临时链接有效期通常较短，定期刷新
+const textureUrlInflight = Object.create(null);
+const offlineTextureInflight = Object.create(null);
 
 // 从你的截图复制的 fileID（如环境迁移请按需更新）
 // 精简版：只保留 3 张核心贴图，兼容所有设备
@@ -77,6 +79,15 @@ async function savePermanentFromTemp(tempPath, name, fallback){
   } catch(e) { try { console.warn('[texture] savePermanent失败', name, e); } catch(_){}; return ''; }
 }
 
+function textureInflightKey(name, preferNetwork){
+  return `${String(name || '')}:${preferNetwork ? 'network' : 'normal'}`;
+}
+
+function getAnyTextureUrlInflight(name){
+  const n = String(name || '');
+  return textureUrlInflight[textureInflightKey(n, false)] || textureUrlInflight[textureInflightKey(n, true)] || null;
+}
+
 export function clearTextureCache(){ writeCache({}); }
 
 export function clearTextureSaved(names = ['earth','earth_night','cloud','earth_day8k']){
@@ -95,7 +106,7 @@ export function clearTextureSaved(names = ['earth','earth_night','cloud','earth_
 }
 
 // 返回：{ url, fallback } —— url 可能是云端临时链接，也可能直接是本地兜底
-export async function getTextureUrl(name, preferNetwork = false) {
+async function resolveTextureUrl(name, preferNetwork = false) {
   // 开发者工具（Windows/macOS）的网络环境对临时 CDN 链接常出现 403（no referrer），
   // 为保证本地预览“无红色错误”，默认在 DevTools 环境走本地兜底。
   // 如需强制走云端，可在 app.globalData.forceCloudTextures = true。
@@ -224,6 +235,18 @@ export async function getTextureUrl(name, preferNetwork = false) {
   return { url: fallback || '', fallback };
 }
 
+export async function getTextureUrl(name, preferNetwork = false) {
+  const active = getAnyTextureUrlInflight(name);
+  if (active) return active;
+  const key = textureInflightKey(name, preferNetwork);
+  const task = resolveTextureUrl(name, preferNetwork)
+    .finally(() => {
+      if (textureUrlInflight[key] === task) delete textureUrlInflight[key];
+    });
+  textureUrlInflight[key] = task;
+  return task;
+}
+
 // 预取若干纹理，提升首帧稳定性
 export async function prefetchTextureUrls(names = ['earth','earth_night','cloud']){
   // DevTools 跳过云预取，除非显式开启 forceCloudTextures
@@ -249,12 +272,29 @@ export async function ensureOfflineTextures(names = ['earth','earth_night','clou
     if (isDev && !forceCloud) return;
   } catch(_){ }
   for (const n of names) {
+    await ensureOneTextureOffline(n);
+  }
+}
+
+async function ensureOneTextureOffline(name){
+  const n = String(name || '');
+  if (!FILE_ID_MAP[n]) return;
+  if (offlineTextureInflight[n]) return offlineTextureInflight[n];
+  const task = (async () => {
     try {
       const fallback = FALLBACK_MAP[n];
-      const saved = readSavedPaths()[n];
-      if (saved && hasFile(saved)) { continue; }
-      
-      // 增加 try-catch 保护，防止个别下载失败阻断后续
+      let saved = readSavedPaths()[n];
+      if (saved && hasFile(saved)) return;
+
+      // If the foreground loader is already resolving this texture, wait for it
+      // instead of starting a competing download/save of the same file.
+      const active = getAnyTextureUrlInflight(n);
+      if (active) {
+        try { await active; } catch(_){}
+        saved = readSavedPaths()[n];
+        if (saved && hasFile(saved)) return;
+      }
+
       try {
         const df = await wx.cloud.downloadFile({ fileID: FILE_ID_MAP[n] });
         const temp = df?.tempFilePath || '';
@@ -263,5 +303,9 @@ export async function ensureOfflineTextures(names = ['earth','earth_night','clou
         try { console.warn('[texture] ensureOffline单个失败', n, err); } catch(_){}
       }
     } catch(e) { try { console.warn('[texture] ensureOffline失败', n, e); } catch(_){} }
-  }
+  })().finally(() => {
+    if (offlineTextureInflight[n] === task) delete offlineTextureInflight[n];
+  });
+  offlineTextureInflight[n] = task;
+  return task;
 }

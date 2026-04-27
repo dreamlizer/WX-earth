@@ -7,6 +7,7 @@ import { getHighlightedWorldPositions } from './city-markers.js';
 import { LabelsData, stableRand } from './labels-data.js';
 import { LabelsRender } from './labels-render.js';
 import { LabelsLayout } from './labels-layout.js';
+import { createLabelFrameWorkset, resetLabelFrameWorkset, nextLabelCandidate, copyForcedCodes } from './labels-workset.js';
 import * as _const from './label-constants.js';
 
 // —— 配置参数 (Controller 层关注的) ——
@@ -120,6 +121,7 @@ export function updateLabels() {
   const ctx = getRenderContext();
   const { THREE, camera, scene, globeGroup, width, height } = ctx || {};
   if (!THREE || !camera || !globeGroup || !width || !height) return;
+  const nowMs = Date.now();
 
   // 初始化临时变量
   if (!__tmp) {
@@ -131,7 +133,11 @@ export function updateLabels() {
       normal2: new THREE.Vector3(),
       view: new THREE.Vector3(),
       view2: new THREE.Vector3(),
-      local: new THREE.Vector3()
+      local: new THREE.Vector3(),
+      screen: {},
+      forcedScreen: {},
+      winSpMap: new Map(),
+      workset: createLabelFrameWorkset()
     };
     __camPos = new THREE.Vector3();
   }
@@ -149,12 +155,13 @@ export function updateLabels() {
 
   // 1. 准备候选集
   const grid = LabelsLayout.makeGrid(width, height);
+  const workset = resetLabelFrameWorkset(__tmp.workset);
   
   // 高亮避让
   try {
     const highlights = getHighlightedWorldPositions() || [];
     for (const h of highlights) {
-      const sp = LabelsLayout.worldToScreen(h.world, ctx);
+      const sp = LabelsLayout.worldToScreen(h.world, ctx, __tmp.screen);
       if (sp) LabelsLayout.occupyAround(grid, sp.x, sp.y, Math.round(grid.cell * 0.9));
     }
   } catch(_){}
@@ -186,7 +193,7 @@ export function updateLabels() {
     }
   } catch(_){}
 
-  const candidates = [];
+  const candidates = workset.candidates;
   let maxScore = 0;
 
   for (const meta of LabelsData.BASE_LABELS) {
@@ -215,7 +222,8 @@ export function updateLabels() {
       if (camDistLOD > LOD_CITIES_START_APPEAR) continue;
     }
 
-    const sp = LabelsLayout.worldToScreen(__tmp.world, ctx);
+    const scratch = meta.__labelScratch || (meta.__labelScratch = { screen: {}, size: {}, fallbackMesh: { scale: { x: 1, y: 1 } } });
+    const sp = LabelsLayout.worldToScreen(__tmp.world, ctx, scratch.screen);
     if (!sp) continue;
 
     const centerWeight = Math.max(0, 1 - Math.hypot(sp.ndcX, sp.ndcY));
@@ -240,11 +248,13 @@ export function updateLabels() {
     // 估算尺寸
     let size;
     if (mesh) {
-      size = LabelsLayout.estimatePixelSize(mesh, __tmp.world, ctx);
+      size = LabelsLayout.estimatePixelSize(mesh, __tmp.world, ctx, scratch.size);
     } else {
       const wh = meta.isCity ? CITY_WORLD_HEIGHT : DEFAULT_WORLD_HEIGHT;
       const aspect = (meta.text.length * 0.6) + (meta.isCity ? 0.8 : 0.4);
-      size = LabelsLayout.estimatePixelSize({ scale: { x: wh * aspect, y: wh } }, __tmp.world, ctx);
+      scratch.fallbackMesh.scale.x = wh * aspect;
+      scratch.fallbackMesh.scale.y = wh;
+      size = LabelsLayout.estimatePixelSize(scratch.fallbackMesh, __tmp.world, ctx, scratch.size);
     }
 
     // 边缘淡出
@@ -256,29 +266,40 @@ export function updateLabels() {
     );
     const edgeAlpha = Math.max(0, Math.min(1, edgeFade));
 
-    candidates.push({ id, mesh, sp, size, score: s, edgeAlpha, centerWeight, isSmallCountryCity });
+    const candidate = nextLabelCandidate(workset);
+    candidate.id = id;
+    candidate.mesh = mesh;
+    candidate.meta = meta;
+    candidate.sp = sp;
+    candidate.size = size;
+    candidate.score = s;
+    candidate.edgeAlpha = edgeAlpha;
+    candidate.centerWeight = centerWeight;
+    candidate.isSmallCountryCity = isSmallCountryCity;
+    candidates.push(candidate);
   }
 
   // 2. 排序与预算
-  const countryCands = [];
-  const cityCands = [];
+  const countryCands = workset.countryCands;
+  const cityCands = workset.cityCands;
   for (const c of candidates) {
-    const meta = LabelsData.getMeta(c.id);
+    const meta = c.meta || LabelsData.getMeta(c.id);
     if (meta.isCity) cityCands.push(c); else countryCands.push(c);
   }
   countryCands.sort((a,b) => b.score - a.score);
   cityCands.sort((a,b) => b.score - a.score);
 
   // 城市筛选
-  let cityCandsFiltered = cityCands;
+  let cityCandsFiltered = workset.cityCandsFiltered;
+  for (const c of cityCands) cityCandsFiltered.push(c);
   let __showAllCitiesMode = false;
-  const forcedCodesSet = new Set([...LabelsData.FORCED_CITY_CODES].map(s => String(s).toUpperCase()));
-  if (__forceAllCitiesCountry) forcedCodesSet.add(__forceAllCitiesCountry);
+  const forcedCodesSet = copyForcedCodes(workset, LabelsData.FORCED_CITY_CODES, __forceAllCitiesCountry);
 
-  const forcedCities = cityCands.filter(c => {
-    const m = LabelsData.getMeta(c.id);
-    return m.isCity && m.country && forcedCodesSet.has(String(m.country).toUpperCase());
-  });
+  const forcedCities = workset.forcedCities;
+  for (const c of cityCands) {
+    const m = c.meta || LabelsData.getMeta(c.id);
+    if (m.isCity && m.country && forcedCodesSet.has(String(m.country).toUpperCase())) forcedCities.push(c);
+  }
   
   // 计算有效预算
   let budgetForced = CITY_BUDGET_MID;
@@ -287,17 +308,24 @@ export function updateLabels() {
   else if (camDistLOD <= LOD_CITIES_ALL_APPEAR) budgetForced = Math.max(CITY_BUDGET_NEAR, effBudget);
 
   if (__forceAllCitiesCountry) {
-    const smallCount = forcedCities.filter(c => c.isSmallCountryCity).length;
+    let smallCount = 0;
+    for (const c of forcedCities) if (c.isSmallCountryCity) smallCount++;
     if (smallCount > 0) budgetForced = Math.max(budgetForced, smallCount);
   }
 
-  const forcedCityIds = new Set(forcedCities.map(c => c.id));
-  const otherCities = cityCands.filter(c => !forcedCityIds.has(c.id));
+  const forcedCityIds = workset.forcedCityIds;
+  for (const c of forcedCities) forcedCityIds.add(c.id);
+  const otherCities = workset.otherCities;
+  for (const c of cityCands) {
+    if (!forcedCityIds.has(c.id)) otherCities.push(c);
+  }
   
-  cityCandsFiltered = [
-    ...forcedCities.slice(0, Math.max(0, budgetForced)),
-    ...(camDistLOD <= LOD_CITIES_ALL_APPEAR ? otherCities : [])
-  ];
+  cityCandsFiltered.length = 0;
+  const forcedLimit = Math.max(0, budgetForced);
+  for (let i = 0; i < forcedCities.length && i < forcedLimit; i++) cityCandsFiltered.push(forcedCities[i]);
+  if (camDistLOD <= LOD_CITIES_ALL_APPEAR) {
+    for (const c of otherCities) cityCandsFiltered.push(c);
+  }
 
   const thr = _const?.CITY_SHOW_ALL_THRESHOLD ?? 12;
   if (cityCands.length > 0 && cityCands.length <= thr && camDistLOD <= LOD_CITIES_START_APPEAR) {
@@ -305,17 +333,17 @@ export function updateLabels() {
     __showAllCitiesMode = true;
   }
 
-  const winners = new Set();
+  const winners = workset.winners;
   let used = 0;
   
   // 居中保底
-  let __mustCentral = [];
+  const __mustCentral = workset.mustCentral;
   const thrCenter = _const?.MUST_CENTER_WEIGHT_CITY ?? 0.75;
-  __mustCentral = candidates.filter(c => {
-    const m = LabelsData.getMeta(c.id);
+  for (const c of candidates) {
+    const m = c.meta || LabelsData.getMeta(c.id);
     const isForcedCity = m.isCity && m.country && forcedCodesSet.has(String(m.country).toUpperCase());
-    return isForcedCity && (c.centerWeight || 0) >= thrCenter;
-  });
+    if (isForcedCity && (c.centerWeight || 0) >= thrCenter) __mustCentral.push(c);
+  }
 
   for (const c of __mustCentral) {
     if (winners.has(c.id)) continue;
@@ -328,7 +356,7 @@ export function updateLabels() {
     }
     winners.add(c.id); used++;
     const st = LabelsRender.LABEL_STATES.get(c.id) || { alpha: 0, lastWinAt: 0 };
-    st.lastWinAt = Date.now();
+    st.lastWinAt = nowMs;
     LabelsRender.LABEL_STATES.set(c.id, st);
   }
 
@@ -342,14 +370,18 @@ export function updateLabels() {
   const dynamicCountryMin = isCityPriority ? 6 : COUNTRY_MIN_WINNERS;
   const countryBudget = Math.max(0, Math.min(__budgetEff - cityReserve, dynamicCountryMin));
 
-  const __mustIds = new Set(__mustCentral.map(c => c.id));
-  const citiesQueue = cityCandsFiltered.filter(c => !__mustIds.has(c.id));
+  const __mustIds = workset.mustIds;
+  for (const c of __mustCentral) __mustIds.add(c.id);
+  const citiesQueue = workset.citiesQueue;
+  for (const c of cityCandsFiltered) {
+    if (!__mustIds.has(c.id)) citiesQueue.push(c);
+  }
   
   const tryPlace = (c) => {
     if (used >= __budgetEff) return false;
     if (winners.has(c.id)) return false;
     
-    const meta = LabelsData.getMeta(c.id);
+    const meta = c.meta || LabelsData.getMeta(c.id);
     let wCells = Math.max(1, Math.ceil(c.size.w / grid.cell));
     let hCells = Math.max(1, Math.ceil(c.size.h / grid.cell));
     
@@ -361,7 +393,7 @@ export function updateLabels() {
     if (LabelsLayout.tryOccupy(grid, c.sp.x, c.sp.y, wCells, hCells)) {
       winners.add(c.id); used++;
       const st = LabelsRender.LABEL_STATES.get(c.id) || { alpha: 0, lastWinAt: 0 };
-      st.lastWinAt = Date.now();
+      st.lastWinAt = nowMs;
       LabelsRender.LABEL_STATES.set(c.id, st);
       return true;
     }
@@ -370,7 +402,7 @@ export function updateLabels() {
 
   // 放置逻辑
   let placedCountryCount = 0;
-  const countryIndicesPlaced = new Set();
+  const countryIndicesPlaced = workset.countryIndicesPlaced;
   
   // Phase 1: 保底国家
   for (let i = 0; i < countryCands.length; i++) {
@@ -394,7 +426,7 @@ export function updateLabels() {
   if (forcedID && LabelsRender.LABEL_MESHES.has(forcedID)) {
     winners.add(forcedID);
     const st = LabelsRender.LABEL_STATES.get(forcedID) || { alpha: 0, lastWinAt: 0 };
-    st.lastWinAt = Date.now();
+    st.lastWinAt = nowMs;
     LabelsRender.LABEL_STATES.set(forcedID, st);
   }
 
@@ -425,7 +457,8 @@ export function updateLabels() {
   }
 
   // 更新所有 Mesh
-  const winSpMap = new Map();
+  const winSpMap = __tmp.winSpMap;
+  winSpMap.clear();
   for(const c of candidates) { if(winners.has(c.id)) winSpMap.set(c.id, c.sp); }
 
   for (const [id, mesh] of LabelsRender.LABEL_MESHES.entries()) {
@@ -442,7 +475,7 @@ export function updateLabels() {
     if (!isWin && !isForced) {
       // 淡出逻辑
       const st = LabelsRender.LABEL_STATES.get(id) || { alpha: 0, lastWinAt: 0 };
-      const sticky = (Date.now() - st.lastWinAt) < STICKY_MS;
+      const sticky = (nowMs - st.lastWinAt) < STICKY_MS;
       if (sticky) {
         // 粘性淡出
         const nextAlpha = st.alpha * (1 - OPACITY_FOLLOW); // 指数衰减
@@ -469,7 +502,7 @@ export function updateLabels() {
     if (alpha > 1) alpha = 1;
 
     let sp = winSpMap.get(id);
-    if (!sp && isForced) sp = LabelsLayout.worldToScreen(__tmp.world2, ctx);
+    if (!sp && isForced) sp = LabelsLayout.worldToScreen(__tmp.world2, ctx, __tmp.forcedScreen);
     
     if (alpha > 0 && sp) {
       const edgeFade = Math.min(

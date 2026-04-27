@@ -25,9 +25,9 @@ import { createViewportManager } from './viewport-manager.js';
 import { createInputManager } from './input-manager.js';
 import { createTimezoneManager } from './timezone-manager.js';
 import { getCountryOverride as getCountryOverrideExtern } from './tz-overrides.js';
+import { createColliderManager } from './collider-manager.js';
 import { createHighlightManager } from './highlight-manager.js';
 import { createLightingManager } from './lighting-manager.js';
-import { createColliderManager } from './collider-manager.js';
 import { createFlyManager } from './fly-manager.js';
 import { ZenModeManager, applyZenAutoRotate, applyZenBrake, advanceZenAnimation, advanceRotationFrame, zenState, enterZenMode, exitZenMode, resetZenState, createZenController } from './zen-mode-manager.js';
 import { MoonVoyageManager } from './moon-voyage-manager.js';
@@ -37,6 +37,8 @@ import { createFadeOverlay } from './fade-overlay.js';
 import { fixTexture, loadTextureWithRetry, reloadAllTextures, dumpTextureInfo } from './asset-manager.js';
 import { loadTexturesSequentially } from './scene-loader.js';
 import { createPerfMonitor } from './perf-monitor.js';
+import { createRuntimeDiagnostics } from './runtime-diagnostics.js';
+import { createTextureHealthChecker } from './texture-health.js';
 import { dumpRendererInfo, exposeDebugTools } from './debug-manager.js';
 import { createTouchState, updateInertiaParams } from './touch-state.js';
 import { detectEnvironment, applyPlatformHacks, shouldPrefetchTextures } from './platform-manager.js';
@@ -163,6 +165,13 @@ export class AppEngine {
 
     // 6. 辅助系统 (Starfield, Perf, etc.)
     const perfMonitor = createPerfMonitor();
+    const runtimeDiagnostics = createRuntimeDiagnostics({
+      APP_CFG,
+      globalDataRef: () => {
+        try { return getApp()?.globalData || {}; } catch(_) { return {}; }
+      },
+      logger: (payload) => { try { console.info('[earth-diag]', payload); } catch(_){} }
+    });
     dumpRendererInfo(THREE, renderer);
 
     // 初始视角
@@ -193,13 +202,6 @@ export class AppEngine {
     applyPlatformHacks(this.sys);
     const { isPCClient: __isPCClient } = detectEnvironment(this.sys);
     const TEX_FLIP_Y = true;
-
-    try {
-      if (shouldPrefetchTextures(this.sys, getApp()?.globalData)) {
-        prefetchTextureUrls();
-        ensureOfflineTextures();
-      }
-    } catch(_){ }
 
     // 8. Scene Context 构建
     const sceneCtx = {
@@ -254,6 +256,15 @@ export class AppEngine {
     };
     this.sceneCtx = sceneCtx;
 
+    const textureHealthChecker = createTextureHealthChecker({
+      APP_CFG,
+      refs: sceneCtx.refs,
+      refreshTextures: () => this.refreshTextures(),
+      diagnostics: runtimeDiagnostics,
+      isReady: () => !!this.earthReady,
+      logger: (payload) => { try { console.warn('[texture-health]', payload); } catch(_){} }
+    });
+
     // 9. 高级控制器 (Theme, Zen)
     this.themeController = createThemeController({
       refs: sceneCtx.refs,
@@ -284,6 +295,17 @@ export class AppEngine {
 
     // 10. 资源加载
     loadTexturesSequentially(sceneCtx).then(() => {
+       // Keep first paint on one loading path. Warm offline caches only after
+       // the foreground earth texture has had time to settle on WebGL.
+       setTimeout(() => {
+          try {
+            if (!this.state) return;
+            if (shouldPrefetchTextures(this.sys, getApp()?.globalData)) {
+              prefetchTextureUrls();
+              ensureOfflineTextures();
+            }
+          } catch(_){ }
+       }, 5000);
        if (this.moonMgr) {
          // Delay moon assets preload to avoid network contention with Cloud/Night textures
          // which are loaded shortly after the initial Day texture.
@@ -359,7 +381,8 @@ export class AppEngine {
     this.loop = createRenderLoop(() => canvas);
     
     const sceneUpdater = createSceneUpdater({
-      perfMonitor, tweener, highlight, page, flyMgr, starCtl: this.starCtl, tzMgr,
+      perfMonitor, runtimeDiagnostics, textureHealthChecker,
+      tweener, highlight, page, flyMgr, starCtl: this.starCtl, tzMgr,
       lighting, touch: this.touch, globeGroup, camera, baseDist, clampZoom, updateCamDist,
       APP_CFG, LIGHT_CFG, setZenMode,
       THREE, renderer, scene, width, height,

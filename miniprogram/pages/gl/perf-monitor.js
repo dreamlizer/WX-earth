@@ -16,7 +16,7 @@ export class PerfMonitor {
   update(now) {
     const dtSec = this.prevRenderTime ? Math.max(0, Math.min(0.12, (now - this.prevRenderTime) / 1000)) : 0;
     
-    if (this.prevRenderTime) {
+    if (PERF_DIAG_LOG && this.prevRenderTime) {
       const fps = dtSec > 0 ? (1 / dtSec) : 0;
       const dtMs = now - this.prevRenderTime;
       this.fpsWindow.push({ fps, dtMs });

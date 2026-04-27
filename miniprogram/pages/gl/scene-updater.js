@@ -5,9 +5,22 @@ import { INTERACTION_DEBUG_LOG, PERF_HIDE_MARKERS_ON_DRAG, LOD_CITIES_START_APPE
 import { updateLabels } from './labels.js';
 import { updateCityMarkers, setCityMarkersVisible } from './city-markers.js';
 
+export function getLabelUpdateIntervalMs({ isDragging, idle, isFlying, hasInertia } = {}) {
+  if (isDragging) return 96;
+  if (idle) return 140;
+  if (isFlying || hasInertia) return 48;
+  return 48;
+}
+
+export function getMarkerUpdateIntervalMs({ isDragging, hasHighlight } = {}) {
+  if (isDragging) return Infinity;
+  return hasHighlight ? 50 : 100;
+}
+
 export function createSceneUpdater(ctx) {
   const {
-    perfMonitor, tweener, highlight, page, flyMgr, starCtl, tzMgr,
+    perfMonitor, runtimeDiagnostics, textureHealthChecker,
+    tweener, highlight, page, flyMgr, starCtl, tzMgr,
     lighting, touch, globeGroup, camera, baseDist, clampZoom, updateCamDist,
     APP_CFG, LIGHT_CFG, setZenMode,
     THREE, renderer, scene, width, height,
@@ -25,6 +38,7 @@ export function createSceneUpdater(ctx) {
   let __lastRotX = 0;
   let __lastRotY = 0;
   let __lastLabelUpdateAt = 0;
+  let __lastMarkerUpdateAt = 0;
   let __lastBorderWidth = 0;
   let __borderLines = [];
   let __markersVisible = true;
@@ -36,6 +50,7 @@ export function createSceneUpdater(ctx) {
     const refs = getRefs();
     const now = Date.now();
     const dtSec = perfMonitor.update(now);
+    try { runtimeDiagnostics?.recordFrame?.(now, dtSec); } catch(_){}
     
     tweener.update(now);
 
@@ -60,6 +75,7 @@ export function createSceneUpdater(ctx) {
           if (res.bloomPass !== bloomPass) refs.setBloomPass(res.bloomPass);
        } catch(e) { console.error('[Moon] Render failed', e); }
        
+       try { runtimeDiagnostics?.flush?.(now); } catch(_){}
        return;
     }
     
@@ -169,6 +185,7 @@ export function createSceneUpdater(ctx) {
       const ry = globeGroup.rotation.y;
       const isFlying = !!flyMgr?.isFlying?.();
       const isDragging = !!touch.isDragging;
+      const hasInertia = Math.abs(touch.velX || 0) > 0.0002 || Math.abs(touch.velY || 0) > 0.0002;
       
       // Idle detection
       let idle = false;
@@ -181,9 +198,10 @@ export function createSceneUpdater(ctx) {
       __lastRotY = ry;
 
       // Label Updates
-      const intervalMs = isDragging ? 80 : (idle ? 120 : 0);
+      const intervalMs = getLabelUpdateIntervalMs({ isDragging, idle, isFlying, hasInertia });
       if ((now - __lastLabelUpdateAt) >= intervalMs) {
-          updateLabels();
+          if (runtimeDiagnostics?.isEnabled?.()) runtimeDiagnostics.measure('labels', () => updateLabels());
+          else updateLabels();
           __lastLabelUpdateAt = now;
       }
 
@@ -193,9 +211,15 @@ export function createSceneUpdater(ctx) {
       if (wantMarkers !== __markersVisible) {
           setCityMarkersVisible(wantMarkers);
           __markersVisible = wantMarkers;
+          if (wantMarkers) __lastMarkerUpdateAt = 0;
       }
       if (wantMarkers) {
-          updateCityMarkers(camera, now);
+          const markerIntervalMs = getMarkerUpdateIntervalMs({ isDragging, hasHighlight: false });
+          if ((now - __lastMarkerUpdateAt) >= markerIntervalMs) {
+              if (runtimeDiagnostics?.isEnabled?.()) runtimeDiagnostics.measure('markers', () => updateCityMarkers(camera, now));
+              else updateCityMarkers(camera, now);
+              __lastMarkerUpdateAt = now;
+          }
       }
 
       // Border Width Updates
@@ -218,6 +242,9 @@ export function createSceneUpdater(ctx) {
           __lastBorderWidth = newWidth;
       }
     } catch(e) { console.error('[ViewUpdate] error', e); }
+
+    try { textureHealthChecker?.tick?.(now); } catch(_){}
+    try { runtimeDiagnostics?.flush?.(now); } catch(_){}
   };
 
   return { update };

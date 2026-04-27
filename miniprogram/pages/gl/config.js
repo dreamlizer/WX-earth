@@ -35,6 +35,19 @@ export const APP_CFG = {
   },
 
   
+  diagnostics: {
+    enabled: false,
+    flushIntervalMs: 5000,
+    slowFrameMs: 34
+  },
+
+  textureHealth: {
+    enabled: true,
+    intervalMs: 3000,
+    startDelayMs: 2500,
+    minReloadGapMs: 15000
+  },
+
   // -------------------- 普通模式 --------------------
   // [通用] 普通模式（非禅定）——整体偏自然、易读
   // 灯光、材质、星空效果与明暗等针对普通模式的观感参数。
