@@ -35,3 +35,10 @@ for f in tools/*.test.cjs; do node "$f"; done
 - 本地兜底数据在 `miniprogram/assets/data/` 和 `miniprogram/pages/gl/country_data.*`。
 - 云函数在 `cloudfunctions/`，部署状态以微信开发者工具和云环境为准。
 - 不要在文档或日志里新增密钥、私有 token 或用户数据。
+
+## 易踩边界
+
+- 国家点选依赖 `loadCountries() -> buildIndex(features)` 先完成；边界线或碰撞体异常时，也要保留 `earthMesh + searchIndex` 的点击兜底。
+- 微信开发者工具和 PC 客户端默认不要预取云贴图或月球资源，避免假超时；诗句云函数和数据库读取仍可在 DevTools 使用，不要一刀切禁云。
+- 禅定预设名来自 `poetry_sets` 文档 `_id`，歌词来自 `lines`；`poetrySetsV2` 是停用占位，运行链路不要再调用。
+- 登月进入/退出有异步窗口，保留 `_entering` / `_exiting` 这类重入保护，避免普通地球状态被错误备份。
