@@ -83,7 +83,7 @@ export function performTapSelection(opts) {
         } catch(_) { inter = interEarth; }
       }
     }
-    if (!inter) { return { hit: null, highlightTargets: null }; }
+    if (!inter) return { hit: null, highlightTargets: null };
     const pLocal = globeGroup.worldToLocal(inter.point.clone());
     let [lon, lat] = convertVec3ToLatLon(pLocal.x, pLocal.y, pLocal.z);
     if (lonSameSign) lon = normalizeLon(lon);
@@ -257,5 +257,5 @@ export function performTapSelection(opts) {
       }
       return { hit, highlightTargets: __highlightTarget, lon, lat };
     } catch(_) { return { hit, highlightTargets: hit, lon, lat }; }
-  } catch(_) { return { hit: null, highlightTargets: null }; }
+  } catch(e) { try { console.error('[selection] performTapSelection threw:', e && e.message); } catch(_){} return { hit: null, highlightTargets: null }; }
 }

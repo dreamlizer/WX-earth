@@ -1,3 +1,5 @@
+import { PERF_DIAG_LOG } from './label-constants.js';
+
 /**
  * 调试与诊断管理器
  * 职责：提供控制台调试工具（如缩放、微调中心点、输出渲染管线信息），辅助开发与排查。
@@ -12,6 +14,7 @@ const _tmName = (THREE, v) => {
 };
 
 export const dumpRendererInfo = (THREE, renderer) => {
+  if (!PERF_DIAG_LOG) return;
   try {
     const colorSpace = (renderer.outputColorSpace ?? renderer.outputEncoding);
     const tone = renderer.toneMapping;

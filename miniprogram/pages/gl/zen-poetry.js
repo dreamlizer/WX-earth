@@ -12,7 +12,6 @@ export async function preloadPoetryCloud(page) {
     page.__poetryPresets = { ...(page.__poetryPresets || {}), ...map };
     if (Object.keys(labels).length) { page.__presetLabels = { ...(page.__presetLabels || {}), ...labels }; }
     page.__poetrySource = source || page.__poetrySource || 'unknown';
-    console.info(`[poetry] 载入 ${Object.keys(map).length} 组，来源：${page.__poetrySource}`);
     try {
       if (!Array.isArray(page.__poetryPresets[3]) || page.__poetryPresets[3].length === 0) {
         console.warn('[poetry] 未发现 preset_3，请检查云函数部署/数据库权限/环境ID');
@@ -43,7 +42,6 @@ export async function preloadPresetLabelsCloud(page) {
 export async function preloadSpecialCloud(page) {
   const items = await loadSpecialTexts(APP_CFG, LOG);
   page._specialItems = items;
-  LOG.info('[special] 加载', page._specialItems.length, '条');
 }
 
 export async function playPoetry(page, preset, startIdx, opts) {

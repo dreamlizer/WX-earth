@@ -99,11 +99,18 @@ export class ZenModeManager {
   }
 
   // 切换下一首
-  switchNextPreset(){
+  async switchNextPreset(){
     try {
       const isEn = (this.page?.data?.lang === 'en');
       const current = Number(this.page?.__zenPreset || (isEn ? 101 : 1));
       const nextPreset = ZenPoetry.resolveNextPreset(this.page, current, isEn);
+      try {
+        const map = this.page?.__poetryPresets || {};
+        const labels = this.page?.__presetLabels || {};
+        if (!Array.isArray(map[nextPreset]) || !map[nextPreset].length || !labels[nextPreset]) {
+          await this.preloadPoetryCloud();
+        }
+      } catch(_){ }
 
       // 显示歌名 Toast (覆盖在按钮上)
       const labels = this.page.__presetLabels || {};

@@ -51,9 +51,6 @@ export const applyPlatformHacks = (sys, globalScope) => {
     } catch(e) { console.warn('[HarmonyOS] Failed to disable ImageBitmap', e); }
   }
 
-  if (isPCClient) {
-    try { console.log('[platform] PC Client detected (Strict Mode)'); } catch(_){}
-  }
 };
 
 /**
@@ -62,14 +59,13 @@ export const applyPlatformHacks = (sys, globalScope) => {
  * @param {Object} appGlobalData - 小程序 App.globalData
  */
 export const shouldPrefetchTextures = (sys, appGlobalData) => {
-  const { isDevtools } = detectEnvironment(sys);
+  const { isDevtools, isPCClient } = detectEnvironment(sys);
   const forceCloud = !!(appGlobalData?.forceCloudTextures);
   
-  // 在开发工具中默认跳过云端预加载（节省流量），除非强制开启
-  if (!isDevtools || forceCloud) {
+  // 在开发工具/PC 客户端中默认跳过云端预加载（节省流量），除非强制开启。
+  if (!(isDevtools || isPCClient) || forceCloud) {
     return true;
   } else {
-    try { console.warn('[tex] skip cloud prefetch/ensure in devtools'); } catch(_){}
     return false;
   }
 };

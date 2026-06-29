@@ -43,6 +43,9 @@ export const loadTextureWithRetry = async (loader, name, urlProvider, applyFn, {
       loader.load(lastFallback, (tex) => {
          if (finished) return;
          finished = true;
+         // 标记为占位图：iOS 云贴图加载失败时退回的 1×1 PNG。打上标记后，
+         // texture-health 才能识别它“看起来有图但其实是兜底”，从而在会话内自动重载真图（无需重启）。
+         try { tex.userData = tex.userData || {}; tex.userData.isPlaceholder = true; } catch(_){}
          try { applyFn(tex); } catch(_){}
          resolve(true);
       }, undefined, () => {
@@ -180,6 +183,8 @@ export const reloadAllTextures = async (ctx) => {
 };
 
 export const dumpTextureInfo = (name, tex) => {
+  const debugTexture = false;
+  if (!debugTexture) return;
   try {
     if (!tex) { console.info('[TEX]', name, 'not loaded'); return; }
     const cs = (tex.colorSpace ?? tex.encoding);

@@ -306,7 +306,8 @@ export class AppEngine {
             }
           } catch(_){ }
        }, 5000);
-       if (this.moonMgr) {
+       const { isDevtools, isPCClient } = detectEnvironment(this.sys);
+       if (this.moonMgr && !isDevtools && !isPCClient) {
          // Delay moon assets preload to avoid network contention with Cloud/Night textures
          // which are loaded shortly after the initial Day texture.
          // Giving it 8s ensures the Earth is fully ready and smooth before starting background downloads.
@@ -335,13 +336,18 @@ export class AppEngine {
 
     loadCountries().then((features) => {
       this.countryFeatures = features;
-      this.borderGroup = makeBorder(THREE, globeGroup, this.countryFeatures);
-      try { if (this.borderGroup) this.borderGroup.visible = false; } catch(_){}
-      if (this.earthReady) {
-        setTimeout(() => { try { if (this.borderGroup) this.borderGroup.visible = true; } catch(_){} }, 1000);
-      }
-      try { collider.build(this.countryFeatures); this.colliderGroup = collider.getGroup(); } catch(_){ this.colliderGroup = null; }
       this.searchIndex = buildIndex(features);
+      try { collider.build(this.countryFeatures); this.colliderGroup = collider.getGroup(); } catch(_){ this.colliderGroup = null; }
+      try {
+        this.borderGroup = makeBorder(THREE, globeGroup, this.countryFeatures);
+        try { if (this.borderGroup) this.borderGroup.visible = false; } catch(_){}
+        if (this.earthReady) {
+          setTimeout(() => { try { if (this.borderGroup) this.borderGroup.visible = true; } catch(_){} }, 1000);
+        }
+      } catch(e) {
+        this.borderGroup = null;
+        try { console.warn('[countries] border build failed; selection index remains available', e && e.message); } catch(_){}
+      }
       try { page?.onCountriesLoaded?.(features); } catch (e) { }
     });
 
@@ -543,7 +549,12 @@ export class AppEngine {
            setEarthPureDayTex: (tex) => { this.earthPureDayTex = tex; }
       });
 
-      try { await this.moonMgr?.refreshAssets?.({ preload: true }); } catch(_){ }
+          try {
+            const { isDevtools, isPCClient } = detectEnvironment(this.sys);
+            if (!isDevtools && !isPCClient) {
+              await this.moonMgr?.refreshAssets?.({ preload: true });
+            }
+          } catch(_){ }
       
       if (success) {
           try { clearZenAudioSaved(); /* console.info('[assets] 音乐缓存已清除'); */ } catch(_){}

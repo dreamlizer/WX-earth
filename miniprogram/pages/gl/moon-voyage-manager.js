@@ -2,6 +2,7 @@
 import { MoonOrbitSequence } from './moon-orbit-sequence.js';
 import { CompanionRobotEffect } from './moon-voyage-companion.js';
 import { ZodiacSystem } from './moon-voyage-zodiac.js';
+import { detectEnvironment } from './platform-manager.js';
 
 import { 
   applyEarthNearAnchor, 
@@ -41,6 +42,7 @@ import {
   preloadAssets, 
   refreshAssets 
 } from './moon-voyage-assets.js';
+import { getSystemInfo } from './sys-info.js';
 
 import {
   ASSETS,
@@ -180,17 +182,16 @@ export class MoonVoyageManager {
     this.fader = fader;
 
     this._isDevtools = false;
+    // PC 微信客户端会忽略 texture.flipY，需要像地球那样对月球/机器人贴图做纹理矩阵翻转。
+    // 这里判定一次，传给月球与机器人贴图创建处（非 PC 平台下 fixTexture 为 no-op）。
+    this._isPCClient = false;
     try {
-      const info = wx.getSystemInfoSync?.();
-      const env = String(info?.environment || '').toLowerCase();
-      const platform = String(info?.platform || '').toLowerCase();
-      const model = String(info?.model || '').toLowerCase();
-      this._isDevtools =
-        env.includes('devtools') ||
-        platform.includes('devtools') ||
-        model.includes('devtools');
+      const info = getSystemInfo();
+      const envInfo = detectEnvironment(info);
+      this._isDevtools = !!envInfo.isDevtools;
+      this._isPCClient = !!envInfo.isPCClient;
     } catch (_) {}
-    this._moonDebug = !!this._isDevtools || !!this.page?.__moonDebug;
+    this._moonDebug = !!this.page?.__moonDebug;
     
     this._rebuildMilkyWay();
     this._rebuildStarDust();
@@ -198,14 +199,13 @@ export class MoonVoyageManager {
     this._orbitSeq = this._orbitSeq || new MoonOrbitSequence();
     try { this._orbitSeq.init(THREE, scene); } catch (_) {}
     this._companionFx = this._companionFx || new CompanionRobotEffect();
-    try { this._companionFx.setContext({ THREE, scene, camera, isDevtools: this._isDevtools }); } catch (_) {}
+    try { this._companionFx.setContext({ THREE, scene, camera, isDevtools: this._isDevtools, isPCClient: this._isPCClient }); } catch (_) {}
     this._zodiacSys = this._zodiacSys || new ZodiacSystem();
     try { 
       this._zodiacSys.setContext({ THREE, scene, isDevtools: this._isDevtools }); 
       this._zodiacSys.init();
     } catch (_) {}
     
-    console.log('[Moon] Manager initialized');
   }
 
   isActive() {

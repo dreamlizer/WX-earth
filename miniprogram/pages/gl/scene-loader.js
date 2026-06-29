@@ -82,7 +82,7 @@ export const loadTexturesSequentially = async (ctx) => {
         }
         try { refs.page()?.setData({ loading: false }); } catch(_){}
       }
-    }, { maxAttempts: 3, baseDelayMs: 800 });
+    }, { maxAttempts: 4, baseDelayMs: 800 });
 
     // 如果基础纹理加载失败，创建默认球体
     if (!dayLoaded) {
@@ -196,7 +196,6 @@ export const loadTexturesSequentially = async (ctx) => {
           if (cloudMesh) {
             cloudMesh.material.map = tex;
             cloudMesh.material.needsUpdate = true;
-            console.log('[scene] cloud texture applied');
           }
           dumpTextureInfo('cloud', tex);
         }, { maxAttempts: 2, baseDelayMs: 800 });

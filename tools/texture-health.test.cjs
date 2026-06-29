@@ -61,6 +61,47 @@ function testRepairRebindsExistingDayTextureBeforeReloading() {
   assert.strictEqual(mesh.visible, true);
 }
 
+function testInspectFlagsPlaceholderTextureAsBroken() {
+  const { inspectEarthTextureState } = loadTextureHealth();
+  // iOS 云贴图失败时退回的 1×1 占位图：带 isPlaceholder 标记
+  const placeholder = { uuid: 'placeholder', userData: { isPlaceholder: true }, image: { width: 1, height: 1 } };
+  const state = inspectEarthTextureState({
+    earthMesh: makeMesh(placeholder),
+    earthDayTex: placeholder,
+    currentTheme: 'default'
+  });
+
+  assert.strictEqual(state.ok, false, 'placeholder texture must be reported as not ok');
+}
+
+function testInspectFlagsTinyImageAsBroken() {
+  const { inspectEarthTextureState } = loadTextureHealth();
+  // 即使没有标记，≤2px 的图也应被判为兜底/无效
+  const tiny = { uuid: 'tiny', image: { width: 1, height: 1 } };
+  const state = inspectEarthTextureState({
+    earthMesh: makeMesh(tiny),
+    earthDayTex: tiny,
+    currentTheme: 'default'
+  });
+
+  assert.strictEqual(state.ok, false, 'a 1x1 texture must be reported as not ok');
+}
+
+function testRepairRequestsReloadWhenOnlyPlaceholderAvailable() {
+  const { repairEarthTexture } = loadTextureHealth();
+  const placeholder = { uuid: 'placeholder', userData: { isPlaceholder: true }, image: { width: 1, height: 1 } };
+  const mesh = makeMesh(placeholder);
+
+  const result = repairEarthTexture({
+    earthMesh: mesh,
+    earthDayTex: placeholder,
+    currentTheme: 'default'
+  });
+
+  // 没有任何可用真图可重绑 -> 必须请求重载（refreshTextures），这是 iOS 自愈的关键
+  assert.strictEqual(result.action, 'reload', 'must request reload when only a placeholder is available');
+}
+
 async function testCheckerThrottlesRefreshWhenNoTextureCanBeRebound() {
   const { createTextureHealthChecker } = loadTextureHealth();
   let refreshCalls = 0;
@@ -107,6 +148,9 @@ async function testCheckerSkipsReloadBeforeEarthIsReady() {
 
 testInspectReportsHealthyPhongEarth();
 testRepairRebindsExistingDayTextureBeforeReloading();
+testInspectFlagsPlaceholderTextureAsBroken();
+testInspectFlagsTinyImageAsBroken();
+testRepairRequestsReloadWhenOnlyPlaceholderAvailable();
 testCheckerThrottlesRefreshWhenNoTextureCanBeRebound().then(() => testCheckerSkipsReloadBeforeEarthIsReady()).then(() => {
   console.log('texture-health tests passed');
 }).catch((err) => {

@@ -267,6 +267,7 @@ Page({
 
   __resolveMoonBtnUrl() {
     try {
+      if (this.__isDevtools) return;
       const fileID = String(this.data?.cloudMoonButtonFileId || '');
       if (!fileID || !fileID.startsWith('cloud://')) return;
       const cloud = wx?.cloud;

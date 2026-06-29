@@ -460,7 +460,9 @@ export function isDevtools(){ // 是否运行在微信开发者工具环境
   try {
     const info = getSystemInfo();
     const env = String(info?.environment || '').toLowerCase();
-    return env === 'devtools';
+    const brand = String(info?.brand || '').toLowerCase();
+    const platform = String(info?.platform || '').toLowerCase();
+    return env === 'devtools' || brand === 'devtools' || platform === 'devtools';
   } catch(_) { return false; }
 }
 

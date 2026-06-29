@@ -141,7 +141,6 @@ async function resolveTextureUrl(name, preferNetwork = false) {
     try {
       const saved = readSavedPaths()[name];
       if (saved && hasFile(saved)) {
-        try { console.log('[texture] use offline saved', name, saved); } catch(_){}
         return { url: saved, fallback };
       }
     } catch(_){}
@@ -195,7 +194,6 @@ async function resolveTextureUrl(name, preferNetwork = false) {
     });
     const item = res?.fileList?.[0];
     const url = item?.tempFileURL;
-    try { console.log('[texture] tempURL', name, { status: item?.status, errMsg: item?.errMsg, url }); } catch(_){}
     if (typeof url === 'string' && url.startsWith('http')) {
       const cache = readCache();
       cache[name] = { url, exp: now() + TTL_MS };
@@ -210,7 +208,6 @@ async function resolveTextureUrl(name, preferNetwork = false) {
   try {
     const df1 = await wx.cloud.downloadFile({ fileID: FILE_ID_MAP[name] });
     const p1 = df1?.tempFilePath || '';
-    try { console.log('[texture] fallback downloadFile', name, { path: p1 }); } catch(_){ }
     if (p1) {
       const saved = await savePermanentFromTemp(p1, name, fallback);
       const cache = readCache();

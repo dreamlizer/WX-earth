@@ -1,3 +1,4 @@
+import { fixTexture } from './asset-manager.js';
 
 export class CompanionRender {
   constructor() {
@@ -5,13 +6,15 @@ export class CompanionRender {
     this.scene = null;
     this.camera = null;
     this.isDevtools = false;
+    this.isPCClient = false;
   }
 
-  setContext({ THREE, scene, camera, isDevtools }) {
+  setContext({ THREE, scene, camera, isDevtools, isPCClient }) {
     this.THREE = THREE || null;
     this.scene = scene || null;
     this.camera = camera || null;
     this.isDevtools = !!isDevtools;
+    this.isPCClient = !!isPCClient;
   }
 
   ensureRobot(robots, i) {
@@ -167,6 +170,8 @@ export class CompanionRender {
         tex.magFilter = THREE.LinearFilter;
         tex.generateMipmaps = false;
         try { tex.colorSpace = THREE.SRGBColorSpace; } catch (_) { try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
+        // PC 微信客户端忽略 flipY，会让机器人 Sprite 贴图上下颠倒；与地球/月球同款纹理矩阵翻转修正（非 PC 下为 no-op）
+        try { fixTexture(tex, this.isPCClient); } catch (_) {}
         tex.needsUpdate = true;
       } catch (_) {}
 

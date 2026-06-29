@@ -7,6 +7,14 @@ function pickExpectedEarthTexture({ currentTheme, earthDayTex, earthPureDayTex, 
 function textureLooksUsable(tex) {
   if (!tex) return false;
   if (tex.image === null) return false;
+  // 兜底占位图（iOS 云贴图加载失败时退回的 1×1 PNG）不算可用：
+  // 必须被识别为“坏”，才能触发会话内自动重载，免去用户手动重启。
+  if (tex.userData && tex.userData.isPlaceholder) return false;
+  const img = tex.image;
+  if (img && typeof img.width === 'number' && typeof img.height === 'number'
+      && img.width > 0 && img.height > 0 && (img.width <= 2 || img.height <= 2)) {
+    return false;
+  }
   return true;
 }
 

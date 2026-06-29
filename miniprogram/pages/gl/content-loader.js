@@ -1,9 +1,11 @@
+// —— 诗句预设加载器 ——
 import { isDevtools } from './config.js';
 
-// —— 诗句预设加载器 ——
 export const loadPoetryPresets = async (APP_CFG, LOG) => {
-  const __isDev = isDevtools();
   const __cloudDisabled = (APP_CFG?.cloud?.enabled === false);
+  const __isDevtools = (() => {
+    try { return isDevtools(); } catch(_) { return false; }
+  })();
   const __canCallFn = !!(!__cloudDisabled && wx && wx.cloud && typeof wx.cloud.callFunction === 'function');
   const __canDb = !!(!__cloudDisabled && wx && wx.cloud && typeof wx.cloud.database === 'function');
 
@@ -30,46 +32,45 @@ export const loadPoetryPresets = async (APP_CFG, LOG) => {
     try {
       const { result } = await wx.cloud.callFunction({ name: fnName, data: { type: 'list' } });
       const arr = result && Array.isArray(result.data) ? result.data : [];
-      return normalize(arr);
+      return { ...normalize(arr), failed: false };
     } catch (e) {
-      try { console.warn('[poetry] 云函数调用失败：', fnName, e); } catch(_){}
-      return { map: {}, labels: {} };
+      if (!__isDevtools || APP_CFG?.diagnostics?.enabled) {
+        try { console.warn('[poetry] 云函数调用失败：', fnName, e); } catch(_){}
+      }
+      return { map: {}, labels: {}, failed: true };
     }
   };
 
   let source = '';
+  let skipDbFallback = false;
   let res = { map: {}, labels: {} };
 
   // 1) 主云函数
-  if (__canCallFn && !__isDev) {
+  if (__canCallFn) {
     res = await safeCallFn('poetrySets');
     if (Object.keys(res.map).length) { source = 'cloud-fn:poetrySets'; }
   }
 
-  // 2) 备用云函数名
-  if (__canCallFn && !__isDev && !Object.keys(res.map).length) {
-    const r2 = await safeCallFn('poetrySetsV2');
-    if (Object.keys(r2.map).length) { res = r2; source = 'cloud-fn:poetrySetsV2'; }
-  }
-
-  // 3) 直接读取数据库（无需云函数权限）
-  if (!Object.keys(res.map).length && __canDb) {
+  // 2) 直接读取数据库（无需云函数权限）
+  if (!Object.keys(res.map).length && __canDb && !skipDbFallback) {
     try {
       const db = wx.cloud.database();
       const r = await db.collection('poetry_sets').limit(100).get();
       const arr = Array.isArray(r?.data) ? r.data : [];
       res = normalize(arr);
-      if (Object.keys(res.map).length) { source = 'db:poetry_sets'; console.info('[poetry] 直接从数据库读取成功'); }
+      if (Object.keys(res.map).length) { source = 'db:poetry_sets'; }
     } catch(dbErr){ try { console.warn('[poetry] 数据库直接读取失败：', dbErr); } catch(_){} }
   }
 
-  // 4) 本地兜底 JSON
+  // 3) 本地兜底 JSON
   if (!Object.keys(res.map).length) {
     try {
       const local = require('../../assets/data/poetry_sets.json');
       res = normalize(local);
       source = 'local:poetry_sets.json';
-      console.warn('[poetry] 使用本地回退 JSON');
+      if (!__isDevtools || APP_CFG?.diagnostics?.enabled) {
+        console.warn('[poetry] 使用本地回退 JSON');
+      }
     } catch(_){ }
   }
 
@@ -106,7 +107,6 @@ export const loadSpecialTexts = async (APP_CFG, LOG) => {
     const arr = Array.isArray(r?.data) ? r.data : [];
     const texts = arr.map(d => String(d?.slogan || d?.string || d?.text || '')).filter(s => s.length > 0);
     const items = texts.length ? texts : fallback;
-    LOG.info('[special] 加载', items.length, '条');
     return items;
   } catch(e){ return fallback; }
 };

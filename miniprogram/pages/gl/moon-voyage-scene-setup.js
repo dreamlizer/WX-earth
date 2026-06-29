@@ -1,6 +1,7 @@
 
 import { APP_CFG } from './config.js';
 import { createMilkyWay, createStarDustLayer } from './moon-voyage-visuals.js';
+import { fixTexture } from './asset-manager.js';
 
 export const rebuildMilkyWay = (THREE, scene, mgrState) => {
   if (!THREE || !scene) return;
@@ -19,7 +20,7 @@ export const rebuildMilkyWay = (THREE, scene, mgrState) => {
     mgrState.milkyWayMesh.visible = false;
   }
 
-  if (mgrState._isDevtools) {
+  if (mgrState._moonDebug) {
     try {
       const cfg = APP_CFG?.moonVoyage?.starCorridor || {};
       const u = mgrState.milkyWayMesh?.material?.uniforms || {};
@@ -94,6 +95,8 @@ export const createMoon = (THREE, scene, mgrState) => {
   );
   
   map.encoding = THREE.sRGBEncoding;
+  // PC 微信客户端忽略 flipY，会让月球贴图上下颠倒；与地球同款纹理矩阵翻转修正（非 PC 下为 no-op）
+  try { fixTexture(map, !!mgrState._isPCClient); } catch (_) {}
 
   const material = new THREE.MeshStandardMaterial({
     map: map,
@@ -112,6 +115,5 @@ export const createMoon = (THREE, scene, mgrState) => {
   
   if (scene) {
     scene.add(mgrState.moonMesh);
-    console.log('[Moon] Mesh created and added to SCENE (Dual Object Mode)');
   }
 };
