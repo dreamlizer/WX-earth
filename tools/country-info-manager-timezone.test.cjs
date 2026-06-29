@@ -41,6 +41,7 @@ function loadCountryInfoManager(getCountryOverride) {
     clearTimeout,
     buildCountryTitleSuffix: (lang, offset) => (lang === 'zh' ? `（${offset}）` : ` (${offset})`),
     getCountryOverride,
+    getFlagSprite: (code) => (code ? { code } : null),
     countryMeta: {
       CHN: {
         NAME_EN: 'China',
@@ -50,6 +51,15 @@ function loadCountryInfoManager(getCountryOverride) {
         GDP_USD_TRILLION: 18.74,
         CAPITAL_EN: 'Beijing',
         CAPITAL_ZH: '北京',
+      },
+      FRA: {
+        NAME_EN: 'France',
+        NAME_ZH: '法国',
+        AREA_KM2: 643801,
+        POPULATION: 68000000,
+        GDP_USD_TRILLION: 3.13,
+        CAPITAL_EN: 'Paris',
+        CAPITAL_ZH: '巴黎',
       },
     },
     setForcedLabel: () => {},
@@ -107,6 +117,47 @@ async function testChinaPanelUsesCountryTimezoneOverride() {
   assert.strictEqual(page.data.countryInfo.titleTzSuffix, '（GMT+8）');
 }
 
+async function testMissingNaturalEarthIsoFallsBackToKnownCountryName() {
+  const { getCountryOverride } = loadTzOverrides();
+  const { CountryInfoManager } = loadCountryInfoManager(getCountryOverride);
+  const page = {
+    selectedTimezone: 'Europe/Paris',
+    __lastForcedId: null,
+    __keepCityForcedUntil: 0,
+    data: {
+      lang: 'zh',
+      zenMode: false,
+      countryPanelOpen: false,
+      countryPanelFading: false,
+      countryInfo: null,
+    },
+    setData(patch) {
+      this.data = { ...this.data, ...patch };
+    },
+    cancelPanelCloseTimer: () => {},
+    onCloseCountryPanel: () => {},
+    tzlookup: () => 'Europe/Paris',
+    computeGmtOffsetStr: () => 'GMT+1',
+    formatTime: (_date, tzName) => tzName || '',
+  };
+
+  const manager = new CountryInfoManager(page);
+  await manager.onCountryPicked({
+    props: {
+      ISO_A3: '-99',
+      ISO_A2: '-99',
+      NAME: 'France',
+      NAME_EN: 'France',
+      ADMIN: 'France',
+    },
+    bbox: [-5.14, 41.33, 9.56, 51.09],
+  });
+
+  assert.strictEqual(page.data.countryInfo.code, 'FRA');
+  assert.strictEqual(page.data.countryInfo.flag.code, 'FRA');
+  assert.strictEqual(page.data.countryInfo.name, '法国');
+}
+
 function testCountryTimezoneCoverage() {
   const { getCountryOverride } = loadTzOverrides();
   const countryData = require(path.join(__dirname, '..', 'miniprogram', 'pages', 'gl', 'country_data.json'));
@@ -140,6 +191,7 @@ function testCountryTimezoneCoverage() {
 }
 
 testChinaPanelUsesCountryTimezoneOverride()
+  .then(() => testMissingNaturalEarthIsoFallsBackToKnownCountryName())
   .then(() => testCountryTimezoneCoverage())
   .then(() => console.log('country-info-manager timezone tests passed'))
   .catch((err) => {

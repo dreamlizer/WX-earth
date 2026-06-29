@@ -551,10 +551,29 @@ canvas {
   border: 2px solid rgba(120,170,220,0.55);
   border-radius: 14px;
   padding: 5px 14px; /* 上下边距减少约60%：12px -> 5px */
+  padding-right: 54px;
   color: #e8f6ff;
   font-size: 15px; /* 整体字体略小 +2px */
   box-sizing: border-box;
   z-index: 990;
+}
+.country-flag {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 32px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid rgba(210,232,255,0.38);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.24);
+}
+.country-flag-sprite {
+  position: absolute;
+  display: block;
+  max-width: none;
+  max-height: none;
 }
 .country-title {
   font-weight: 700;

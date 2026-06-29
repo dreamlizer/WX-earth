@@ -168,6 +168,14 @@
 <!-- 国家信息面板：点击国家后显示（保持画布可旋转；遮罩负责关闭） -->
 <!-- 移除 style="top: ..."，改为完全由 CSS 控制位置 -->
 <view class="country-panel {{lang==='en'?'lang-en':''}} {{countryPanelFading?'fading-out':''}}" wx:if="{{countryPanelOpen}}" bindtouchstart="onPanelTouchStart" bindtouchmove="onPanelTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+  <view wx:if="{{countryInfo.flag}}" class="country-flag">
+    <image
+      class="country-flag-sprite"
+      src="{{countryInfo.flag.src}}"
+      mode="scaleToFill"
+      style="{{countryInfo.flag.style}}"
+    />
+  </view>
   <view class="country-title">{{countryInfo.name || '未知'}}{{countryInfo.titleTzSuffix || ''}}</view>
   <view class="country-row"><text class="k">{{labels.capital}}</text><text class="v">{{countryInfo.capital || '--'}}</text></view>
   <view class="country-row"><text class="k">{{labels.area}}</text><text class="v">{{countryInfo.areaKm2 || '--'}} km²</text></view>

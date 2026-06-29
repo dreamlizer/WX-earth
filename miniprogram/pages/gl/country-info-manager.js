@@ -2,7 +2,30 @@
 import { setForcedLabel, setForcedCityCountries, clearForcedCityCountries } from './labels.js';
 import { buildCountryTitleSuffix } from './title-utils.js';
 import { getCountryOverride } from './tz-overrides.js';
+import { getFlagSprite } from './flag-sprite.js';
 import countryMeta from './country_data.js';
+
+const COUNTRY_CODE_BY_NATURAL_EARTH_NAME = Object.freeze({
+  FRANCE: 'FRA',
+  KOSOVO: 'XKX',
+  NORWAY: 'NOR',
+});
+
+const normalizeCountryNameKey = (value) => String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+
+const normalizeCountryCode = (props = {}) => {
+  const candidates = [props.ISO_A3, props.ISO_A2, props.ISO, props.CC, props.ISO2];
+  for (const value of candidates) {
+    const code = String(value || '').trim().toUpperCase();
+    if (code && code !== '-99') return code;
+  }
+  const nameFields = [props.NAME, props.NAME_EN, props.ADMIN, props.NAME_LONG];
+  for (const value of nameFields) {
+    const code = COUNTRY_CODE_BY_NATURAL_EARTH_NAME[normalizeCountryNameKey(value)];
+    if (code) return code;
+  }
+  return null;
+};
 
 const formatThousandsInt = (n) => {
   try {
@@ -50,8 +73,7 @@ export class CountryInfoManager {
             try { page.__pendingPanelsClose = false; } catch(_){}
             
             const p = hit?.props || {};
-      const codeRaw = p.ISO_A3 || p.ISO_A2 || p.ISO || p.CC || p.ISO2 || null;
-      const code = (codeRaw ? String(codeRaw).toUpperCase() : null);
+      const code = normalizeCountryCode(p);
 
       // —— 特殊处理：台湾点击等同于中国；同时关闭面板
       if (code === 'TWN' || code === 'TW') {
@@ -73,7 +95,11 @@ export class CountryInfoManager {
         try { page.__lastForcedId = code || null; } catch(_){}
       }
       // 强制显示该国所有城市（兼容 A3/A2）
-      try { setForcedCityCountries([code, p.ISO_A3, p.ISO_A2].filter(Boolean)); } catch(_){}
+      try {
+        setForcedCityCountries([code, p.ISO_A3, p.ISO_A2]
+          .map((value) => String(value || '').trim().toUpperCase())
+          .filter((value) => value && value !== '-99'));
+      } catch(_){}
 
       // 禅定模式：允许点击国家，但不弹面板、不显示时区胶囊
       if (page.data.zenMode) {
@@ -116,6 +142,7 @@ export class CountryInfoManager {
       const nextInfo = { 
         code: code || '', 
         name: displayName, 
+        flag: getFlagSprite(code),
         capital, 
         areaKm2, 
         population, 
