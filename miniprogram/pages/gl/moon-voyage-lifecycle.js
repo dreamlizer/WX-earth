@@ -313,14 +313,18 @@ const startVoyage = (mgr) => {
   mgr.fader.fadeOutBlack(2000, () => {
     // End of fade
   });
-  
+
   startTimeline(mgr);
-    
+
+  // 进入流程已提交（active 已置位、原始状态已备份），解除重入锁
+  mgr._entering = false;
+
   } catch (err) {
     console.error('[Moon] _startVoyage critical error:', err);
     try { restoreState(mgr); } catch (_) {}
     mgr.active = false;
     mgr.phase = 'IDLE';
+    mgr._entering = false;
   }
 };
 
@@ -374,8 +378,15 @@ export const enterVoyage = (mgr) => {
     return;
   }
 
+  // 重入保护：进入登月有一个异步“登船准备中”窗口（资源未缓存时可能数秒），
+  // 期间 mgr.active 仍为 false；退出动画也有数秒黑幕收尾。若不锁住，这两个窗口里
+  // 再次触发会导致 startVoyage / captureStartState 跑两次——把“登月中的位置”当成
+  // “原始位置”备份，退出后普通模式被还原到错误状态。这里直接吞掉这些误触发。
+  if (mgr._entering || mgr._exiting) return;
+  mgr._entering = true;
+
   try { prepareUiForLaunch(mgr.page); } catch (_) {}
-  
+
   // Ensure assets are loaded
   if (!mgr.loaded) {
     wx.showLoading({ title: '登船准备中...' });
@@ -386,13 +397,14 @@ export const enterVoyage = (mgr) => {
       startVoyage(mgr);
     }).catch((err) => {
       wx.hideLoading();
+      mgr._entering = false;
       console.error('[Moon] Launch failed:', err);
       try { restoreState(mgr); } catch (_) {}
       wx.showToast({ title: '资源加载失败', icon: 'none' });
     });
     return;
   }
-  
+
   startVoyage(mgr);
 };
 

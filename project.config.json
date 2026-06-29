@@ -4,7 +4,7 @@
   "appid": "wx6f41ba1a7d7bc51e",
   "projectname": "wx-earth-clean",
   "compileType": "miniprogram",
-  "libVersion": "3.10.2",
+  "libVersion": "3.12.0",
   "setting": {
     "urlCheck": true,
     "es6": true,
@@ -21,34 +21,69 @@
         "packageJsonPath": "miniprogram/package.json",
         "miniprogramNpmDistDir": "miniprogram/miniprogram_npm"
       }
-    ]
+    ],
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "enhance": false,
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
   },
   "packOptions": {
     "ignore": [
       {
-        "type": "glob",
-        "value": "miniprogram/node_modules/**"
+        "value": "miniprogram/node_modules/**",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "**/*.map"
+        "value": "**/*.map",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "**/*.md"
+        "value": "**/*.md",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "miniprogram/assets/data/*.geojson"
+        "value": "miniprogram/assets/data/*.geojson",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "miniprogram/libs/troika-three-text.min.js"
+        "value": "miniprogram/libs/troika-three-text.min.js.txt",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "WinReference/**"
+        "value": "miniprogram/miniprogram_npm/miniprogram_npm/**",
+        "type": "glob"
+      },
+      {
+        "value": "miniprogram/pages/gl/country_data.json",
+        "type": "glob"
+      },
+      {
+        "value": "miniprogram/assets/data/country_data.json",
+        "type": "glob"
+      },
+      {
+        "value": "miniprogram/assets/data/County_meta.json",
+        "type": "glob"
+      },
+      {
+        "value": "WinReference/**",
+        "type": "glob"
       }
-    ]
-  }
+    ],
+    "include": []
+  },
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }

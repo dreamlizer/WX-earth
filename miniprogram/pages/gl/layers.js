@@ -83,25 +83,50 @@ function decimateRing(ring, step){
 
 export function makeBorder(THREE, globeGroup, COUNTRY_FEATURES) {
   // 生成国家边界线层
+  // 性能优化：把所有国家/环的边界线合并进单一 BufferGeometry，用一个 LineSegments
+  // 渲染，把原先“每个 ring 一个 LineLoop”造成的数百~上千个 draw call 压成 1 个。
+  // 视觉完全等价：LineLoop 会自动闭合首尾，这里用线段对显式补上闭合段。
   const BORDER_GROUP = new THREE.Group();
   const lineMat = makeLineMat(THREE, 0xffffff, 20);
+  const positions = [];
+
+  const addRing = (ring) => {
+    const r = decimateRing(ring, BORDER_DECIMATE);
+    if (!Array.isArray(r) || r.length < 2) return;
+    // 经纬 -> 3D（含 warp 校正与统一微抬升），直接展开成数字，避免逐点 new Vector3
+    const verts = new Array(r.length);
+    for (let i = 0; i < r.length; i++) {
+      const [wLon, wLat] = applyWarp(r[i][0], r[i][1]);
+      const v = convertLatLonToVec3(wLon, wLat, RADIUS + 0.0012);
+      verts[i] = v;
+    }
+    // 相邻点成段
+    for (let i = 0; i < verts.length - 1; i++) {
+      const a = verts[i], b = verts[i + 1];
+      positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    }
+    // 若未闭合（首尾不同），补一条闭合段，等价于 LineLoop 的自动闭合
+    const first = verts[0], last = verts[verts.length - 1];
+    if (first.x !== last.x || first.y !== last.y || first.z !== last.z) {
+      positions.push(last.x, last.y, last.z, first.x, first.y, first.z);
+    }
+  };
+
   COUNTRY_FEATURES.forEach(f => {
-    const addRing = (ring) => {
-      const r = decimateRing(ring, BORDER_DECIMATE);
-      const pts = r.map(([lon, lat]) => {
-        // 统一微抬升高度，避免不同数据集误差导致的双线错位感
-        // 新增：在经纬→3D 前应用 warp 校正
-        const [wLon, wLat] = applyWarp(lon, lat);
-        const v = convertLatLonToVec3(wLon, wLat, RADIUS + 0.0012);
-        return new THREE.Vector3(v.x, v.y, v.z);
-      });
-      const g = new THREE.BufferGeometry().setFromPoints(pts);
-      const line = new THREE.LineLoop(g, lineMat); setRO(line);
-      BORDER_GROUP.add(line);
-    };
     if (f.type === 'Polygon') f.coords.forEach(addRing);
     else if (f.type === 'MultiPolygon') f.coords.forEach(poly => poly.forEach(addRing));
   });
+
+  if (positions.length) {
+    const g = new THREE.BufferGeometry();
+    const PosAttr = THREE.Float32BufferAttribute || THREE.BufferAttribute;
+    const attr = new PosAttr(new Float32Array(positions), 3);
+    if (typeof g.setAttribute === 'function') g.setAttribute('position', attr);
+    else if (typeof g.addAttribute === 'function') g.addAttribute('position', attr);
+    else { g.attributes = g.attributes || {}; g.attributes.position = attr; }
+    const lines = new THREE.LineSegments(g, lineMat); setRO(lines);
+    BORDER_GROUP.add(lines);
+  }
   globeGroup.add(BORDER_GROUP);
 
   // 调试：在锚点处绘制位移箭头（便于快速肉眼标定）

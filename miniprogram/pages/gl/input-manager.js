@@ -93,6 +93,7 @@ export function createInputManager(ctx){
       return
     }
     try { highlight && highlight.setHighlight && highlight.setHighlight(res.highlightTargets) } catch(_){}
+    try { tzMgr && tzMgr.updateAfterSelection && tzMgr.updateAfterSelection(hit, lat, lon) } catch(_){ }
     try { page && page.onCountryPicked && page.onCountryPicked(hit) } catch(_){}
     if (debugLog) {
       try {
@@ -100,7 +101,6 @@ export function createInputManager(ctx){
         console.log('[select] country:', name, 'at', Number(lon).toFixed(4), Number(lat).toFixed(4))
       } catch(_){}
     }
-    try { tzMgr && tzMgr.updateAfterSelection && tzMgr.updateAfterSelection(hit, lat, lon) } catch(_){ }
   }
 
   return { onTouchStart, onTouchMove, onTouchEnd }

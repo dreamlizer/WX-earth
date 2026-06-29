@@ -144,10 +144,11 @@ export function updateLabels() {
   
   camera.getWorldPosition(__camPos);
   globeGroup.getWorldPosition(__tmp.globeCenter);
-  
-  // 更新矩阵
-  camera.updateMatrixWorld(true);
-  scene?.updateMatrixWorld?.(true);
+
+  // 注意：不在此处调用 camera/scene.updateMatrixWorld(true)。
+  // updateLabels 在每帧渲染（renderer.render）之后才执行（见 scene-updater 的步骤顺序），
+  // 渲染已把整棵场景树的世界矩阵和 camera.matrixWorldInverse 刷新过；这里再强制全量刷新
+  // 是重复劳动。本函数后续读取的 mesh.getWorldPosition / camera.matrixWorldInverse 均已是当前帧最新值。
 
   const camDistLOD = Math.max(0.1, camera.position.length());
   if (INIT_CAM_DIST === null) { INIT_CAM_DIST = camDistLOD; }

@@ -1,6 +1,7 @@
 // 国家信息管理器：负责点选国家后的数据整合与面板展示，以及标题时区后缀更新
 import { setForcedLabel, setForcedCityCountries, clearForcedCityCountries } from './labels.js';
 import { buildCountryTitleSuffix } from './title-utils.js';
+import { getCountryOverride } from './tz-overrides.js';
 import countryMeta from './country_data.js';
 
 const formatThousandsInt = (n) => {
@@ -93,7 +94,11 @@ export class CountryInfoManager {
       const gdpVal = (typeof meta?.GDP_USD_TRILLION === 'number') ? meta.GDP_USD_TRILLION : null;
       const gdp = (gdpVal !== null) ? formatThousandsFixed(gdpVal, 2) : '--';
 
-      let tzName = page.selectedTimezone || '';
+      let tzName = '';
+      try {
+        tzName = getCountryOverride({ ...(hit || {}), props: { ...(hit?.props || {}), ...p } }) || '';
+      } catch(_){ tzName = ''; }
+      if (!tzName) tzName = page.selectedTimezone || '';
       try {
         if (!tzName) {
           const bb = hit?.bbox || null;
