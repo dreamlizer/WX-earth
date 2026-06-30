@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const flagModulePath = path.join(root, 'miniprogram/pages/gl/flag-sprite.js');
-const spritePath = path.join(root, 'miniprogram/assets/flags/flags-sprite.webp');
+const spritePath = path.join(root, 'miniprogram/assets/flags/flags-sprite.png');
 const countryInfoManagerPath = path.join(root, 'miniprogram/pages/gl/country-info-manager.js');
 
 function loadFlagModule() {
@@ -50,11 +50,11 @@ const ALLOWED_NO_FLAG = new Set([
 ]);
 
 assert.ok(fs.existsSync(flagModulePath), 'flag-sprite.js should exist');
-assert.ok(fs.existsSync(spritePath), 'flags-sprite.webp should exist');
+assert.ok(fs.existsSync(spritePath), 'flags-sprite.png should exist');
 
 const mod = loadFlagModule();
 
-assert.equal(mod.FLAG_SPRITE, '/assets/flags/flags-sprite.webp');
+assert.equal(mod.FLAG_SPRITE, '/assets/flags/flags-sprite.png');
 assert.equal(mod.FLAG_CELL_WIDTH, 64);
 assert.equal(mod.FLAG_CELL_HEIGHT, 48);
 assert.equal(mod.FLAG_SPRITE_COLUMNS, 16);

@@ -1,5 +1,5 @@
 // Generated from flag-icons 7.5.0 (MIT). Keep cells sorted by ISO_A3.
-export const FLAG_SPRITE = '/assets/flags/flags-sprite.webp';
+export const FLAG_SPRITE = '/assets/flags/flags-sprite.png';
 export const FLAG_SPRITE_COLUMNS = 16;
 export const FLAG_CELL_WIDTH = 64;
 export const FLAG_CELL_HEIGHT = 48;

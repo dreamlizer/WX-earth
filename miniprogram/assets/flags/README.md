@@ -1,12 +1,13 @@
 # Flag sprite assets
 
-`flags-sprite.webp` is generated from `flag-icons` 7.5.0 4x3 SVG flags.
+`flags-sprite.png` is generated from `flag-icons` 7.5.0 4x3 SVG flags.
 
 - Source package: https://www.npmjs.com/package/flag-icons
 - License: MIT
 - Runtime mapping: `miniprogram/pages/gl/flag-sprite.js`
 
 The sprite is bundled with the mini-program package and does not require cloud storage upload.
+It is kept as PNG for reliable rendering of local package assets on real WeChat clients.
 
 ## MIT license text
 
