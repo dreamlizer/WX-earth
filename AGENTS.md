@@ -39,6 +39,7 @@ for f in tools/*.test.cjs; do node "$f"; done
 ## 易踩边界
 
 - 国家点选依赖 `loadCountries() -> buildIndex(features)` 先完成；边界线或碰撞体异常时，也要保留 `earthMesh + searchIndex` 的点击兜底。
+- 国家信息面板国旗使用 `miniprogram/assets/flags/flags-sprite.png` 本地 PNG 图集和 `flag-sprite.js` 映射；不要改成本地 WebP，也不要上传到云存储，真机端可能不显示包内 WebP。
 - 微信开发者工具和 PC 客户端默认不要预取云贴图或月球资源，避免假超时；诗句云函数和数据库读取仍可在 DevTools 使用，不要一刀切禁云。
 - 禅定预设名来自 `poetry_sets` 文档 `_id`，歌词来自 `lines`；`poetrySetsV2` 是停用占位，运行链路不要再调用。
 - 登月进入/退出有异步窗口，保留 `_entering` / `_exiting` 这类重入保护，避免普通地球状态被错误备份。

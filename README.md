@@ -13,6 +13,7 @@
 
 - `miniprogram/pages/gl/`：3D 地球页面、WebGL 渲染、交互、禅定模式、登月模式。
 - `miniprogram/assets/data/`：国家、城市、诗句等本地兜底数据。
+- `miniprogram/assets/flags/`：国家信息面板右上角国旗图集，随小程序代码包发布。
 - `cloudfunctions/`：可部署的云函数，主要用于诗句、城市、国家信息等云端数据。
 - `tools/`：Node.js 小测试和辅助脚本。
 
@@ -45,7 +46,7 @@ for f in tools/*.test.cjs; do node "$f"; done
 普通模式：
 - 顶部工具栏：语言、当前时间、设置、搜索、禅定入口。
 - 搜索面板：支持国家和城市搜索，选中后飞向对应位置并打开国家信息。
-- 国家面板：展示首都、面积、人口、GDP，并保持画布可继续旋转。
+- 国家面板：展示国旗、首都、面积、人口、GDP，并保持画布可继续旋转。
 
 禅定模式：
 - 隐藏普通工具栏，启动诗句、音乐、自动缓慢旋转和沉浸式视觉。
@@ -67,3 +68,7 @@ for f in tools/*.test.cjs; do node "$f"; done
 - `quickstartFunctions`：云开发模板残留函数，不是核心产品路径。
 
 如果云端数据或贴图不可用，先确认微信开发者工具云环境、云函数部署状态和本地兜底资源，再改业务逻辑。
+
+## 本地图集资源
+
+国家面板的国旗使用 `miniprogram/assets/flags/flags-sprite.png` 和 `miniprogram/pages/gl/flag-sprite.js` 的映射表。图集是本地 PNG 资源，随小程序包上传，不需要云存储；不要改成本地 WebP，真机客户端对小程序包内 WebP 渲染不稳定。
