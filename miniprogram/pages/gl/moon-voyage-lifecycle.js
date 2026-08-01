@@ -273,9 +273,11 @@ const bindMoonDebugHooks = (mgr) => {
 const startTimeline = (mgr) => {
   if (mgr.timer) clearInterval(mgr.timer);
   const TICK_RATE = 1000 / 30; 
+  const lifecycleToken = mgr._lifecycleToken;
   
   mgr.timer = setInterval(() => {
-    if (!mgr.active) {
+    if ((typeof mgr._isLifecycleCurrent === 'function' &&
+         !mgr._isLifecycleCurrent(lifecycleToken)) || !mgr.active) {
       clearInterval(mgr.timer);
       mgr.timer = null;
       return;
@@ -292,7 +294,9 @@ const startTimeline = (mgr) => {
   }, TICK_RATE);
 };
 
-const startVoyage = (mgr) => {
+const startVoyage = (mgr, lifecycleToken = mgr._lifecycleToken) => {
+  if (typeof mgr._isLifecycleCurrent === 'function' &&
+      !mgr._isLifecycleCurrent(lifecycleToken)) return;
   try {
     console.log('[Moon] Starting voyage sequence');
     try { mgr.page?.showMoonToast?.('登月启动'); } catch(_) { wx.showToast({ title: '登月启动', icon: 'success' }); }
@@ -332,12 +336,15 @@ const playExitZoomEffect = (mgr, durationMs) => {
   if (!mgr.camera || durationMs <= 0) return;
   
   const token = mgr._exitFadeToken;
+  const lifecycleToken = mgr._lifecycleToken;
   const start = Date.now();
   // 速度：每秒后退多少单位（根据场景尺度调整）
   const speedPerSec = 1.8; 
   
   const tick = () => {
     // 1. 安全检查：如果退出流程已变或已结束，停止
+    if (typeof mgr._isLifecycleCurrent === 'function' &&
+        !mgr._isLifecycleCurrent(lifecycleToken)) return;
     if (mgr._exitFadeToken !== token) return;
     if (!mgr._exiting) return;
     
@@ -365,13 +372,14 @@ const playExitZoomEffect = (mgr, durationMs) => {
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(tick);
     } else {
-      setTimeout(tick, 16);
+      mgr._schedule?.(tick, 16, lifecycleToken);
     }
   };
   tick();
 };
 
 export const enterVoyage = (mgr) => {
+  if (mgr._disposed) return;
   // Toggle: If active, exit immediately
   if (mgr.active) {
     exitVoyage(mgr);
@@ -384,6 +392,7 @@ export const enterVoyage = (mgr) => {
   // “原始位置”备份，退出后普通模式被还原到错误状态。这里直接吞掉这些误触发。
   if (mgr._entering || mgr._exiting) return;
   mgr._entering = true;
+  const lifecycleToken = mgr._lifecycleToken;
 
   try { prepareUiForLaunch(mgr.page); } catch (_) {}
 
@@ -393,9 +402,13 @@ export const enterVoyage = (mgr) => {
     const pAssets = preloadAssets(mgr, ASSETS);
     const pZodiac = mgr._zodiacSys ? mgr._zodiacSys.preload() : Promise.resolve();
     Promise.all([pAssets, pZodiac]).then(() => {
+      if (typeof mgr._isLifecycleCurrent === 'function' &&
+          !mgr._isLifecycleCurrent(lifecycleToken)) return;
       wx.hideLoading();
-      startVoyage(mgr);
+      startVoyage(mgr, lifecycleToken);
     }).catch((err) => {
+      if (typeof mgr._isLifecycleCurrent === 'function' &&
+          !mgr._isLifecycleCurrent(lifecycleToken)) return;
       wx.hideLoading();
       mgr._entering = false;
       console.error('[Moon] Launch failed:', err);
@@ -405,10 +418,11 @@ export const enterVoyage = (mgr) => {
     return;
   }
 
-  startVoyage(mgr);
+  startVoyage(mgr, lifecycleToken);
 };
 
 export const exitVoyage = (mgr) => {
+  if (mgr._disposed) return;
   const shouldRestore =
     !!mgr.active ||
     !!mgr.timer ||
@@ -472,8 +486,9 @@ export const exitVoyage = (mgr) => {
       });
       
       // 2. 强制下一帧执行 opacity=1，确保 transition 生效
-      setTimeout(() => {
+      mgr._schedule?.(() => {
         try {
+           if (token !== mgr._exitFadeToken) return;
            console.warn('[Moon] Setting Opacity to 1');
            mgr.page.setData({ globalBlackMaskOpacity: 1 }, () => {
               console.log('[Moon] setData callback: Opacity set to 1');
@@ -497,7 +512,7 @@ export const exitVoyage = (mgr) => {
   // ------------------------------------------------------------
   // STEP 2: 黑屏完全覆盖后，重置场景 (Hold 期间)
   // ------------------------------------------------------------
-  setTimeout(() => {
+  mgr._schedule?.(() => {
     // 再次检查是否被中断
     if (token !== mgr._exitFadeToken) return;
     
@@ -508,7 +523,7 @@ export const exitVoyage = (mgr) => {
     try { mgr.page?.__getZenModeMgr?.()?.exit?.(); } catch (_) {}
 
     // B. 等待 Hold 时间结束，然后淡出
-    setTimeout(() => {
+    mgr._schedule?.(() => {
       if (token !== mgr._exitFadeToken) return;
       
       console.warn('[Moon] Hold complete. Starting Mask FadeOut...');
@@ -532,7 +547,8 @@ export const exitVoyage = (mgr) => {
       }
       
       // 等待淡出彻底完成后，移除 DOM，防止遮挡
-      setTimeout(() => {
+      mgr._schedule?.(() => {
+        if (token !== mgr._exitFadeToken) return;
         if (mgr.page && mgr.page.setData) {
           mgr.page.setData({ globalBlackMask: false });
         }

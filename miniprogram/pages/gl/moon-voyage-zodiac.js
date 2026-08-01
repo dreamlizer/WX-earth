@@ -245,6 +245,45 @@ export class ZodiacSystem {
     }
   }
 
+  dispose() {
+    const group = this.group;
+    this.group = null;
+    this.active = false;
+    if (!group) return;
+
+    try { group.parent?.remove?.(group); } catch (_) {
+      try { this.scene?.remove?.(group); } catch (_) {}
+    }
+
+    const geometries = new Set();
+    const materials = new Set();
+    const textures = new Set();
+    try {
+      group.traverse((node) => {
+        const geometry = node?.geometry;
+        if (geometry && !geometries.has(geometry)) {
+          geometries.add(geometry);
+          try { geometry.dispose?.(); } catch (_) {}
+        }
+        const nodeMaterials = Array.isArray(node?.material) ? node.material : [node?.material];
+        for (const material of nodeMaterials) {
+          if (!material || materials.has(material)) continue;
+          materials.add(material);
+          for (const value of Object.values(material)) {
+            if (!value?.isTexture || textures.has(value)) continue;
+            textures.add(value);
+            try { value.dispose?.(); } catch (_) {}
+          }
+          try { material.dispose?.(); } catch (_) {}
+        }
+      });
+    } catch (_) {}
+    if (this._texture && !textures.has(this._texture)) {
+      try { this._texture.dispose?.(); } catch (_) {}
+    }
+    this._texture = null;
+  }
+
   tick(dt, moonMesh, camera) {
     if (!this.active || !this.group || !moonMesh) return;
     

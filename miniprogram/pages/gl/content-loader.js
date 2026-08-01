@@ -1,6 +1,10 @@
 // —— 诗句预设加载器 ——
 import { isDevtools } from './config.js';
 
+const POETRY_CACHE_KEY = 'gl.poetry.presets.v1';
+const POETRY_CACHE_SCHEMA = 1;
+const POETRY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
 export const loadPoetryPresets = async (APP_CFG, LOG) => {
   const __cloudDisabled = (APP_CFG?.cloud?.enabled === false);
   const __isDevtools = (() => {
@@ -41,6 +45,38 @@ export const loadPoetryPresets = async (APP_CFG, LOG) => {
     }
   };
 
+  const readCache = () => {
+    try {
+      if (typeof wx?.getStorageSync !== 'function') return null;
+      const cached = wx.getStorageSync(POETRY_CACHE_KEY);
+      const ageMs = Date.now() - Number(cached?.savedAt || 0);
+      if (cached?.schema !== POETRY_CACHE_SCHEMA || ageMs < 0 || ageMs >= POETRY_CACHE_TTL_MS) return null;
+      if (!cached?.map || typeof cached.map !== 'object' || !Object.keys(cached.map).length) return null;
+      return {
+        map: cached.map,
+        labels: cached?.labels && typeof cached.labels === 'object' ? cached.labels : {},
+        source: 'cache:poetry_sets'
+      };
+    } catch(_) {
+      return null;
+    }
+  };
+
+  const writeCache = (result) => {
+    try {
+      if (typeof wx?.setStorageSync !== 'function' || !Object.keys(result?.map || {}).length) return;
+      wx.setStorageSync(POETRY_CACHE_KEY, {
+        schema: POETRY_CACHE_SCHEMA,
+        savedAt: Date.now(),
+        map: result.map,
+        labels: result.labels || {}
+      });
+    } catch(_) { }
+  };
+
+  const cached = readCache();
+  if (cached) return cached;
+
   let source = '';
   let skipDbFallback = false;
   let res = { map: {}, labels: {} };
@@ -48,7 +84,10 @@ export const loadPoetryPresets = async (APP_CFG, LOG) => {
   // 1) 主云函数
   if (__canCallFn) {
     res = await safeCallFn('poetrySets');
-    if (Object.keys(res.map).length) { source = 'cloud-fn:poetrySets'; }
+    if (Object.keys(res.map).length) {
+      source = 'cloud-fn:poetrySets';
+      writeCache(res);
+    }
   }
 
   // 2) 直接读取数据库（无需云函数权限）
@@ -58,7 +97,10 @@ export const loadPoetryPresets = async (APP_CFG, LOG) => {
       const r = await db.collection('poetry_sets').limit(100).get();
       const arr = Array.isArray(r?.data) ? r.data : [];
       res = normalize(arr);
-      if (Object.keys(res.map).length) { source = 'db:poetry_sets'; }
+      if (Object.keys(res.map).length) {
+        source = 'db:poetry_sets';
+        writeCache(res);
+      }
     } catch(dbErr){ try { console.warn('[poetry] 数据库直接读取失败：', dbErr); } catch(_){} }
   }
 
@@ -68,6 +110,7 @@ export const loadPoetryPresets = async (APP_CFG, LOG) => {
       const local = require('../../assets/data/poetry_sets.json');
       res = normalize(local);
       source = 'local:poetry_sets.json';
+      writeCache(res);
       if (!__isDevtools || APP_CFG?.diagnostics?.enabled) {
         console.warn('[poetry] 使用本地回退 JSON');
       }

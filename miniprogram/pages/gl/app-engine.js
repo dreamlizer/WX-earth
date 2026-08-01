@@ -91,6 +91,12 @@ export class AppEngine {
     this.themeController = null;
     this.starCtl = null;
     this.loop = null;
+    this.sceneCtx = null;
+
+    // 每次 init 都创建新的生命周期代次。旧代次的异步回调只能完成自身清理，
+    // 不能再修改新的页面或场景。
+    this._lifecycleToken = 0;
+    this._engineTimers = new Set();
     
     this.touch = createTouchState(this.sys);
     
@@ -100,14 +106,66 @@ export class AppEngine {
     this.brightnessScale = Number(APP_CFG?.brightness?.default ?? 0.85);
   }
 
+  _isLifecycleCurrent(token) {
+    return token === this._lifecycleToken;
+  }
+
+  _schedule(token, fn, delayMs) {
+    if (!this._isLifecycleCurrent(token)) return null;
+    const timer = setTimeout(() => {
+      this._engineTimers.delete(timer);
+      if (!this._isLifecycleCurrent(token)) return;
+      fn();
+    }, Math.max(0, Number(delayMs) || 0));
+    this._engineTimers.add(timer);
+    return timer;
+  }
+
+  _clearEngineTimers() {
+    for (const timer of this._engineTimers) {
+      try { clearTimeout(timer); } catch(_){ }
+    }
+    this._engineTimers.clear();
+  }
+
+  _resetRuntimeRefs() {
+    this.earthMesh = null;
+    this.cloudMesh = null;
+    this.earthDayTex = null;
+    this.earthPureDayTex = null;
+    this.earthNightTex = null;
+    this.earthOldMat = null;
+    this.countryFeatures = null;
+    this.searchIndex = null;
+    this.tropicGroup = null;
+    this.borderGroup = null;
+    this.colliderGroup = null;
+    this.earthReady = false;
+    this.cloudVisibleTarget = null;
+    this.composer = null;
+    this.bloomPass = null;
+    this.poetry3d = null;
+    this.themeController = null;
+    this.starCtl = null;
+    this.loop = null;
+    this.sceneCtx = null;
+    this.moonMgr = null;
+  }
+
   // 初始化入口
   init(page) {
+    this.teardown();
+    try { this.sys = getSystemInfo(true); } catch(_){ }
+    this.touch = createTouchState(this.sys);
+    const lifecycleToken = ++this._lifecycleToken;
     wx.createSelectorQuery().select('#gl').fields({ node: true, size: true }).exec(res => {
-      this._setup(res, page);
+      if (!this._isLifecycleCurrent(lifecycleToken)) return;
+      this._setup(res, page, lifecycleToken);
     });
   }
 
-  _setup(res, page) {
+  _setup(res, page, lifecycleToken) {
+    if (!this._isLifecycleCurrent(lifecycleToken)) return;
     const self = this;
     const hit = res && res[0];
     if (!hit || !hit.node) { console.error('[FAIL] canvas 节点未取到'); return; }
@@ -214,7 +272,8 @@ export class AppEngine {
         TEX_FLIP_Y,
         isPCClient: __isPCClient
       },
-      checkState: () => !!this.state,
+      checkState: () => this._isLifecycleCurrent(lifecycleToken),
+      schedule: (fn, delayMs) => this._schedule(lifecycleToken, fn, delayMs),
       refs: {
         earthMesh: () => this.earthMesh,
         earthDayTex: () => this.earthDayTex,
@@ -295,11 +354,11 @@ export class AppEngine {
 
     // 10. 资源加载
     loadTexturesSequentially(sceneCtx).then(() => {
+       if (!this._isLifecycleCurrent(lifecycleToken)) return;
        // Keep first paint on one loading path. Warm offline caches only after
        // the foreground earth texture has had time to settle on WebGL.
-       setTimeout(() => {
+       this._schedule(lifecycleToken, () => {
           try {
-            if (!this.state) return;
             if (shouldPrefetchTextures(this.sys, getApp()?.globalData)) {
               prefetchTextureUrls();
               ensureOfflineTextures();
@@ -311,11 +370,14 @@ export class AppEngine {
          // Delay moon assets preload to avoid network contention with Cloud/Night textures
          // which are loaded shortly after the initial Day texture.
          // Giving it 8s ensures the Earth is fully ready and smooth before starting background downloads.
-         setTimeout(() => {
+         this._schedule(lifecycleToken, () => {
             console.log('[AppEngine] Triggering Moon preload (delayed)...');
             this.moonMgr.preload().catch(e => console.warn('[AppEngine] Moon preload bg fail', e));
          }, 8000);
        }
+    }).catch((e) => {
+      if (!this._isLifecycleCurrent(lifecycleToken)) return;
+      console.warn('[AppEngine] texture initialization failed', e);
     });
 
     // 11. 数据加载
@@ -335,6 +397,7 @@ export class AppEngine {
     this.managers.tzMgr = tzMgr;
 
     loadCountries().then((features) => {
+      if (!this._isLifecycleCurrent(lifecycleToken)) return;
       this.countryFeatures = features;
       this.searchIndex = buildIndex(features);
       try { collider.build(this.countryFeatures); this.colliderGroup = collider.getGroup(); } catch(_){ this.colliderGroup = null; }
@@ -342,13 +405,18 @@ export class AppEngine {
         this.borderGroup = makeBorder(THREE, globeGroup, this.countryFeatures);
         try { if (this.borderGroup) this.borderGroup.visible = false; } catch(_){}
         if (this.earthReady) {
-          setTimeout(() => { try { if (this.borderGroup) this.borderGroup.visible = true; } catch(_){} }, 1000);
+          this._schedule(lifecycleToken, () => {
+            try { if (this.borderGroup) this.borderGroup.visible = true; } catch(_){}
+          }, 1000);
         }
       } catch(e) {
         this.borderGroup = null;
         try { console.warn('[countries] border build failed; selection index remains available', e && e.message); } catch(_){}
       }
       try { page?.onCountriesLoaded?.(features); } catch (e) { }
+    }).catch((e) => {
+      if (!this._isLifecycleCurrent(lifecycleToken)) return;
+      console.error('[countries] load failed', e);
     });
 
     // 12. 输入管理
@@ -405,7 +473,8 @@ export class AppEngine {
     try { wx.onWindowResize(onWinResize); } catch(_){ }
 
     // 14. 保存最终状态到实例
-    this.state = { 
+    if (!this._isLifecycleCurrent(lifecycleToken)) return;
+    this.state = {
         THREE, scene, renderer, globeGroup, camera, dirLight, 
         width, height, page, baseDist,
         onWinResizeCb: onWinResize,
@@ -434,16 +503,81 @@ export class AppEngine {
 
   // —— Public API ——
 
-  teardown() {
-    if (!this.state) return;
-    try { if (this.state.onWinResizeCb) wx.offWindowResize(this.state.onWinResizeCb); } catch(_){ }
+  teardown(options = {}) {
+    ++this._lifecycleToken;
+    this._clearEngineTimers();
+
+    const state = this.state;
+    const composer = this.composer;
+    const earthOldMat = this.earthOldMat;
+    const rootTextures = [
+      this.earthDayTex,
+      this.earthPureDayTex,
+      this.earthNightTex
+    ];
+    try { if (state?.onWinResizeCb) wx.offWindowResize(state.onWinResizeCb); } catch(_){ }
     try { this.loop?.stop(); } catch(_){ }
-    if (this.state.scene) {
-        this.state.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-    }
-    this.state.renderer?.dispose?.();
+    try { this.moonMgr?.dispose?.(); } catch(_){ }
+    try { this.poetry3d?.stop?.(); this.poetry3d?.setEnabled?.(false); } catch(_){ }
+
     this.state = null;
     this.managers = {};
+    this._resetRuntimeRefs();
+
+    const releaseResources = () => {
+      try { composer?.dispose?.(); } catch(_){ }
+
+      const disposedTextures = new Set();
+      const disposeTexture = (texture) => {
+        if (!texture?.isTexture || disposedTextures.has(texture)) return;
+        disposedTextures.add(texture);
+        try { texture.dispose?.(); } catch(_){ }
+      };
+      rootTextures.forEach(disposeTexture);
+
+      const disposedMaterials = new Set();
+      if (state?.scene) {
+        const disposedGeometries = new Set();
+        state.scene.traverse((o) => {
+          const geometry = o?.geometry;
+          if (geometry && !disposedGeometries.has(geometry)) {
+            disposedGeometries.add(geometry);
+            try { geometry.dispose?.(); } catch(_){ }
+          }
+
+          const materials = Array.isArray(o?.material) ? o.material : [o?.material];
+          for (const material of materials) {
+            if (!material || disposedMaterials.has(material)) continue;
+            disposedMaterials.add(material);
+            for (const key of Object.keys(material)) {
+              disposeTexture(material[key]);
+            }
+            for (const uniform of Object.values(material.uniforms || {})) {
+              disposeTexture(uniform?.value);
+            }
+            try { material.dispose?.(); } catch(_){ }
+          }
+        });
+      }
+      if (earthOldMat && !disposedMaterials.has(earthOldMat)) {
+        try { earthOldMat.dispose?.(); } catch(_){ }
+      }
+      try { state?.renderer?.dispose?.(); } catch(_){ }
+    };
+
+    if (options?.deferResourceDisposal) {
+      try {
+        if (typeof wx?.nextTick === 'function') {
+          wx.nextTick(releaseResources);
+        } else {
+          setTimeout(releaseResources, 0);
+        }
+      } catch(_) {
+        releaseResources();
+      }
+    } else {
+      releaseResources();
+    }
   }
   
   flyTo(lat, lon, duration = 800) {

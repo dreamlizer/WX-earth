@@ -17,21 +17,33 @@ const mergeCompanionRobotCfg = (baseCfg, tuneCfg) => {
   };
 };
 
-const downloadFile = (fileID) => {
+const downloadFile = (fileID, mgrState, lifecycleToken) => {
   return new Promise((resolve, reject) => {
-    // 30s Timeout
-    const timer = setTimeout(() => {
-      reject(new Error(`Download timeout (30s): ${fileID}`));
-    }, 30000);
+    let settled = false;
+    let timer = null;
+    let untrackCancel = () => {};
 
     const finishOk = (tempFilePath) => {
-      clearTimeout(timer);
+      if (settled) return;
+      settled = true;
+      mgrState._clearTimer?.(timer);
+      untrackCancel();
       resolve(tempFilePath);
     };
     const finishErr = (err) => {
-      clearTimeout(timer);
+      if (settled) return;
+      settled = true;
+      mgrState._clearTimer?.(timer);
+      untrackCancel();
       reject(err);
     };
+    const cancel = () => finishErr(new Error(`Download cancelled: ${fileID}`));
+    untrackCancel = mgrState._trackPendingCancel?.(cancel) || (() => {});
+    timer = mgrState._schedule?.(
+      () => finishErr(new Error(`Download timeout (30s): ${fileID}`)),
+      30000,
+      lifecycleToken
+    );
 
     try {
       if (String(fileID || '').startsWith('cloud://') && wx?.cloud?.getTempFileURL) {
@@ -85,6 +97,8 @@ const downloadFile = (fileID) => {
 };
 
 export const preloadAssets = async (mgrState, ASSETS) => {
+  if (typeof mgrState._isLifecycleCurrent === 'function' &&
+      !mgrState._isLifecycleCurrent(mgrState._lifecycleToken)) return false;
   if (mgrState.loaded) return Promise.resolve();
   if (mgrState._preloadPromise) return mgrState._preloadPromise;
 
@@ -98,11 +112,14 @@ export const preloadAssets = async (mgrState, ASSETS) => {
   const companionBase = (APP_CFG?.moonVoyage?.starCorridor?.effects?.companionRobot) || {};
   const companionTune = (APP_CFG?.moonVoyage?.timeline?.companionRobot) || {};
   const companionCfg = mergeCompanionRobotCfg(companionBase, companionTune);
-  mgrState._preloadPromise = Promise.all([
-    downloadFile(ASSETS.TEXTURE),
-    downloadFile(ASSETS.AUDIO),
+  const lifecycleToken = mgrState._lifecycleToken;
+  const preloadPromise = Promise.all([
+    downloadFile(ASSETS.TEXTURE, mgrState, lifecycleToken),
+    downloadFile(ASSETS.AUDIO, mgrState, lifecycleToken),
     Promise.resolve().then(() => mgrState._companionFx?.preload?.(companionCfg)).catch(() => null)
   ]).then(([texPath, audioPath]) => {
+    if (typeof mgrState._isLifecycleCurrent === 'function' &&
+        !mgrState._isLifecycleCurrent(lifecycleToken)) return false;
     mgrState.texPath = texPath;
     mgrState.normPath = null;
     mgrState.audioPath = audioPath;
@@ -111,13 +128,18 @@ export const preloadAssets = async (mgrState, ASSETS) => {
     // Create moon mesh now (invisible) so it's ready
     createMoon(mgrState.THREE, mgrState.scene, mgrState);
     mgrState.loaded = true;
+    if (mgrState._preloadPromise === preloadPromise) mgrState._preloadPromise = null;
+    return true;
   }).catch(err => {
+    if (mgrState._preloadPromise === preloadPromise) mgrState._preloadPromise = null;
+    if (typeof mgrState._isLifecycleCurrent === 'function' &&
+        !mgrState._isLifecycleCurrent(lifecycleToken)) return false;
     console.error('[Moon] Preload failed', err);
-    mgrState._preloadPromise = null; // Allow retry
     throw err; // Re-throw to catch in enter()
   });
 
-  return mgrState._preloadPromise;
+  mgrState._preloadPromise = preloadPromise;
+  return preloadPromise;
 };
 
 export const refreshAssets = async (mgrState, opts = {}, ASSETS) => {

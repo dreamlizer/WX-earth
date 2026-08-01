@@ -83,15 +83,21 @@ export const refreshMainStarfieldMesh = (scene, mgrState) => {
 export const createMoon = (THREE, scene, mgrState) => {
   if (mgrState.moonMesh || !mgrState.texPath) return;
 
+  const lifecycleToken = mgrState._lifecycleToken;
+  const markTextureReady = () => {
+    if (typeof mgrState._isLifecycleCurrent === 'function' &&
+        !mgrState._isLifecycleCurrent(lifecycleToken)) return;
+    mgrState._moonTexReady = true;
+  };
   const geometry = new THREE.SphereGeometry(1, 64, 64);
   const loader = new THREE.TextureLoader();
   
   mgrState._moonTexReady = false;
   const map = loader.load(
     mgrState.texPath,
-    () => { mgrState._moonTexReady = true; },
+    markTextureReady,
     null,
-    () => { mgrState._moonTexReady = true; }
+    markTextureReady
   );
   
   map.encoding = THREE.sRGBEncoding;

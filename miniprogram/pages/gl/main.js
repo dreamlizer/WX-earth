@@ -13,8 +13,8 @@ export function boot(page) {
   engine.init(page);
 }
 
-export function teardown() {
-  engine.teardown();
+export function teardown(options) {
+  engine.teardown(options);
 }
 
 // —— 交互事件 ——

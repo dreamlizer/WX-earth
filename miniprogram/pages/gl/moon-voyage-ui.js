@@ -5,14 +5,18 @@ import { stopMoonLyrics } from './moon-voyage-lyrics.js';
 export const uiMaskFadeIn = (page, fadeInMs, token, mgrState) => {
   try {
     page?.setData?.({ globalBlackMask: true, globalBlackMaskOpacity: 0, globalBlackMaskFadeMs: fadeInMs });
-    setTimeout(() => { try { if (token === mgrState._exitFadeToken) page?.setData?.({ globalBlackMaskOpacity: 1 }); } catch (_) {} }, 16);
+    mgrState._schedule?.(() => {
+      try { if (token === mgrState._exitFadeToken) page?.setData?.({ globalBlackMaskOpacity: 1 }); } catch (_) {}
+    }, 16);
   } catch (_) {}
 };
 
 export const uiMaskFadeOut = (page, fadeOutMs, token, mgrState) => {
   try {
     page?.setData?.({ globalBlackMaskFadeMs: fadeOutMs, globalBlackMaskOpacity: 0 });
-    setTimeout(() => { try { if (token === mgrState._exitFadeToken) page?.setData?.({ globalBlackMask: false }); } catch (_) {} }, fadeOutMs + 50);
+    mgrState._schedule?.(() => {
+      try { if (token === mgrState._exitFadeToken) page?.setData?.({ globalBlackMask: false }); } catch (_) {}
+    }, fadeOutMs + 50);
   } catch (_) {}
 };
 

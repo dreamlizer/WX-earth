@@ -15,14 +15,21 @@ import { applyThemeWithState } from './theme-manager.js';
  * @param {Object} ctx.setters - 设置器对象
  */
 export const loadTexturesSequentially = async (ctx) => {
-  const { THREE, globeGroup, config, checkState, refs, setters } = ctx;
+  const { THREE, globeGroup, config, checkState, refs, setters, schedule } = ctx;
   const { APP_CFG, LIGHT_CFG, RADIUS, TEX_FLIP_Y, isPCClient } = config;
   const loader = new THREE.TextureLoader();
+  const scheduleLater = (fn, delayMs) => {
+    if (typeof schedule === 'function') return schedule(fn, delayMs);
+    return setTimeout(fn, delayMs);
+  };
 
   try {
     // 1. 加载地球日间纹理 (基础)
     const dayLoaded = await loadTextureWithRetry(loader, 'earth', (force) => getTextureUrl('earth', !!force), (tex) => {
-      if (!checkState()) return;
+      if (!checkState()) {
+        try { tex?.dispose?.(); } catch(_){ }
+        return;
+      }
       
       tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
       try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
@@ -73,8 +80,9 @@ export const loadTexturesSequentially = async (ctx) => {
         const tweener = refs.tweener();
         if (tweener) {
           tweener.to(earthMesh.material, { opacity: 1 }, 1200, t => t * (2 - t), null, () => {
+            if (!checkState()) return;
             setters.setEarthReady(true);
-            setTimeout(() => { 
+            scheduleLater(() => {
               try { const tg = refs.tropicGroup(); if (tg) tg.visible = true; } catch(_){} 
               try { const bg = refs.borderGroup(); if (bg) bg.visible = true; } catch(_){} 
             }, 1000);
@@ -83,6 +91,8 @@ export const loadTexturesSequentially = async (ctx) => {
         try { refs.page()?.setData({ loading: false }); } catch(_){}
       }
     }, { maxAttempts: 4, baseDelayMs: 800 });
+
+    if (!checkState()) return;
 
     // 如果基础纹理加载失败，创建默认球体
     if (!dayLoaded) {
@@ -104,6 +114,10 @@ export const loadTexturesSequentially = async (ctx) => {
     // 2. 加载纯白昼纹理 (Day 8K)
     try {
       await loadTextureWithRetry(loader, 'earth_day', (force) => getTextureUrl('earth_day', !!force), (tex) => {
+        if (!checkState()) {
+          try { tex?.dispose?.(); } catch(_){ }
+          return;
+        }
         tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
         try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
         try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
@@ -127,6 +141,8 @@ export const loadTexturesSequentially = async (ctx) => {
         } catch(_){}
       }, { maxAttempts: 2, baseDelayMs: 800 });
     } catch(_){}
+
+    if (!checkState()) return;
 
     // 3. 立即创建云层 Mesh (占位)，避免 setCloudVisible 找不到对象
     try {
@@ -158,10 +174,15 @@ export const loadTexturesSequentially = async (ctx) => {
     } catch(e) { console.error('[scene] cloud init error', e); }
 
     // 延迟加载夜景和云层纹理
-    setTimeout(async () => {
+    scheduleLater(async () => {
+      if (!checkState()) return;
       // 夜景
       try {
         await loadTextureWithRetry(loader, 'earth_night', (force) => getTextureUrl('earth_night', !!force), (tex) => {
+          if (!checkState()) {
+            try { tex?.dispose?.(); } catch(_){ }
+            return;
+          }
           tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
           try { tex.flipY = TEX_FLIP_Y; tex.needsUpdate = true; } catch(_){}
           fixTexture(tex, isPCClient);
@@ -187,7 +208,12 @@ export const loadTexturesSequentially = async (ctx) => {
       
       // 云层纹理加载
       try {
+        if (!checkState()) return;
         await loadTextureWithRetry(loader, 'cloud', (force) => getTextureUrl('cloud', !!force), (tex) => {
+          if (!checkState()) {
+            try { tex?.dispose?.(); } catch(_){ }
+            return;
+          }
           tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; try { tex.colorSpace = THREE.SRGBColorSpace; } catch(_){ try { tex.encoding = THREE.sRGBEncoding; } catch(__){} }
           try { tex.flipY = false; tex.needsUpdate = true; } catch(_){}
           fixTexture(tex, isPCClient);

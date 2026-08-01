@@ -61,7 +61,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
   const node2Time = node1Time + T_CORRIDOR;
   const node3Time = node2Time + T_MOON_APPROACH;
 
-  if (mgr._isDevtools) {
+  if (mgr._moonDebug) {
     try {
       if (!mgr.__companionNode2Logged && t >= node2Time && t <= (node2Time + 0.6)) {
         mgr.__companionNode2Logged = true;
@@ -93,7 +93,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
   const SHOW_EARTH_AFTER_DEPARTURE = false;
   mgr.globeGroup.visible = ((t < node1Time) && (earthScaleMul > 0.02)) || (SHOW_EARTH_AFTER_DEPARTURE && (t >= node2Time));
 
-  if (mgr._isDevtools) {
+  if (mgr._moonDebug) {
     try {
       const now = Date.now();
       if (t >= (node1Time - 2.0) && t <= (node1Time + 6.0) && now >= (mgr.__cutDiagNext || 0)) {
@@ -112,7 +112,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
       mgr._mainStarfieldMesh.rotation.y += rotRadPerSec * dtSec * driftK;
     }
 
-    if (mgr._isDevtools) {
+    if (mgr._moonDebug) {
       try {
         const now = Date.now();
         if (t >= node1Time && t <= node2Time && now >= (mgr.__bgDiagNext || 0)) {
@@ -462,7 +462,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
       if (u?.time) u.time.value = mgr._dustBgTime;
       if (u?.uOpacity) u.uOpacity.value = 0.18 * kBg2 * dustPulseMul;
       mgr._dustBgMesh.visible = (u?.uOpacity?.value || 0) > 0.01;
-      if (mgr._isDevtools) {
+      if (mgr._moonDebug) {
         const now = Date.now();
         if (!mgr.__dustDiagNext) mgr.__dustDiagNext = now + 900;
         if (now >= mgr.__dustDiagNext) {

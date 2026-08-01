@@ -78,8 +78,10 @@ export const startMoonLyrics = async (mgrState, baseTimeMs) => {
       try {
         const db = wx.cloud.database();
         let r = await db.collection('poetry_sets').where({ preset }).limit(1).get();
+        if (token !== mgrState._lyricToken) return;
         if (!Array.isArray(r?.data) || r.data.length === 0) {
           r = await db.collection('poetry_sets').where({ preset: String(preset) }).limit(1).get();
+          if (token !== mgrState._lyricToken) return;
         }
         const doc = (Array.isArray(r?.data) && r.data[0]) ? r.data[0] : null;
         const normalized = normalizeLines(doc?.lines);

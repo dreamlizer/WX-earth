@@ -147,6 +147,71 @@ export class MoonVoyageManager {
     this._lyricTimers = [];
     this._lyricToken = 0;
     this._startState = null;
+    this._lifecycleToken = 0;
+    this._disposed = false;
+    this._timers = new Set();
+    this._pendingCancels = new Set();
+    this._preloadPromise = null;
+    this._entering = false;
+  }
+
+  _isLifecycleCurrent(token) {
+    return !this._disposed && token === this._lifecycleToken;
+  }
+
+  _schedule(callback, delayMs, token = this._lifecycleToken) {
+    if (!this._isLifecycleCurrent(token)) return null;
+    const timer = setTimeout(() => {
+      this._timers.delete(timer);
+      if (!this._isLifecycleCurrent(token)) return;
+      callback();
+    }, delayMs);
+    this._timers.add(timer);
+    return timer;
+  }
+
+  _clearTimer(timer) {
+    if (timer == null) return;
+    try { clearTimeout(timer); } catch (_) {}
+    this._timers.delete(timer);
+  }
+
+  _clearTimers() {
+    for (const timer of this._timers) {
+      try { clearTimeout(timer); } catch (_) {}
+    }
+    this._timers.clear();
+  }
+
+  _trackPendingCancel(cancel) {
+    if (typeof cancel !== 'function') return () => {};
+    if (this._disposed) {
+      try { cancel(); } catch (_) {}
+      return () => {};
+    }
+    this._pendingCancels.add(cancel);
+    return () => this._pendingCancels.delete(cancel);
+  }
+
+  _disposeOwnedMesh(mesh) {
+    if (!mesh) return;
+    try { mesh.parent?.remove?.(mesh); } catch (_) {
+      try { this.scene?.remove?.(mesh); } catch (_) {}
+    }
+    try { mesh.geometry?.dispose?.(); } catch (_) {}
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    const textures = new Set();
+    for (const material of materials) {
+      if (!material) continue;
+      const disposeTexture = (texture) => {
+        if (!texture?.isTexture || textures.has(texture)) return;
+        textures.add(texture);
+        try { texture.dispose?.(); } catch (_) {}
+      };
+      for (const value of Object.values(material)) disposeTexture(value);
+      for (const uniform of Object.values(material.uniforms || {})) disposeTexture(uniform?.value);
+      try { material.dispose?.(); } catch (_) {}
+    }
   }
 
   // Delegated methods
@@ -174,6 +239,8 @@ export class MoonVoyageManager {
   _restoreState() { restoreState(this); }
 
   init(THREE, scene, globeGroup, camera, page, fader = null) {
+    this._disposed = false;
+    ++this._lifecycleToken;
     this.THREE = THREE;
     this.scene = scene;
     this.globeGroup = globeGroup;
@@ -224,5 +291,89 @@ export class MoonVoyageManager {
 
   exit() {
     exitVoyage(this);
+  }
+
+  dispose() {
+    if (this._disposed) return;
+    const wasEntering = this._entering;
+    this._disposed = true;
+    ++this._lifecycleToken;
+    ++this._exitFadeToken;
+    this.active = false;
+    this.phase = 'IDLE';
+    this._entering = false;
+    this._exiting = false;
+
+    this._clearTimers();
+    for (const cancel of this._pendingCancels) {
+      try { cancel(); } catch (_) {}
+    }
+    this._pendingCancels.clear();
+    if (this.timer) {
+      try { clearInterval(this.timer); } catch (_) {}
+      this.timer = null;
+    }
+
+    const page = this.page;
+    this.page = null;
+    try { stopMoonLyrics(this); } catch (_) {}
+    if (this.audioContext) {
+      try { this.audioContext.stop?.(); } catch (_) {}
+      try { this.audioContext.destroy?.(); } catch (_) {}
+      this.audioContext = null;
+    }
+    try { this._companionFx?.dispose?.(); } catch (_) {}
+    try { this._orbitSeq?.dispose?.(); } catch (_) {}
+    try { this._zodiacSys?.dispose?.(); } catch (_) {}
+
+    try {
+      const earthMesh = findEarthMesh(this.globeGroup);
+      if (earthMesh && this._earthMaterialBackup && earthMesh === this._earthMaterialBackupMesh) {
+        earthMesh.material = this._earthMaterialBackup;
+      }
+    } catch (_) {}
+    if (this._earthVoyageMaterial && this._earthVoyageMaterial !== this._earthMaterialBackup) {
+      try { this._earthVoyageMaterial.dispose?.(); } catch (_) {}
+    }
+    this._earthVoyageMaterial = null;
+    this._earthMaterialBackup = null;
+    this._earthMaterialBackupMesh = null;
+
+    const ownedMeshes = [
+      this.moonMesh,
+      this.milkyWayMesh,
+      this._dustBgMesh,
+      this._dustSlowMesh,
+      this._dustFastMesh,
+      this._earthFallbackMesh
+    ];
+    for (const mesh of new Set(ownedMeshes)) this._disposeOwnedMesh(mesh);
+
+    if (page?.__moonVoyageMgr === this) {
+      page.__moonVoyageMgr = null;
+      page.debugSpeedUp = null;
+    }
+    try { if (wasEntering) wx.hideLoading?.(); } catch (_) {}
+
+    this.moonMesh = null;
+    this.milkyWayMesh = null;
+    this._dustBgMesh = null;
+    this._dustSlowMesh = null;
+    this._dustFastMesh = null;
+    this._earthFallbackMesh = null;
+    this._mainStarfieldMesh = null;
+    this._companionFx = null;
+    this._orbitSeq = null;
+    this._zodiacSys = null;
+    this._preloadPromise = null;
+    this.loaded = false;
+    this.texPath = null;
+    this.normPath = null;
+    this.audioPath = null;
+    this.THREE = null;
+    this.scene = null;
+    this.globeGroup = null;
+    this.camera = null;
+    this.fader = null;
   }
 }

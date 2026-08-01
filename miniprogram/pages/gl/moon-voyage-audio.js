@@ -5,6 +5,12 @@ import { startMoonLyrics } from './moon-voyage-lyrics.js';
 export const playAudio = (mgrState, ASSETS) => {
   if (mgrState.audioContext) mgrState.audioContext.destroy();
   
+  const lifecycleToken = mgrState._lifecycleToken;
+  const isCurrent = () => (
+    (typeof mgrState._isLifecycleCurrent !== 'function' ||
+      mgrState._isLifecycleCurrent(lifecycleToken)) &&
+    mgrState.audioContext === ctx
+  );
   const ctx = wx.createInnerAudioContext();
   ctx.src = mgrState.audioPath || ASSETS.AUDIO;
   ctx.autoplay = true;
@@ -16,13 +22,18 @@ export const playAudio = (mgrState, ASSETS) => {
   } catch(_) { ctx.volume = 0.65; }
   
   ctx.onPlay(() => {
+    if (!isCurrent()) return;
     console.log('[Moon] Audio playing');
     let baseTimeMs = Date.now();
     try { baseTimeMs = baseTimeMs - Math.max(0, Number(ctx.currentTime || 0) * 1000); } catch(_){ }
     try { startMoonLyrics(mgrState, baseTimeMs); } catch(_){ }
   });
-  ctx.onError((res) => console.error('[Moon] Audio error', res));
+  ctx.onError((res) => {
+    if (!isCurrent()) return;
+    console.error('[Moon] Audio error', res);
+  });
   ctx.onEnded(() => {
+     if (!isCurrent()) return;
      console.log('[Moon] Audio ended, triggering exit');
      if (typeof mgrState.exit === 'function') mgrState.exit();
   });

@@ -7,8 +7,11 @@ export class ZenAudio {
     this.fileIds = fileIds || {};
     this.appCfg = appCfg;
     this.ctx = null;
-    this._listeners = { ended: [], play: [] };
+    this._listeners = { ended: new Set(), play: new Set() };
     this._fadeTimer = null;
+    this._fadeInTimer = null;
+    this._delayTimer = null;
+    this._disposed = false;
   }
 
   updateFileIds(ids) {
@@ -20,12 +23,14 @@ export class ZenAudio {
   }
 
   start(preset, localUrl) {
+    if (this._disposed) return;
     this.stop(); // Stop previous
     
     // Create new context
     // Using InnerAudioContext for now to match project consistency
     // (BackgroundAudioManager requires app.json config)
     this.ctx = wx.createInnerAudioContext();
+    const ctx = this.ctx;
     
     // Determine source
     const cloudId = this.fileIds[preset] || this.fileIds[1];
@@ -40,15 +45,20 @@ export class ZenAudio {
     this.ctx.volume = vol;
 
     // Listeners
-    this.ctx.onPlay(() => {
+    ctx.onPlay(() => {
+      if (this.ctx !== ctx) return;
       // console.log('[ZenAudio] Playing preset:', preset);
-      this._listeners.play.forEach(cb => { try { cb(); } catch(_){} });
+      const event = { preset, currentTime: Number(ctx.currentTime || 0) };
+      this._listeners.play.forEach(cb => { try { cb(event); } catch(_){} });
     });
-    this.ctx.onEnded(() => {
+    ctx.onEnded(() => {
+      if (this.ctx !== ctx) return;
       // console.log('[ZenAudio] Ended preset:', preset);
-      this._listeners.ended.forEach(cb => { try { cb(); } catch(_){} });
+      const event = { preset, currentTime: Number(ctx.currentTime || 0) };
+      this._listeners.ended.forEach(cb => { try { cb(event); } catch(_){} });
     });
-    this.ctx.onError((res) => {
+    ctx.onError((res) => {
+      if (this.ctx !== ctx) return;
       console.error('[ZenAudio] Error:', res);
     });
 
@@ -57,26 +67,49 @@ export class ZenAudio {
   }
   
   startWithDelayFadeIn(preset, localUrl, delayMs, fadeMs) {
-    setTimeout(() => {
+    if (this._disposed) return;
+    if (this._delayTimer) clearTimeout(this._delayTimer);
+    if (this._fadeInTimer) clearInterval(this._fadeInTimer);
+    this._delayTimer = setTimeout(() => {
+      this._delayTimer = null;
+      if (this._disposed) return;
       this.start(preset, localUrl);
       if (this.ctx) {
         this.ctx.volume = 0;
         const targetVol = Number(this.appCfg?.audio?.zenVolume ?? 1.0);
         const steps = 10;
-        const stepMs = fadeMs / steps;
+        const stepMs = Math.max(16, Number(fadeMs || 0) / steps);
         let i = 0;
-        const t = setInterval(() => {
+        this._fadeInTimer = setInterval(() => {
            i++;
-           if (!this.ctx) { clearInterval(t); return; }
+           if (!this.ctx) {
+             clearInterval(this._fadeInTimer);
+             this._fadeInTimer = null;
+             return;
+           }
            this.ctx.volume = (i / steps) * targetVol;
-           if (i >= steps) clearInterval(t);
+           if (i >= steps) {
+             clearInterval(this._fadeInTimer);
+             this._fadeInTimer = null;
+           }
         }, stepMs);
       }
-    }, delayMs);
+    }, Math.max(0, Number(delayMs) || 0));
   }
 
   stop() {
-    if (this._fadeTimer) clearInterval(this._fadeTimer);
+    if (this._delayTimer) {
+      clearTimeout(this._delayTimer);
+      this._delayTimer = null;
+    }
+    if (this._fadeTimer) {
+      clearInterval(this._fadeTimer);
+      this._fadeTimer = null;
+    }
+    if (this._fadeInTimer) {
+      clearInterval(this._fadeInTimer);
+      this._fadeInTimer = null;
+    }
     if (this.ctx) {
       try { this.ctx.stop(); } catch(_){}
       try { this.ctx.destroy(); } catch(_){}
@@ -89,7 +122,7 @@ export class ZenAudio {
      if (this._fadeTimer) clearInterval(this._fadeTimer);
      
      const steps = 10;
-     const dt = ms / steps;
+     const dt = Math.max(16, Number(ms || 0) / steps);
      const startVol = this.ctx.volume;
      let i = 0;
      
@@ -97,6 +130,7 @@ export class ZenAudio {
         i++;
         if (i >= steps) {
            clearInterval(this._fadeTimer);
+           this._fadeTimer = null;
            this.stop();
         } else {
            if (this.ctx) this.ctx.volume = startVol * (1 - i/steps);
@@ -104,8 +138,24 @@ export class ZenAudio {
      }, dt);
   }
 
-  onEnded(cb) { this._listeners.ended.push(cb); }
-  onPlay(cb) { this._listeners.play.push(cb); }
+  onEnded(cb) {
+    if (typeof cb !== 'function') return () => {};
+    this._listeners.ended.add(cb);
+    return () => this._listeners.ended.delete(cb);
+  }
+
+  onPlay(cb) {
+    if (typeof cb !== 'function') return () => {};
+    this._listeners.play.add(cb);
+    return () => this._listeners.play.delete(cb);
+  }
+
+  dispose() {
+    this._disposed = true;
+    this.stop();
+    this._listeners.ended.clear();
+    this._listeners.play.clear();
+  }
   
   getCurrentTime() {
     return this.ctx ? this.ctx.currentTime : 0;

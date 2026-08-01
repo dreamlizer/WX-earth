@@ -53,6 +53,8 @@ export const getInitialData = () => ({
   suggestions: [],
   // 禅定模式开关（仅UI显隐与面板关闭，不改变渲染逻辑）
   zenMode: false,
+  zenToastVisible: false,
+  zenToastText: '',
   moonVoyageActive: false,
   moonTimeVisible: false,
   moonTimerText: '',

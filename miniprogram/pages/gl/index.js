@@ -34,6 +34,29 @@ Page({
     moonToastOpacity: 0,
   },
 
+  __schedulePageTask(callback, delayMs) {
+    if (!this.__pageTimers) this.__pageTimers = new Set();
+    const timer = setTimeout(() => {
+      this.__pageTimers?.delete?.(timer);
+      callback();
+    }, delayMs);
+    this.__pageTimers.add(timer);
+    return timer;
+  },
+
+  __clearPageTimer(timer) {
+    if (timer == null) return;
+    try { clearTimeout(timer); } catch(_){ }
+    this.__pageTimers?.delete?.(timer);
+  },
+
+  __clearPageTimers() {
+    for (const timer of (this.__pageTimers || [])) {
+      try { clearTimeout(timer); } catch(_){ }
+    }
+    this.__pageTimers?.clear?.();
+  },
+
   __isMoonLocked(){
     try { if (isMoonVoyageActive()) return true; } catch(_){ }
     try { if (this.__zenPoetryPaused) return true; } catch(_){ }
@@ -71,7 +94,9 @@ Page({
 
   // Custom Moon Toast (Smoother Fade)
   showMoonToast(text, duration = 2500) {
-    if (this._moonToastTimer) clearTimeout(this._moonToastTimer);
+    if (this._moonToastTimer) this.__clearPageTimer(this._moonToastTimer);
+    const token = (this._moonToastToken || 0) + 1;
+    this._moonToastToken = token;
     
     // 1. Show (start invisible)
     this.setData({
@@ -81,16 +106,19 @@ Page({
     });
 
     // 2. Trigger Fade In (next tick)
-    setTimeout(() => {
+    this.__schedulePageTask(() => {
+      if (token !== this._moonToastToken) return;
       this.setData({ moonToastOpacity: 1 });
     }, 50);
 
     // 3. Fade Out after duration
-    this._moonToastTimer = setTimeout(() => {
+    this._moonToastTimer = this.__schedulePageTask(() => {
+      if (token !== this._moonToastToken) return;
       this.setData({ moonToastOpacity: 0 });
       
       // 4. Hide completely after fade transition (800ms)
-      setTimeout(() => {
+      this.__schedulePageTask(() => {
+        if (token !== this._moonToastToken) return;
         this.setData({ moonToastVisible: false });
       }, 800);
     }, duration);
@@ -100,7 +128,7 @@ Page({
   onMoonTimerTouchStart() {
     try {
       if (!isMoonVoyageActive()) return;
-      this._moonTimerLongPressTimer = setTimeout(() => {
+      this._moonTimerLongPressTimer = this.__schedulePageTask(() => {
         this.setData({ moonTimeVisible: !this.data.moonTimeVisible });
         wx.vibrateShort({ type: 'light' });
       }, 4000);
@@ -108,7 +136,7 @@ Page({
   },
   onMoonTimerTouchEnd() {
     if (this._moonTimerLongPressTimer) {
-      clearTimeout(this._moonTimerLongPressTimer);
+      this.__clearPageTimer(this._moonTimerLongPressTimer);
       this._moonTimerLongPressTimer = null;
     }
   },
@@ -153,7 +181,7 @@ Page({
     // 1. 环境检测与基础设置
     const sys = getSystemInfo();
     const isPC = /windows|mac/i.test(sys.platform || '') || sys.deviceType === 'pc' || sys.environment === 'devtools';
-    this.__isDevtools = (sys && sys.environment === 'devtools');
+    this.__isDevtools = isDevtools();
     
     // PC端滚动兼容
     const anchor = 200;
@@ -193,16 +221,17 @@ Page({
 
     // 6. 布局更新与传感器
     this.updateTopOffsets();
-    setTimeout(() => this.updateSettingsPanelFrame(), 50);
+    this.__schedulePageTask(() => this.updateSettingsPanelFrame(), 50);
 
     const layoutMgr = this.__getLayoutMgr();
     const updateSensors = () => {
       layoutMgr.updateEggSensor();
       layoutMgr.updateBrightnessSensor();
     };
-    [120, 260].forEach(ms => setTimeout(updateSensors, ms));
+    [120, 260].forEach(ms => this.__schedulePageTask(updateSensors, ms));
     
     if (typeof wx.onWindowResize === 'function') {
+      this.__onWindowResize = updateSensors;
       wx.onWindowResize(updateSensors);
     }
 
@@ -220,7 +249,24 @@ Page({
     // 初始应用惯性滑条默认值，确保一进入就生效
     try { this.__getSettingsMgr().setInertia(this.data.inertiaPct); } catch(_){}
   },
-  onUnload() { teardown(); },
+  onUnload() {
+    this.__clearPageTimers();
+    this._moonToastTimer = null;
+    this._moonTimerLongPressTimer = null;
+    this.__moonTapTimer = null;
+    this._moonToastToken = (this._moonToastToken || 0) + 1;
+    try {
+      if (this.__onWindowResize && typeof wx.offWindowResize === 'function') {
+        wx.offWindowResize(this.__onWindowResize);
+      }
+    } catch(_){ }
+    this.__onWindowResize = null;
+    try { this.__zenModeMgr?.dispose?.(); } catch(_){ }
+    try { this.__zenAudioMgr?.dispose?.(); } catch(_){ }
+    this.__zenModeMgr = null;
+    this.__zenAudioMgr = null;
+    teardown({ deferResourceDisposal: true });
+  },
   onShow() { try { setPaused(false); } catch(_){ } },
   onHide() { try { setPaused(true); } catch(_){ } },
   // 发送给朋友（右上角“转发”或 button open-type=share 触发）
@@ -552,8 +598,8 @@ Page({
        // Moon Mode Speed Up Easter Egg
        if (this.__moonVoyageMgr && this.__moonVoyageMgr.active) {
           this.__moonTapCount = (this.__moonTapCount || 0) + 1;
-          clearTimeout(this.__moonTapTimer);
-          this.__moonTapTimer = setTimeout(() => { this.__moonTapCount = 0; }, 500);
+          this.__clearPageTimer(this.__moonTapTimer);
+          this.__moonTapTimer = this.__schedulePageTask(() => { this.__moonTapCount = 0; }, 500);
           if (this.__moonTapCount >= 3) {
              this.__moonTapCount = 0;
              if (this.debugSpeedUp) this.debugSpeedUp();
