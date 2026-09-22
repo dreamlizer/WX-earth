@@ -12,6 +12,8 @@ export class ZenAudio {
     this._fadeInTimer = null;
     this._delayTimer = null;
     this._disposed = false;
+    this._suspended = false;
+    this._resumeAfterSuspend = false;
   }
 
   updateFileIds(ids) {
@@ -37,7 +39,8 @@ export class ZenAudio {
     this.ctx.src = localUrl || cloudId;
     
     // Settings
-    this.ctx.autoplay = true;
+    this.ctx.autoplay = !this._suspended;
+    if (this._suspended) this._resumeAfterSuspend = true;
     this.ctx.loop = false; // Manager handles loop logic
     
     // Volume
@@ -47,6 +50,7 @@ export class ZenAudio {
     // Listeners
     ctx.onPlay(() => {
       if (this.ctx !== ctx) return;
+      if (this._suspended) { try { ctx.pause(); } catch (_) {} return; }
       // console.log('[ZenAudio] Playing preset:', preset);
       const event = { preset, currentTime: Number(ctx.currentTime || 0) };
       this._listeners.play.forEach(cb => { try { cb(event); } catch(_){} });
@@ -63,7 +67,22 @@ export class ZenAudio {
     });
 
     // Explicit play to ensure start
-    try { this.ctx.play(); } catch(_){}
+    try { if (!this._suspended) this.ctx.play(); } catch(_){}
+  }
+
+  suspend() {
+    if (this._disposed || this._suspended) return;
+    this._resumeAfterSuspend = !!this._delayTimer || (!!this.ctx && this.ctx.paused !== true);
+    this._suspended = true;
+    try { this.ctx?.pause(); } catch (_) {}
+  }
+
+  resume() {
+    if (this._disposed || !this._suspended) return;
+    this._suspended = false;
+    const play = this._resumeAfterSuspend;
+    this._resumeAfterSuspend = false;
+    try { if (play) this.ctx?.play(); } catch (_) {}
   }
   
   startWithDelayFadeIn(preset, localUrl, delayMs, fadeMs) {
@@ -168,7 +187,10 @@ export class ZenAudio {
 // --- Helper Functions ---
 
 export function resolveAudioPresetForLang(preset, isEn) {
-  try { return isEn ? Math.max(1, Number(preset||101) - 100) : Number(preset||1); } catch(_){ return isEn ? 1 : 1; }
+  try {
+    const value = Number(preset || (isEn ? 101 : 1));
+    return value >= 101 ? Math.max(1, value - 100) : Math.max(1, value);
+  } catch(_){ return 1; }
 }
 
 export const clearZenAudioSaved = () => {

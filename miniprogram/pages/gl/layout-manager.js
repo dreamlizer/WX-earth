@@ -98,11 +98,10 @@ export class LayoutManager {
   }
 
   // —— 通用测量工具 ——
-  measure(id){
+  measure(id, { timeoutMs = 120, fallback = { width: 80, height: 160 } } = {}){
     return new Promise(resolve => {
       try {
         let done = false;
-        const fallback = { width: 80, height: 160 };
         const timer = setTimeout(() => {
           if (done) return;
           done = true;
@@ -114,7 +113,7 @@ export class LayoutManager {
             }
           } catch(_){ }
           resolve(fallback);
-        }, 120);
+        }, timeoutMs);
         const q = wx.createSelectorQuery().in(this.page);
         q.select(`#${id}`).boundingClientRect(rect => {
           if (done) return;
@@ -122,7 +121,7 @@ export class LayoutManager {
           try { clearTimeout(timer); } catch(_){ }
           resolve(rect || fallback);
         }).exec();
-      } catch(_) { resolve({ width: 80, height: 160 }); }
+      } catch(_) { resolve(fallback); }
     });
   }
 

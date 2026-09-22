@@ -69,6 +69,10 @@ for f in tools/*.test.cjs; do node "$f"; done
 
 如果云端数据或贴图不可用，先确认微信开发者工具云环境、云函数部署状态和本地兜底资源，再改业务逻辑。
 
+开发者工具和 PC 客户端默认不请求云贴图（`forceCloudTextures: false`），使用 `miniprogram/assets/textures/preview-*` 的 512×256 本地预览图。它们分别由仓库根目录的 `earth.jpg`、`earth_day8k.webp`、`earth_night.webp`、`cloud.webp` 缩小生成，合计约 260 KiB。手机端仍走原来的云端高清贴图路径。
+
+此前桌面兜底只有 1×1 占位图，导致地球无纹理，并被健康检查反复判为坏图、重载同一占位图；刷新无法解决。2026-09-09 已替换桌面预览资源，自动测试通过；因 Mac 锁屏，修正后的模拟器画面验收仍待完成。
+
 ## 本地图集资源
 
 国家面板的国旗使用 `miniprogram/assets/flags/flags-sprite.png` 和 `miniprogram/pages/gl/flag-sprite.js` 的映射表。图集是本地 PNG 资源，随小程序包上传，不需要云存储；不要改成本地 WebP，真机客户端对小程序包内 WebP 渲染不稳定。

@@ -96,13 +96,13 @@ export class LabelsManager {
         this.page.__zenPreset = preset;
         // 视觉平滑：淡出当前，再在1秒后切入新预设（与切换逻辑一致）
         try { this.page?._stopZenAudio?.(2000); } catch(_){ }
-        try { this.page?.setData?.({ poetryFadeMs: 2000, 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
+        try { this.page?.setData?.({ 'poetryA.fadeMs': 2000, 'poetryB.fadeMs': 2000, 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
         setTimeout(() => {
           // 英文仍播放 1–3 三首：将 4–6 映射到 1–3
           const audioPreset = (next === 'en') ? Math.max(1, preset - 100) : preset;
         try { this.page?._startZenAudio?.(audioPreset); } catch(_){ }
         try { this.page?.__getPoetryMgr?.().resetImmediate?.(); } catch(_){ }
-        try { this.page?.__startPoetryViaMgr?.(preset, 0, { firstDelayMs: 0 }); } catch(_){ }
+        try { this.page?.__startPoetryViaMgr?.(preset, 0); } catch(_){ }
         }, 1000);
       }
     } catch(_){}

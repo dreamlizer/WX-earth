@@ -51,7 +51,13 @@ export function createSceneUpdater(ctx) {
     const now = Date.now();
     const dtSec = perfMonitor.update(now);
     try { runtimeDiagnostics?.recordFrame?.(now, dtSec); } catch(_){}
-    
+
+    // 实验场景独立渲染，原场景的相机、灯光和旋转不参与试航。
+    if (ctx.renderMoonTrial?.(now)) {
+      try { runtimeDiagnostics?.flush?.(now); } catch(_){}
+      return;
+    }
+
     tweener.update(now);
 
     // 0. Moon Voyage Override

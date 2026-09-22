@@ -56,6 +56,8 @@ export const getInitialData = () => ({
   zenToastVisible: false,
   zenToastText: '',
   moonVoyageActive: false,
+  moonTrialActive: false,
+  moonTrialLoading: false,
   moonTimeVisible: false,
   moonTimerText: '',
   moonPhaseText: '',
@@ -78,8 +80,6 @@ export const getInitialData = () => ({
   presetPinnedDy: 0,
   presetCollapsed: false,
   presetListOpacity: 1,
-  // 禅定诗句当前文本（进入禅定后循环显示）
-  poetryFadeMs: 600,
   // 诗句字号（来自配置）
   poetryFontSizePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.fontSizePx)) ? Math.max(8, Number(APP_CFG.poetry.fontSizePx) - 2) : 14,
   // 英文/中文切换时用于还原的基准字号
@@ -92,10 +92,11 @@ export const getInitialData = () => ({
   poetryNextStartMaxDistancePx: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.nextStartMaxDistancePx)) ? Number(APP_CFG.poetry.nextStartMaxDistancePx) : 20,
   poetryInitialCenterRatio: (APP_CFG && APP_CFG.poetry && Number(APP_CFG.poetry.initialCenterRatio)) ? Number(APP_CFG.poetry.initialCenterRatio) : 0.35,
   // 双层容器（A/B）用于句间交替与位移
-  poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
-  poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+  poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, fadeMs: 0, visible: false },
+  poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, fadeMs: 0, visible: false },
   poetryAFirst: false,
   poetryBFirst: false,
+  poetryHorizontal: false,
   // 诗句残影层：由 _startPoetry 按配置生成，按偏移/透明度渲染
   // 移除拖影层：保留纯文字项以降低资源消耗
   // 云端音频 FileID（只走云端，不再回退本地）

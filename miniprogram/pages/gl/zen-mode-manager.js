@@ -142,9 +142,8 @@ export class ZenModeManager {
       const preset = ZenPoetry.resolvePresetForLang(this.page, current, isEn);
       this.page.__zenPreset = preset;
       const audioPreset = ZenAudio.resolveAudioPresetForLang(preset, isEn);
-      const startDelay = isEn ? 1000 : 500;
       this._ensureAudioListeners();
-      this._queuePoetryForAudio(preset, audioPreset, { firstDelayMs: startDelay });
+      this._queuePoetryForAudio(preset, audioPreset);
       this._playAudio(audioPreset);
       ZenUI.updateSensors(this.page);
     } catch(_){ }
@@ -190,7 +189,7 @@ export class ZenModeManager {
 
       // 显示歌名 Toast（锚定在按钮左侧）
       const labels = this.page.__presetLabels || {};
-      const label = labels[nextPreset] || (isEn ? 'Track ' + nextPreset : '曲目 ' + nextPreset);
+      const label = ZenPoetry.resolvePresetLabel(labels, nextPreset, isEn);
 
       this.page.setData({
         zenToastVisible: true,
@@ -228,10 +227,10 @@ export class ZenModeManager {
       const pmgr = this.page?.__getPoetryMgr?.();
       if (pmgr && typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { if (pmgr && typeof pmgr.stop === 'function') { pmgr.stop(); } }
       this._stopAudio(2000);
-      try { this.page?.setData?.({ poetryFadeMs: 2000, 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
+      try { this.page?.setData?.({ 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
       const audioPreset = ZenAudio.resolveAudioPresetForLang(p, isEn);
       this._ensureAudioListeners();
-      this._queuePoetryForAudio(p, audioPreset, { firstDelayMs: 0 });
+      this._queuePoetryForAudio(p, audioPreset);
       try {
         const mgr = this.page?.__getZenMgr?.();
         const localUrl = this.page?._getLocalAudio?.(audioPreset) || '';
@@ -246,7 +245,7 @@ export class ZenModeManager {
       const pmgr = this.page?.__getPoetryMgr?.();
       if (!pmgr) return;
       if (typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { pmgr.stop(); }
-      try { ZenPoetry.playPoetry(this.page, this.page.__zenPreset || 1, 0, { firstDelayMs: 0 }); } catch(_){ }
+      try { ZenPoetry.playPoetry(this.page, this.page.__zenPreset || 1, 0); } catch(_){ }
     } catch(_){ }
   }
 

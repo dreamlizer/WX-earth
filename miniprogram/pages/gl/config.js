@@ -354,7 +354,7 @@ export const APP_CFG = {
     displayMs: 10000, // 单句停留显示时长（毫秒）
     // 开关：以哪边为准（true=优先使用每句的 duration；false=以上面的 displayMs 为准）
     preferLineDuration: true, // 优先使用每句自带 duration
-    offsetMs: -1200, // 诗句时间偏移（毫秒）
+    leadInMs: 1200, // 有时间戳的诗句提前开始淡入，到标注时间完全显示（毫秒）
     // 竖排诗句字号（px），用于页面样式绑定
     fontSizePx: 24, // 诗句字号（px）
     // 诗句移动速度（px/s）：值越大移动越快
@@ -365,6 +365,7 @@ export const APP_CFG = {
     // 屏幕安全边界（px）：与四边保持的最小距离，防止抛出屏幕
     safeMarginPx: 18, // 屏幕安全边界（px）
     // 下一句首字贴近上一句首字的最大距离（px；越小越贴近）
+    maxOverlapRatio: 0.10, // 相邻歌词重叠面积 / 较小文字框面积的上限（含移动期间）
     nextStartMaxDistancePx: 10, // 下一句首字贴近上一句首字的最大距离（px）
     // 首句初始位置接近屏幕中心的比例（0–1），如 0.35 表示中心±35%范围内随机
     initialCenterRatio: 0.55, // 首句初始位置靠近中心的比例（0~1）

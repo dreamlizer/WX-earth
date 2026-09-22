@@ -19,7 +19,7 @@ export const startMoonLyrics = async (mgrState, baseTimeMs) => {
   mgrState._lyricCurrentLayer = null;
 
   const preset = Number(APP_CFG?.moonVoyage?.lyrics?.preset ?? 999) || 999;
-  const offsetMs = Number(APP_CFG?.moonVoyage?.lyrics?.offsetMs ?? APP_CFG?.poetry?.offsetMs ?? 0);
+  const offsetMs = Number(APP_CFG?.moonVoyage?.lyrics?.offsetMs ?? 0);
   const formatLyricText = (raw) => {
     let t = String(raw ?? '');
     t = t.replace(/\./g, '');

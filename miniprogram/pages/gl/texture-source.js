@@ -30,6 +30,15 @@ const FALLBACK_MAP = {
   cloud: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/WWy3XQAAAAASUVORK5CYII=',
 };
 
+// 桌面预览默认不请求云端，使用真实的低分辨率贴图，避免 1×1 占位触发健康检查重载循环。
+// 手机端仍使用上面的云资源和原有失败兜底。
+const DESKTOP_PREVIEW_MAP = {
+  earth: '/assets/textures/preview-earth.jpg',
+  earth_day: '/assets/textures/preview-day.jpg',
+  earth_night: '/assets/textures/preview-night.jpg',
+  cloud: '/assets/textures/preview-cloud.png',
+};
+
 function now() { return Date.now(); }
 
 function readCache() {
@@ -124,7 +133,7 @@ async function resolveTextureUrl(name, preferNetwork = false) {
     try { const info = getSystemInfo(); const p = (info?.platform || '').toLowerCase(); return p === 'ios'; } catch(_) { return false; }
   })();
 
-  let fallback = FALLBACK_MAP[name];
+  let fallback = (isDevtools && !forceCloud ? DESKTOP_PREVIEW_MAP[name] : '') || FALLBACK_MAP[name];
   try {
     if (!fallback && (name === 'earth_night' || name === 'earth_day8k')) {
       const savedDay = readSavedPaths()['earth'];

@@ -73,3 +73,39 @@ export function nearbyFrom(end, itemW, itemH, bounds, limit){
   const y = clamp(safeEndY + dy, bounds.minY, bounds.maxY - itemH);
   return { x, y };
 }
+// 用整个移动范围做保守检查，保证交接期间也不会重新滑进旧歌词。
+// overlap / 较小文字框面积；不是按两个框的并集计算。
+export function placePoetryAvoidingOverlap(start, itemW, itemH, move, bounds, previous, maxOverlap = 0.1){
+  const limit = clamp(maxOverlap, 0, 1);
+  const maxX = Math.max(bounds.minX, bounds.maxX - itemW);
+  const maxY = Math.max(bounds.minY, bounds.maxY - itemH);
+  const origin = { x: clamp(start.x, bounds.minX, maxX), y: clamp(start.y, bounds.minY, maxY) };
+  const candidates = [origin];
+  if (previous) {
+    const xs = [origin.x, previous.x - itemW, previous.x + previous.w];
+    const ys = [origin.y, previous.y - itemH, previous.y + previous.h];
+    for (let i = 0; i <= 8; i++) {
+      xs.push(bounds.minX + (maxX - bounds.minX)*i/8);
+      ys.push(bounds.minY + (maxY - bounds.minY)*i/8);
+    }
+    for (const x of xs) for (const y of ys) candidates.push({
+      x: clamp(x, bounds.minX, maxX), y: clamp(y, bounds.minY, maxY)
+    });
+    candidates.sort((a,b) => Math.hypot(a.x-origin.x,a.y-origin.y)-Math.hypot(b.x-origin.x,b.y-origin.y));
+  }
+  for (const moving of [true, false]) {
+    for (const point of candidates) {
+      const endX = clamp(point.x + (moving ? move.tx : 0), bounds.minX, maxX);
+      const endY = clamp(point.y + (moving ? move.ty : 0), bounds.minY, maxY);
+      const x = Math.min(point.x, endX), y = Math.min(point.y, endY);
+      const w = itemW + Math.abs(endX-point.x), h = itemH + Math.abs(endY-point.y);
+      const overlap = previous ? Math.max(0, Math.min(x+w, previous.x+previous.w)-Math.max(x,previous.x)) *
+        Math.max(0, Math.min(y+h, previous.y+previous.h)-Math.max(y,previous.y)) : 0;
+      if (!previous || overlap <= limit * Math.min(itemW*itemH, previous.area)) {
+        return { start: point, move: {endX, endY, tx:endX-point.x, ty:endY-point.y}, fits: true };
+      }
+    }
+  }
+  // 两个大文本框放不下时，由调用方收起旧句，不缩字、不延后歌词节拍。
+  return {start: origin, move: {endX:origin.x,endY:origin.y,tx:0,ty:0}, fits:false};
+}

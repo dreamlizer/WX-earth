@@ -3,13 +3,14 @@
 // 职责：管理预设列表、Toast、以及布局传感器更新
 
 import { getSystemInfo } from './sys-info.js';
+import { getPresetIdsForLang, resolvePresetLabel } from './zen-poetry.js';
 
 export function toggleList(page, mgr) {
   return new Promise(async (resolve) => {
     try {
       if (!page.data.zenMode) return resolve();
       const isEn = (page.data?.lang === 'en');
-      const ids = isEn ? [101,102,103] : [1,2,3];
+      const ids = getPresetIdsForLang(isEn);
       
       // 列表未打开：打开并淡入
       if (!page.data.presetListOpen) {
@@ -132,7 +133,7 @@ export function closeList(page, mgr) {
 export function buildList(ids, cur, labels) {
   try {
     const list = ids
-      .map(id => ({ id, label: labels[id] }))
+      .map(id => ({ id, label: resolvePresetLabel(labels, id, id >= 101) }))
       .filter(it => typeof it.label === 'string' && it.label.length > 0);
     const first = list.find(it => it.id === cur);
     const others = list.filter(it => it.id !== cur);

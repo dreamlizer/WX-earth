@@ -6,6 +6,11 @@ import { APP_CFG, LOG } from './config.js';
 import { loadPoetryPresets, loadPoetryLabelsFromDB, loadSpecialTexts } from './content-loader.js';
 import { computeStartNearCenter, computeMove } from './poetry-motion.js';
 
+const ENGLISH_ONLY_TRACK_LABELS = {
+  102: 'How Deep Is Your Love',
+  103: 'Out of Darkness'
+};
+
 export async function preloadPoetryCloud(page) {
   const { map, labels, source } = await loadPoetryPresets(APP_CFG, LOG);
   if (Object.keys(map).length) {
@@ -69,7 +74,7 @@ export async function playPoetry(page, preset, startIdx, opts) {
     const isEn = (page.data?.lang === 'en');
     const presetsMap = page?.__poetryPresets || {};
     let useMap = presetsMap;
-    if (isEn) {
+    if (isEn || p >= 101) {
       try {
         const sanitized = { ...presetsMap };
         const enKeys = Object.keys(presetsMap).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
@@ -95,35 +100,31 @@ export function stopPoetry(page) {
 
 export function resolvePresetForLang(page, current, isEn) {
   try {
-    let preset = Number(current) || (isEn ? 101 : 1);
-    if (isEn) {
-      try {
-        const map = page?.__poetryPresets || {};
-        const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
-        const valid = (preset===1||preset===2||preset===3) ? (keys[0]||101) : preset;
-        return valid;
-      } catch(_){ return (preset===1||preset===2||preset===3) ? 101 : preset; }
-    } else {
-      if (preset===101||preset===102||preset===103||preset>=104) return 1;
-      return preset;
-    }
+    const preset = Number(current) || (isEn ? 101 : 1);
+    const audioTrack = preset >= 101 ? preset - 100 : preset;
+    if (audioTrack === 2) return 102;
+    if (audioTrack === 3) return 103;
+    return isEn ? 101 : 1;
   } catch(_){ return isEn ? 101 : 1; }
 }
 
 export function resolveNextPreset(page, current, isEn) {
   try {
-    const cur = Number(current) || (isEn ? 101 : 1);
-    if (isEn) {
-      try {
-        const map = page?.__poetryPresets || {};
-        const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
-        const idx = Math.max(0, keys.indexOf(cur));
-        return keys.length ? keys[(idx+1) % keys.length] : (cur===101?102:(cur===102?103:101));
-      } catch(_){ return (cur === 101 ? 102 : (cur === 102 ? 103 : 101)); }
-    } else {
-      return (cur === 1 ? 2 : (cur === 2 ? 3 : 1));
-    }
-  } catch(_){ return isEn ? 102 : 2; }
+    const ids = getPresetIdsForLang(isEn);
+    const cur = resolvePresetForLang(page, current, isEn);
+    const idx = ids.indexOf(cur);
+    return ids[(idx >= 0 ? idx + 1 : 0) % ids.length];
+  } catch(_){ return 102; }
+}
+
+export function getPresetIdsForLang(isEn) {
+  return [isEn ? 101 : 1, 102, 103];
+}
+
+export function resolvePresetLabel(labels, preset, isEn) {
+  const p = Number(preset) || (isEn ? 101 : 1);
+  if (ENGLISH_ONLY_TRACK_LABELS[p]) return ENGLISH_ONLY_TRACK_LABELS[p];
+  return labels?.[p] || (isEn ? `Track ${p}` : `曲目 ${p}`);
 }
 
 // —— 彩蛋逻辑 ——
@@ -159,7 +160,10 @@ export async function triggerSpecial(page, mgr) {
     
     page.__specialIdx = (page.__specialIdx || 0) + 1;
     
-    try { page.setData({ poetryFadeMs: Math.max(200, Number(APP_CFG?.poetry?.special?.fadeOutMs || 2000)), 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){}
+    try {
+      const fadeMs = Math.max(200, Number(APP_CFG?.poetry?.special?.fadeOutMs || 2000));
+      page.setData({ 'poetryA.fadeMs': fadeMs, 'poetryB.fadeMs': fadeMs, 'poetryA.visible': false, 'poetryB.visible': false });
+    } catch(_){}
     
     let resumeIdx = 0;
     try {

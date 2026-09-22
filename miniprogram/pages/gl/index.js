@@ -3,6 +3,7 @@ import { boot, teardown, onTouchStart, onTouchMove, onTouchEnd, setZoom, setNigh
 import { APP_CFG, isDevtools, LOG } from './config.js';
 import { formatTime as formatTimeUtil } from './time-utils.js';
 import { ZenAudio } from './zen-audio.js';
+import { enterMoonTrial, exitMoonTrial, previewMoonTrial } from './main.js';
 import { computeGmtOffsetStr as computeGmtOffsetStrUtil, buildCountryTitleSuffix } from './title-utils.js';
 // 已迁移到 SearchManager：不再在页面层直接使用 buildSearchSuggestions
 import { ZoomManager } from './zoom-manager.js';
@@ -82,6 +83,7 @@ Page({
 
   // 启动登月模式
   onEnterMoonVoyage() {
+    if (this.data.moonTrialActive) return;
     try {
       if (isMoonVoyageActive()) {
         exitMoonVoyage();
@@ -90,6 +92,18 @@ Page({
     } catch(_){ }
     try { if (this.__isMoonLocked()) return; } catch(_){ }
     enterMoonVoyage();
+  },
+
+  onEnterMoonTrial() {
+    if (this.data.moonTrialActive) { exitMoonTrial(); return; }
+    if (!this.data.zenMode || this.__isMoonLocked()) return;
+    enterMoonTrial();
+  },
+
+  onPreviewMoonTrial(e) {
+    if (!this.__isDevtools) return;
+    const value = e.currentTarget.dataset.time;
+    previewMoonTrial(value === 'play' ? null : Number(value));
   },
 
   // Custom Moon Toast (Smoother Fade)
@@ -550,7 +564,7 @@ Page({
         appCfg: APP_CFG,
         getViewport: () => this.__getLayoutMgr().getViewport(),
         getCanvasRect: () => this.__canvasRect,
-        measure: (id) => this.__getLayoutMgr().measure(id),
+        measure: (id) => this.__getLayoutMgr().measure(id, { timeoutMs: 500, fallback: null }),
         setData: (obj) => {
           // [Global Interceptor] 
           // If Zen Poetry is paused (Moon Mode), block any attempt to show poetry

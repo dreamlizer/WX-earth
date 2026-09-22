@@ -1,7 +1,7 @@
 // 职责：管理禅定诗句的显示与切换（DOM层或3D层），与页面事件/状态解耦。
 // 依赖通过构造函数注入，以便在页面外部独立测试与复用。
 
-import { computeStartNearCenter, computeMove, nearbyFrom } from './poetry-motion.js';
+import { computeStartNearCenter, computeMove, nearbyFrom, placePoetryAvoidingOverlap } from './poetry-motion.js';
 const __computeStartCenterEn = (vpW, vpH, w, h, margin) => {
   let x = (vpW - w) / 2;
   if (w > vpW * 0.8) x = Math.max(margin, Math.min(x, vpW - w - margin));
@@ -47,6 +47,7 @@ export class PoetryManager {
     this._absSchedule = false;
     this._showLineOn = null;
     this._hasAbsStart = false;
+    this._placements = {};
     this._playVersion = 0; // 版本号机制，用于作废旧的 async 执行流
   }
 
@@ -63,22 +64,31 @@ export class PoetryManager {
       this._lastStopTime = Date.now(); // 记录停止时刻
       try { for (const t of (this._timers||[])) clearTimeout(t); } catch(_){}
       this._timers = [];
-      this.setData({ 'poetryA.visible': false, 'poetryB.visible': false, poetryAFirst: false, poetryBFirst: false });
-      const fadeMs = Number(this.appCfg?.poetry?.fadeInMs || 600);
+      const fadeMs = Math.max(0, Number(this.appCfg?.poetry?.fadeOutMs || 600));
+      for (const item of Object.values(this._placements)) item.visibleUntil = Math.min(item.visibleUntil, Date.now()+fadeMs);
+      this.setData({
+        'poetryA.fadeMs': fadeMs,
+        'poetryB.fadeMs': fadeMs,
+        'poetryA.visible': false,
+        'poetryB.visible': false,
+        poetryAFirst: false,
+        poetryBFirst: false
+      });
       // 使用当前版本号的闭包来防止旧的 stop 回调干扰新的 play
       const currentVer = this._playVersion;
       setTimeout(() => {
         if (this._playVersion !== currentVer) return;
         this.setData({
-          poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
-          poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false }
+          poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, fadeMs: 0, visible: false },
+          poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, fadeMs: 0, visible: false }
         });
-      }, Math.max(0, Math.min(2000, fadeMs)));
+      }, fadeMs);
     } catch(_){ }
   }
 
   resetImmediate(){
     try {
+      this._placements = {};
       // 立即清空当前状态：不等待淡出
       try { if (this.appCfg?.poetry?.use3D) { this.stopPoetry3D(); } } catch(_){ }
       clearTimeout(this._timer); clearTimeout(this._timer2);
@@ -87,9 +97,8 @@ export class PoetryManager {
       try { for (const t of (this._timers||[])) clearTimeout(t); } catch(_){}
       this._timers = [];
       this.setData({
-        poetryFadeMs: 0,
-        poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
-        poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, visible: false },
+        poetryA: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, fadeMs: 0, visible: false },
+        poetryB: { text: '', x: 0, y: 0, tx: 0, ty: 0, moveMs: 0, fadeMs: 0, visible: false },
         poetryAFirst: false,
         poetryBFirst: false
       });
@@ -101,13 +110,14 @@ export class PoetryManager {
       clearTimeout(this._timer); clearTimeout(this._timer2);
       this._timer = null; this._timer2 = null; this._idx = Math.max(0, Number(startIdx || 0));
       const cfg = this.appCfg?.poetry || {};
-      const fadeInMs = Number(cfg.fadeInMs || 600);
+      const fadeInMs = Math.max(0, Number(cfg.fadeInMs || 600));
+      const fadeOutMs = Math.max(0, Number(cfg.fadeOutMs || fadeInMs));
+      const leadInMs = Math.max(0, Number(cfg.leadInMs || 0));
       const crossMs = Number(cfg.crossfadeMs || 2000); // 默认交叉 2 秒，匹配“旧诗句淡出 2 秒”的需求
       const moveSpeed = Number(cfg.movePxPerSec || 36);
       const margin = Number(cfg.safeMarginPx || 18);
-      // 页面数据中的过渡时长需要同步
-      // 统一使用 2 秒淡出；如需单独控制淡入，可在模板中区分 class（此处先满足需求）
-      this.setData({ poetryFadeMs: Math.max(fadeInMs, 2000) });
+      const isEnglishLyrics = Number(preset) >= 101 || String(this.getLang?.() || 'zh') === 'en';
+      this.setData({ poetryHorizontal: isEnglishLyrics });
       this._hasShownFirstLine = false;
 
       // 诊断与正确性：不再在目标预设缺失时回退到 1，避免造成“切到第三首仍显示第一套”错觉。
@@ -116,9 +126,6 @@ export class PoetryManager {
       if (!Array.isArray(lines) || !lines.length) return;
 
       const preferLine = !!cfg.preferLineDuration;
-      const firstDelayMs = Math.max(0, Number((opts && opts.firstDelayMs !== undefined) ? opts.firstDelayMs : 1000));
-      const offsetMs = Number(cfg.offsetMs || 0);
-      const scheduleShiftMs = Math.max(0, firstDelayMs + offsetMs);
       const hasAbsStart = Array.isArray(lines) && lines.some(l => Number.isFinite(Number(l?.['start-time'])));
       this._timeline = [];
       if (hasAbsStart) {
@@ -126,13 +133,14 @@ export class PoetryManager {
           if (!l || !l.text) return null;
           const baseStart = Math.max(0, Number(l?.['start-time'] || 0));
           const dur = Number(preferLine ? (l.duration || cfg.displayMs || 7000) : (cfg.displayMs || l.duration || 7000));
-          const tStart = Math.max(0, scheduleShiftMs + baseStart);
-          return { index: idx, text: String(l.text), tStart, tEnd: tStart + dur, dur };
+          const tStart = Math.max(0, baseStart - leadInMs);
+          const tEnd = baseStart + dur;
+          return { index: idx, text: String(l.text), cueStart: baseStart, tStart, tEnd, dur, visibleDur: tEnd - tStart };
         }).filter(Boolean);
         this._timeline = arr;
       } else {
         const order = Array.from({ length: lines.length }, (_, j) => (this._idx + j) % lines.length);
-        let accum = scheduleShiftMs;
+        let accum = 0;
         for (let k = 0; k < order.length; k++) {
           const idx = order[k];
           const l = lines[idx];
@@ -174,7 +182,7 @@ export class PoetryManager {
       } catch(_){}
       // 3D 模式：交由 three.js 层渲染（被地球遮挡），关闭 DOM 叠加层
       if (cfg.use3D) {
-        try { this.startPoetry3D(lines, { ...cfg, baseTime: this._baseTime, firstDelayMs, offsetMs }); } catch(_){ }
+        try { this.startPoetry3D(lines, { ...cfg, baseTime: this._baseTime }); } catch(_){ }
         try { this.setData({ 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){}
         return;
       }
@@ -199,6 +207,7 @@ export class PoetryManager {
         const id = useA ? 'poetryA' : 'poetryB';
         const setText = {}; setText[useA ? 'poetryA.text' : 'poetryB.text'] = text;
         setText[useA ? 'poetryA.visible' : 'poetryB.visible'] = false;
+        setText[useA ? 'poetryA.fadeMs' : 'poetryB.fadeMs'] = 0;
         // 先将移动时长置为 0，避免把上一次残留的 transform 动画到初始位
         setText[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
         const isFirstLine = !this._hasShownFirstLine;
@@ -207,19 +216,43 @@ export class PoetryManager {
         const rect = await this.measure(id);
         if (this._playVersion !== currentVer) return; // 版本检查
 
-      const itemW = Math.max(1, rect?.width || 80);
-      const itemH = Math.max(1, rect?.height || 160);
+      // 未量到真实文字时按整个可用区域保守占位，不能拿 80×160 冒充英文实际尺寸。
+      const measured = rect?.width > 0 && rect?.height > 0;
+      const itemW = measured ? rect.width : bounds.maxX - bounds.minX;
+      const itemH = measured ? rect.height : bounds.maxY - bounds.minY;
       // 允许通过配置控制“初始靠近中心”的范围比例（默认 0.35）
       const centerRatio = (typeof cfg.initialCenterRatio === 'number') ? cfg.initialCenterRatio : 0.35;
-      const isEn = String(this.getLang?.() || 'zh') === 'en';
-      let start = startPosOpt || (isEn
+      let start = startPosOpt || (isEnglishLyrics
         ? __computeStartCenterEn(vp.windowWidth, vp.windowHeight, itemW, itemH, margin)
         : this.computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds, centerRatio));
         // 优先级开关：preferLineDuration=true 时以当前句的 showMs 为主，否则以配置 displayMs 为主
         const preferLine2 = !!cfg.preferLineDuration;
         const showDuration = Number(preferLine2 ? (showMs || cfg.displayMs || 7000) : (cfg.displayMs || showMs || 7000));
         const totalDuration = Math.max(0, showDuration + crossMs);
-        const move = this.computeMove(start, itemW, itemH, moveSpeed, totalDuration, bounds);
+        let move = this.computeMove(start, itemW, itemH, moveSpeed, totalDuration, bounds);
+        const otherId = useA ? 'poetryB' : 'poetryA';
+        const previous = this._placements[otherId];
+        const now = Date.now();
+        let occupied = null;
+        if (previous && previous.visibleUntil > now) {
+          const progress = Math.max(0, Math.min(1, (now-previous.motionStart)/Math.max(1,previous.duration)));
+          const x = previous.x + previous.tx*progress;
+          const y = previous.y + previous.ty*progress;
+          const endX = previous.x+previous.tx, endY = previous.y+previous.ty;
+          occupied = { x:Math.min(x,endX), y:Math.min(y,endY),
+            w:previous.w+Math.abs(endX-x), h:previous.h+Math.abs(endY-y), area:previous.w*previous.h };
+        }
+        const layout = placePoetryAvoidingOverlap(start, itemW, itemH, move, bounds, occupied,
+          typeof cfg.maxOverlapRatio === 'number' ? cfg.maxOverlapRatio : 0.1);
+        start = layout.start;
+        move = layout.move;
+        if (!layout.fits) {
+          this.setData({[otherId+'.fadeMs']:0, [otherId+'.visible']:false});
+          previous.visibleUntil = now;
+        }
+        const placement = {x:start.x,y:start.y,w:itemW,h:itemH,tx:move.tx,ty:move.ty,
+          motionStart:now+32,duration:totalDuration,visibleUntil:now+32+showDuration+fadeOutMs};
+        this._placements[id] = placement;
 
         try {
           const elapsedSec = this._baseTime ? ((Date.now() - this._baseTime) / 1000) : 0;
@@ -235,6 +268,7 @@ export class PoetryManager {
         phase1[useA ? 'poetryA.tx' : 'poetryB.tx'] = 0;
         phase1[useA ? 'poetryA.ty' : 'poetryB.ty'] = 0;
         phase1[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
+        phase1[useA ? 'poetryA.fadeMs' : 'poetryB.fadeMs'] = fadeInMs;
         phase1[useA ? 'poetryA.visible' : 'poetryB.visible'] = true;
         this._hasShownFirstLine = true;
         this.setData(phase1);
@@ -246,6 +280,8 @@ export class PoetryManager {
         await new Promise(r => setTimeout(r, 16)); // 再等一帧，确保过渡时长生效
         if (this._playVersion !== currentVer) return; // 版本检查
 
+        placement.motionStart = Date.now();
+        placement.visibleUntil = placement.motionStart + showDuration + fadeOutMs;
         // Phase3：设置目标位移，开始移动动画
         const phase3 = {}; phase3[useA ? 'poetryA.tx' : 'poetryB.tx'] = move.tx; phase3[useA ? 'poetryA.ty' : 'poetryB.ty'] = move.ty; this.setData(phase3);
 
@@ -261,7 +297,7 @@ export class PoetryManager {
             if (!nextStart || isNaN(nextStart.x) || isNaN(nextStart.y)) {
               nextStart = this.computeStartNearCenter(vp.windowWidth, vp.windowHeight, itemW, itemH, bounds, centerRatio);
             }
-            if (isEn) {
+            if (isEnglishLyrics) {
               const cx = Math.max(bounds.minX, Math.min(bounds.maxX - itemW, (vp.windowWidth - itemW) / 2));
               const cy = Math.max(bounds.minY, Math.min(bounds.maxY - itemH, vp.windowHeight * 0.25 + Math.random() * vp.windowHeight * 0.15));
               nextStart.x = Math.max(bounds.minX, Math.min(bounds.maxX - itemW, (nextStart.x + cx) * 0.5));
@@ -275,7 +311,11 @@ export class PoetryManager {
         // 独立定时：在本句完整显示时长到达后，开始旧句淡出
         this._timer = setTimeout(() => {
           if (this._playVersion !== currentVer) return; // 版本检查
-          const hide = {}; hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false; this.setData(hide);
+          if (this._placements[id] !== placement) return;
+          const hide = {};
+          hide[useA ? 'poetryA.fadeMs' : 'poetryB.fadeMs'] = fadeOutMs;
+          hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false;
+          this.setData(hide);
         }, showDuration);
       };
       this._showLineOn = showLineOn;
@@ -291,7 +331,7 @@ export class PoetryManager {
           const delay = Math.max(0, item.tStart - elapsedNow);
           const h = setTimeout(() => {
             this._idx = item.index;
-            showLineOn(useA, item.text, item.dur);
+            showLineOn(useA, item.text, item.visibleDur);
             useA = !useA;
           }, delay);
           this._timers.push(h);
@@ -303,7 +343,7 @@ export class PoetryManager {
           const preferLine3 = !!cfg.preferLineDuration;
           const ms0 = Number(preferLine3 ? (item0?.duration || cfg.displayMs || 7000) : (cfg.displayMs || 7000));
           showLineOn(true, item0.text, ms0);
-        }, scheduleShiftMs);
+        }, 0);
       }
     } catch(_){ }
   }
@@ -324,7 +364,7 @@ export class PoetryManager {
         const h = setTimeout(() => {
           try {
             this._idx = item.index;
-            this._showLineOn(useA, item.text, item.dur);
+            this._showLineOn(useA, item.text, item.visibleDur);
             useA = !useA;
           } catch(_){ }
         }, delay);

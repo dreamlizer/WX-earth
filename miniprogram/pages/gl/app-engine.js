@@ -31,6 +31,7 @@ import { createLightingManager } from './lighting-manager.js';
 import { createFlyManager } from './fly-manager.js';
 import { ZenModeManager, applyZenAutoRotate, applyZenBrake, advanceZenAnimation, advanceRotationFrame, zenState, enterZenMode, exitZenMode, resetZenState, createZenController } from './zen-mode-manager.js';
 import { MoonVoyageManager } from './moon-voyage-manager.js';
+import { MoonTrial } from './moon-trial.js';
 import { clearZenAudioSaved } from './zen-audio.js';
 import { createTweenManager } from './tween-manager.js';
 import { createFadeOverlay } from './fade-overlay.js';
@@ -60,6 +61,7 @@ export class AppEngine {
     this.sys = getSystemInfo();
     this.state = null; // 核心状态容器 (THREE, scene, etc.)
     this.moonMgr = null;
+    this.moonTrial = null;
     this.managers = {}; // 存放 input, fly, lighting 等管理器
     
     // 配置相关
@@ -150,6 +152,7 @@ export class AppEngine {
     this.loop = null;
     this.sceneCtx = null;
     this.moonMgr = null;
+    this.moonTrial = null;
   }
 
   // 初始化入口
@@ -194,6 +197,7 @@ export class AppEngine {
     // 3. Moon Manager
     this.moonMgr = new MoonVoyageManager();
     this.moonMgr.init(THREE, scene, globeGroup, camera, page, fader);
+    this.moonTrial = new MoonTrial(THREE, page);
 
     updateCamDist(camera, baseDist, zenState.zoom);
 
@@ -462,7 +466,8 @@ export class AppEngine {
       THREE, renderer, scene, width, height,
       refs: { ...sceneCtx.refs, ...sceneCtx.setters },
       getState: () => this.state,
-      isMoonVoyageActive: () => this.moonMgr && this.moonMgr.isActive()
+      isMoonVoyageActive: () => this.moonMgr && this.moonMgr.isActive(),
+      renderMoonTrial: (now) => this.moonTrial?.render(renderer, camera.aspect, now)
     });
 
     const render = () => { sceneUpdater.update(); };
@@ -517,6 +522,7 @@ export class AppEngine {
     ];
     try { if (state?.onWinResizeCb) wx.offWindowResize(state.onWinResizeCb); } catch(_){ }
     try { this.loop?.stop(); } catch(_){ }
+    try { this.moonTrial?.dispose(); } catch(_){ }
     try { this.moonMgr?.dispose?.(); } catch(_){ }
     try { this.poetry3d?.stop?.(); this.poetry3d?.setEnabled?.(false); } catch(_){ }
 
@@ -626,6 +632,8 @@ export class AppEngine {
   
   setPaused(on) {
     const p = !!on;
+    if (p) this.moonTrial?.exit(true, false);
+    else this.moonTrial?.resumeZen();
     if (p) this.loop?.stop(); else this.loop?.start(); 
   }
   
@@ -634,6 +642,7 @@ export class AppEngine {
   }
   
   enterMoonVoyage() {
+    if (this.moonTrial?.isActive()) return;
     try { TWEEN?.removeAll?.(); } catch(e){ console.warn('[Moon] Tween clear fail', e); }
     if (this.moonMgr) this.moonMgr.enter();
   }
@@ -647,7 +656,17 @@ export class AppEngine {
   }
   
   isMoonVoyageActive() {
-    return this.moonMgr && this.moonMgr.isActive();
+    return !!(this.moonTrial?.isActive() || this.moonMgr?.isActive());
+  }
+
+  enterMoonTrial() {
+    if (!this.state?.page?.data?.zenMode) return;
+    if (this.moonMgr?.isActive() || this.moonMgr?._entering || this.moonMgr?._exiting) return;
+    return this.moonTrial?.enter();
+  }
+
+  exitMoonTrial() {
+    this.moonTrial?.exit();
   }
   
   startPoetry3D(lines, conf) {
