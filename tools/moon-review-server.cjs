@@ -6,21 +6,35 @@ const http = require('node:http');
 const root = path.resolve(__dirname, '..');
 const page = `<!doctype html><meta charset="utf-8"><title>登月关键帧检查</title>
 <style>body{margin:0;background:#090d16;color:#d9e1ec;font:16px system-ui;text-align:center}nav{padding:14px}button{margin:0 8px;padding:8px 16px}canvas{width:390px;height:720px;background:black}p{margin:8px;font-size:13px}</style>
-<nav><button onclick="show(156)">第一次回望</button><button onclick="show(188)">月球遮挡</button><button onclick="show(245)">最终停留</button><button onclick="save()">保存当前画面</button></nav><p>实际场景代码 · 本地 WebGL 构图检查（不代替微信验收）</p><canvas id="frame" width="780" height="1440"></canvas><p id="status">正在载入本地贴图</p>
+<nav><button onclick="show(156)">第一次回望</button><button onclick="show(188)">月球遮挡</button><button onclick="show(245)">最终停留</button><button onclick="save()">保存当前画面</button><button onclick="playReview()">连续检查（4倍速）</button></nav><input aria-label="时间" type="range" min="113" max="265" step="0.1" value="156" oninput="show(Number(this.value))"><p>实际场景代码 · 本地 WebGL 构图检查（不代替微信验收）</p><canvas id="frame" width="780" height="1440"></canvas><p id="status">正在载入本地贴图</p>
 <script>var exports={};</script><script src="/adapter.js"></script><script type="module">
 import {createMoonTrialScene} from '/scene.js';
 const canvas=document.querySelector('canvas');canvas.createImage=()=>new Image();canvas.requestAnimationFrame=requestAnimationFrame;canvas.cancelAnimationFrame=cancelAnimationFrame;
 const THREE=exports.createScopedThreejs(canvas);const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});renderer.setSize(780,1440,false);
 const view=createMoonTrialScene(THREE,false);let current=156;await view.ready;
-window.show=(t)=>{current=t;view.update(t,390/720);view.render(renderer);document.querySelector('#status').textContent=t+' 秒 · 可直接切换，无需播放音乐';};
+let playing=false;
+const renderFrame=(t)=>{current=t;view.update(t,390/720);view.render(renderer);document.querySelector('#status').textContent=t+' 秒 · 可直接切换，无需播放音乐';};
+window.show=(t)=>{playing=false;renderFrame(t);};
+window.playReview=()=>{playing=true;let start=performance.now(),empty=0,count=0;const step=now=>{if(!playing)return;const t=Math.min(265,113+(now-start)/1000*4);renderFrame(t);count++;if(view.isMoonVisible && !view.isMoonVisible())empty++;if(t<265)requestAnimationFrame(step);else{playing=false;document.querySelector('#status').textContent='连续检查完成：'+count+' 帧，月球完全出画 '+empty+' 帧';}};requestAnimationFrame(step);};
+window.playSweep=()=>{playing=true;const start=performance.now();const step=now=>{if(!playing)return;const t=162.5+(now-start)/1000;renderFrame(Math.min(t,171.5));if(t<171.5)requestAnimationFrame(step);else playing=false;};requestAnimationFrame(step);};
 window.save=async()=>{await fetch('/capture/'+current,{method:'POST',body:canvas.toDataURL('image/png')});document.querySelector('#status').textContent='已保存实际 WebGL 画面：'+current+' 秒';};show(156);
 </script>`;
 http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');
- if(req.method==='POST' && /^\/capture\/(156|188|245)$/.test(url.pathname)){
+ if(req.method==='POST' && /^\/capture\/(156|188|245|original-174|original-243|original-261|original-167|original-200)$/.test(url.pathname)){
   let body='';req.on('data',b=>{body+=b;if(body.length>15000000)req.destroy();});req.on('end',()=>{const dir=path.join(root,'docs/reviews/moon-refinement');fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,url.pathname.split('/').pop()+'.png'),Buffer.from(body.split(',')[1],'base64'));res.end('ok');});return;
  }
  if(url.pathname==='/'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(page);return;}
+ if(url.pathname==='/original'){
+  res.setHeader('Content-Type','text/html; charset=utf-8');
+  res.end(page.replaceAll('/scene.js','/original-scene.js').replaceAll('156','174').replaceAll('188','243').replaceAll('245','261').replace("'/capture/'+current", "'/capture/original-'+current").replace('<nav>', '<nav><button onclick="playSweep()">迎光回放（原速）</button><button onclick="show(167)">掠光一</button><button onclick="show(200)">掠光二</button>').replace('月球遮挡','拉近前').replace('实际场景代码','右下角原轨道模块：仅检查地月构图'));
+  return;
+ }
+ if(url.pathname==='/original-scene.js'){
+  const orbit=fs.readFileSync(path.join(root,'miniprogram/pages/gl/moon-orbit-sequence.js'),'utf8').replace(/^import .*;\n/gm,'');
+  const harness=fs.readFileSync(path.join(root,'tools/moon-original-review-scene.js'),'utf8');
+  res.setHeader('Content-Type','text/javascript');res.end('const fixTexture=()=>{};\n'+orbit+'\n'+harness);return;
+ }
  if(url.pathname==='/scene.js'){
   const source=fs.readFileSync(path.join(root,'miniprogram/pages/gl/moon-trial-scene.js'),'utf8').replace(/^import .*;\n/gm,'');
   const data=fs.readFileSync(path.join(root,'miniprogram/pages/gl/moon-voyage-zodiac-data.js'),'utf8');
@@ -29,4 +43,4 @@ http.createServer((req,res)=>{
  const file=url.pathname==='/adapter.js'?path.join(root,'miniprogram/node_modules/threejs-miniprogram/dist/index.js'):path.resolve(root,'miniprogram', '.'+url.pathname);
  if(!file.startsWith(path.join(root,'miniprogram')+path.sep)){res.writeHead(403).end();return;}
  try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.png')?'image/png':'image/jpeg');res.end(fs.readFileSync(file));}catch(e){res.writeHead(404).end();}
-}).listen(8766,'127.0.0.1',()=>console.log('Moon review: http://127.0.0.1:8766'));
+}).listen(Number(process.env.MOON_REVIEW_PORT || 8766),'127.0.0.1',()=>console.log('Moon review server ready'));

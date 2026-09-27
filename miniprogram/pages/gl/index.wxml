@@ -34,7 +34,7 @@
   <image wx:if="{{moonBtnUrl}}" class="moon-btn-img" src="{{moonBtnUrl}}" mode="aspectFill"></image>
   <text wx:else>🌖</text>
 </view>
-<!-- 平行试航入口：仅在禅定中可用，保留右侧原版登月。 -->
+<!-- 旧实验仅保留已有场景的状态展示，不再显示禅定试航入口。 -->
 <view wx:if="{{moonTrialActive && trialLyric}}" class="moon-lyrics" style="bottom: 100px;"><text class="moon-lyrics-text visible">{{trialLyric}}</text></view>
 <view wx:if="{{moonTrialLoading}}" style="position: fixed; top: 48px; left: 0; right: 0; z-index: 1600; text-align: center; color: #bacbdf; font-size: 24rpx; pointer-events: none;">正在准备旅程与音乐…</view>
 <!-- 调试热区只在原版登月播放时接收触摸，不覆盖试航入口。 -->
@@ -152,7 +152,7 @@
 </scroll-view>
 
 <!-- 使用画布下方已有的 96rpx 留白，确保原生画布不会盖住返回入口。 -->
-<cover-view id="moonTrialEntry" style="left: 32rpx; right: auto; bottom: 16rpx; width: 88rpx; height: 64rpx; display: block; line-height: 64rpx; background: {{moonTrialActive ? '#142136' : 'transparent'}} !important; font-size: 24rpx; letter-spacing: 3rpx; transition-delay: 0s;" class="top-icon-btn moon-btn {{zenBtnVisible && zenMode && !moonVoyageActive ? 'visible' : ''}}" catchtap="onEnterMoonTrial" role="button" aria-label="{{moonTrialActive ? '返回禅定' : '月球试航'}}">{{moonTrialActive ? '返回' : '试航'}}</cover-view>
+<cover-view wx:if="{{moonTrialActive}}" id="moonTrialEntry" style="left: 32rpx; right: auto; bottom: 16rpx; width: 88rpx; height: 64rpx; display: block; line-height: 64rpx; background: {{moonTrialActive ? '#142136' : 'transparent'}} !important; font-size: 24rpx; letter-spacing: 3rpx; transition-delay: 0s;" class="top-icon-btn moon-btn {{zenBtnVisible && zenMode && !moonVoyageActive ? 'visible' : ''}}" catchtap="onEnterMoonTrial" role="button" aria-label="返回禅定">返回</cover-view>
 
 <!-- 底部缩放条：统一胶囊风格（受 showZoomBar 控制，可见才渲染） -->
 <view wx:if="{{showZoomBar}}" class="zoom-bar {{zenMode ? 'inert' : ''}}" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">

@@ -1,3 +1,5 @@
+import { fixTexture } from './asset-manager.js';
+
 export class MoonOrbitSequence {
   constructor() {
     this.THREE = null;
@@ -51,10 +53,25 @@ export class MoonOrbitSequence {
   }
 
   hasArtifacts() {
-    return !!this._sunMesh;
+    return !!(this._sunMesh || this._farEarth || this._glare);
   }
 
   reset() {
+    if (this._farEarth) {
+      this.scene?.remove(this._farEarth);
+      this._farEarth.geometry.dispose();
+      this._farEarth.material.dispose();
+      this._farEarthTexture?.dispose();
+    }
+    this._farEarth = null;
+    this._farEarthTexture = null;
+    this._farEarthEndAxis = null;
+    this._farEarthFacing = null;
+    if (this._glare) {
+      this.scene?.remove(this._glare);
+      this._glare.children.forEach(mesh => { mesh.geometry.dispose(); mesh.material.dispose(); });
+    }
+    this._glare = null;
     this._initDone = false;
     this._baseAz = null;
     this._baseY = null;
@@ -88,6 +105,72 @@ export class MoonOrbitSequence {
       this._sunMesh = null;
     }
     this.reset();
+  }
+
+  // 画外阳光的镜头散射：不改变任何场景灯光、月面材质或相机。
+  _tickGlare(camera, moonWorld, moonRadius, orbitDeg, orbitT, orbitDurationSec = 130, orbitEndDeg = 630) {
+    const THREE = this.THREE;
+    if (!this._glare) {
+      const group = new THREE.Group();
+      group.name = 'MOON_VOYAGE_SUN_GLARE';
+      const material = new THREE.ShaderMaterial({
+        uniforms: { strength: { value: 0 }, peak: { value: 0 }, aspect: { value: 1 },
+          root: { value: new THREE.Vector2() }, variation: { value: 0.9 + Math.random() * 0.2 } },
+        vertexShader: 'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+        fragmentShader: `varying vec2 vUv;
+          uniform float strength,peak,aspect,variation; uniform vec2 root;
+          float ray(vec2 p,float slope,float width,float reach){
+            float d=root.y-p.y;
+            float lateral=p.x-root.x-slope*d;
+            float w=width*(0.5+0.7*d);
+            return exp(-lateral*lateral/(w*w))*exp(-max(0.0,d)/reach)*smoothstep(0.0,0.12,d);
+          }
+          void main(){
+            vec2 p=(vUv*2.0-1.0)*vec2(aspect,1.0);
+            float reach=0.30+0.60*peak;
+            float slope=-root.x*0.35;
+            // 单一宽主芒；周边只有低强度、连续的不规则散光。
+            float d=max(0.0,root.y-p.y);
+            float rays=ray(p,slope+0.03,0.17,reach)*0.95;
+            float grain=0.70+0.16*sin(p.x*13.0+d*5.0+variation*9.0)
+              +0.10*sin(p.x*23.0-d*8.0+variation*17.0);
+            float scatter=ray(p,slope-0.025,0.40,reach*0.85)*grain*0.16;
+            rays+=scatter;
+            float halo=exp(-length(p-root)*3.5)*0.20;
+            float a=1.0-exp(-strength*(halo+rays*(0.20+0.90*peak)));
+            gl_FragColor=vec4(vec3(1.0,0.96,0.86),a);
+          }`,
+        transparent: true, depthWrite: false, depthTest: false, blending: THREE.NormalBlending
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2,2),material);
+      mesh.renderOrder=30;group.add(mesh);this._glare=group;this.scene.add(group);
+    }
+    const sun=this._dirLightPos0.clone().sub(moonWorld).normalize();
+    const local=sun.clone().applyQuaternion(camera.quaternion.clone().inverse());
+    const angle=Math.acos(Math.max(-1,Math.min(1,-local.z)))*180/Math.PI;
+    // 原光源离轴约 52°；采用电影化的镜头响应，不把太阳移进视野。
+    const envelope=1-smoothstep(75,90,angle);
+    const toMoon=moonWorld.clone().sub(camera.position), along=toMoon.dot(sun);
+    const clearance=toMoon.clone().addScaledVector(sun,-along).length();
+    const visible=along>0?smoothstep(moonRadius,moonRadius*1.12,clearance):1;
+    const pass=clamp01((180+360*Math.round((orbitDeg-180)/360))/orbitEndDeg);
+    const center=pass<0.5?Math.cbrt(pass/4):1-Math.cbrt((1-pass)/4);
+    const elapsed=Math.abs(orbitT-center)*orbitDurationSec;
+    // 每次 8 秒：3.5 秒线性渐入，1 秒保持，3.5 秒线性渐出。
+    // 束形保持不变，只调强度，避免半秒内突然伸长再缩回。
+    const fade=clamp01((4-elapsed)/3.5);
+    const strength=fade*envelope*visible*(local.z<0&&local.y>0?1:0);
+    this._glare.children[0].material.uniforms.strength.value=strength;
+    this._glare.visible=strength>0.0001;
+    if(!this._glare.visible)return;
+    const peak=1;
+    this._glare.position.copy(camera.position);this._glare.quaternion.copy(camera.quaternion);
+    const h=2*Math.tan(camera.fov*Math.PI/360),mesh=this._glare.children[0];
+    mesh.position.set(0,0,-2);mesh.scale.set(h*camera.aspect,h,1);
+    const u=mesh.material.uniforms;
+    u.strength.value=strength;u.peak.value=peak;u.aspect.value=camera.aspect;
+    // 束根在画外上缘；只沿原太阳投影的来向移动，绝不横扫屏幕。
+    u.root.value.set(local.x/Math.max(0.01,local.y)*1.16,1.16);
   }
 
   tick({
@@ -134,6 +217,10 @@ export class MoonOrbitSequence {
     lockDirLight = true,
     maxAmbient = 0.18,
     minDir = 1.65,
+    farEarth = false,
+    sunGlare = false,
+    isPC = false,
+    finalApproachSec = 18,
   }) {
     if (!this.THREE || !this.scene || !camera || !moonWorld) return { active: false };
     if (!(t >= node3Time)) return { active: false };
@@ -504,6 +591,78 @@ export class MoonOrbitSequence {
       } catch (_) {}
     }
 
+    if (farEarth) {
+      // 在原轨道确定后固定地球位置；不挪动主地球，不修改原绕月相机。
+      if (!this._farEarth) {
+        const endAz = this._baseAz + orbitEndDeg * Math.PI / 180;
+        const endOffset = new THREE.Vector3(Math.sin(endAz) * this._radiusXZ,
+          Math.max(this._baseY, cameraMinY), Math.cos(endAz) * this._radiusXZ);
+        this._farEarthEndAxis = endOffset.clone().normalize();
+        const forward = this._farEarthEndAxis.clone().negate();
+        const right = new THREE.Vector3().crossVectors(forward, this._upAxis0).normalize();
+        const up = new THREE.Vector3().crossVectors(right, forward).normalize();
+        const halfHeight = 40 * moonR * Math.tan(camera.fov * Math.PI / 360);
+        const geo = new THREE.SphereGeometry(1, 48, 32);
+        // 远景冰雪不额外顶白，保留海洋与陆地的颜色层次。
+        const mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(1.35, 1.35, 1.35) });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.name = 'MOON_VOYAGE_FAR_EARTH';
+        // 以原轨道终点的视野定地球，而不是转动镜头去找地球。
+        mesh.position.copy(moonWorld).add(endOffset).addScaledVector(forward, 40 * moonR)
+          .addScaledVector(right, -0.5 * halfHeight * Math.min(camera.aspect, 0.75))
+          .addScaledVector(up, 0.62 * halfHeight);
+        // 约占竖屏宽度 14%，是 MV 的视觉比例，不是天文距离比例。
+        const size = 0.14 * 40 * moonR * Math.tan(camera.fov * Math.PI / 360) * Math.min(camera.aspect, 0.75);
+        mesh.scale.setScalar(size);
+        // 终景以中国中部（105°E、35°N）朝向观众，北方朝画面上方。
+        // 等距经纬贴图：u=(经度+180)/360，v=(纬度+90)/180。
+        const lon = 105 * Math.PI / 180, lat = 35 * Math.PI / 180;
+        const normal = new THREE.Vector3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), -Math.cos(lat) * Math.sin(lon));
+        const east = new THREE.Vector3(-Math.sin(lon), 0, -Math.cos(lon));
+        const north = new THREE.Vector3().crossVectors(normal, east);
+        const finalCamera = moonWorld.clone().addScaledVector(this._farEarthEndAxis, 4.5 * moonR);
+        const facing = finalCamera.sub(mesh.position).normalize();
+        // 中国中部朝亮面偏约 36 度，避免大陆被晨昏线压黑、只剩海洋和极区。
+        const sunlight = this._fromMoonToCam0.clone().addScaledVector(this._upAxis0, 0.15).normalize();
+        facing.addScaledVector(sunlight, -facing.dot(sunlight)).normalize();
+        facing.multiplyScalar(Math.cos(Math.PI / 5)).addScaledVector(sunlight, Math.sin(Math.PI / 5));
+        const screenRight = new THREE.Vector3().crossVectors(this._upAxis0, facing).normalize();
+        const screenUp = new THREE.Vector3().crossVectors(facing, screenRight).normalize();
+        const localBasis = new THREE.Matrix4().makeBasis(east, north, normal);
+        const worldBasis = new THREE.Matrix4().makeBasis(screenRight, screenUp, facing);
+        this._farEarthFacing = new THREE.Quaternion().setFromRotationMatrix(worldBasis.multiply(localBasis.transpose()));
+        mesh.visible = false;
+        this._farEarth = mesh;
+        this.scene.add(mesh);
+        // 使用已有的自然色日间贴图；试验版素材在亚洲北部有大片白色覆盖。
+        this._farEarthTexture = new THREE.TextureLoader().load('/assets/textures/preview-day.jpg', texture => {
+          if (this._farEarth !== mesh) return;
+          fixTexture(texture, isPC);
+          texture.encoding = THREE.sRGBEncoding;
+          texture.minFilter = THREE.LinearFilter;
+          texture.generateMipmaps = false;
+          mat.map = texture;
+          mat.needsUpdate = true;
+          mesh.visible = true;
+        }, undefined, () => { if (this._farEarth === mesh) mesh.visible = false; });
+      }
+      // 约每分钟转 31 度，仅转动地表；固定地球位置、太阳方向和相机均不变。
+      // 按绝对旅程时间计算，暂停/跳时/帧率变化不会累计出不同朝向。
+      this._farEarth.quaternion.copy(this._farEarthFacing);
+      // 以推近完成时刻为朝向基准，自转仍连续且可重复定位。
+      this._farEarth.rotateY((t - node3Time - orbitDurationSec - finalApproachSec) * 0.009);
+      // 原 630 度环绕完整结束后才推近，前面的位置/朝向逐帧保持原值。
+      const approach = smoothstep(node3Time + orbitDurationSec, node3Time + orbitDurationSec + finalApproachSec, t);
+      if (approach > 0) {
+        const endPosition = this._tmpCamTargetPos.copy(moonWorld)
+          .addScaledVector(this._farEarthEndAxis, 4.5 * moonR);
+        // 保持原朝向，只沿视线推近。地球在推近前后均在同一侧可见。
+        camera.position.lerp(endPosition, approach);
+      }
+    }
+
+    if (sunGlare) this._tickGlare(camera, moonWorld, moonR, orbitDegNow, orbitT, orbitDurationSec, orbitEndDeg);
+    else if (this._glare) this._glare.visible = false;
     return { active: true, orbitDeg: orbitDegNow, showK };
   }
 }

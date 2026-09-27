@@ -281,6 +281,10 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
       lockDirLight: true,
       maxAmbient: 0.07,
       minDir: 1.10,
+      farEarth: true,
+      sunGlare: true,
+      isPC: !!mgr.page?.data?.isPC,
+      finalApproachSec: 18,
     });
     if (res?.active) {
       if (mgr.milkyWayMesh) {
