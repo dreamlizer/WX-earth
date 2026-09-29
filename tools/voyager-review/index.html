@@ -1,0 +1,78 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>旅行者号 · 擦肩样片</title><style>*{box-sizing:border-box}body{margin:0;background:#080a0e;color:#bbc3cf;font:14px system-ui;text-align:center}header{padding:16px}h1{font-size:17px;font-weight:500;margin:0 0 8px}p{font-size:12px;color:#7e8a99;margin:6px}canvas{display:block;margin:auto;width:min(100vw,390px);height:auto;max-height:76vh;aspect-ratio:390/720}button{background:#1a222d;border:1px solid #344052;color:#e0e5ed;border-radius:6px;padding:9px 13px;margin:4px}input{width:240px}footer{padding:10px}</style><header><h1>旅行者号 · 擦肩而过</h1><p>NASA 原始模型与贴图 · 光照与近距离经过 · 三次相遇 · 118 秒运镜预演</p></header><canvas width="780" height="1440"></canvas><footer><a href="/baseline" style="color:#9baec4">查看最初版</a> <button id="play">重播</button><button id="pause">暂停</button><button id="close">观察模型</button><br><button id="phase1">地球旁 · 第一次</button><button id="phase2">深空 · 第二次</button><button id="phase3">飞向月球 · 第三次</button><br><input id="seek" type="range" min="0" max="118" step="0.01" value="0"><span id="clock"></span><p id="status">加载原始模型…</p><p>独立 WebGL 样片 · 尚未作为微信真机验收</p></footer><script>var exports={}</script><script src="/adapter.js"></script><script type="module">
+import {createStarFlow,updateStarFlow} from "/starflow.js";
+import {registerGLTFLoader} from '/loader.js';
+const canvas=document.querySelector('canvas');canvas.createImage=()=>new Image();const T=exports.createScopedThreejs(canvas);registerGLTFLoader(T);
+const r=new T.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});r.setSize(780,1440,false);r.gammaOutput=true;r.gammaFactor=2.2;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=1.05;r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;
+const scene=new T.Scene(),cam=new T.PerspectiveCamera(43,390/720,.1,300);scene.background=new T.Color(0x010207);
+scene.add(new T.AmbientLight(0xaebed5,.12));const sun=new T.DirectionalLight(0xfff4e6,3.2);sun.position.set(8,6,4);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-5;sun.shadow.camera.right=5;sun.shadow.camera.top=5;sun.shadow.camera.bottom=-5;sun.shadow.camera.near=.1;sun.shadow.camera.far=40;sun.shadow.bias=-.00015;scene.add(sun);scene.add(sun.target);const fill=new T.DirectionalLight(0x789aca,.16);fill.position.set(-6,1,2);scene.add(fill);
+// A restrained distant Earth provides scale; no change to the main MV's Earth.
+const earthTex=new T.TextureLoader().load('/earth.jpg');earthTex.encoding=T.sRGBEncoding;
+const earth=new T.Mesh(new T.SphereBufferGeometry(7,48,32),new T.MeshStandardMaterial({map:earthTex,color:0x8b939f,roughness:1,metalness:0}));earth.position.set(10,-18,-105);earth.rotation.set(.15,2.6,0);scene.add(earth);
+const cloudTex=new T.TextureLoader().load('/cloud.png');const clouds=new T.Mesh(new T.SphereBufferGeometry(7.025,48,32),new T.MeshStandardMaterial({color:0x87909d,alphaMap:cloudTex,transparent:true,opacity:.35,depthWrite:false,roughness:1}));earth.add(clouds);
+// Low-resolution reflection environment, separate from the visible black sky.
+// Dark surrounding space with a small bright solar direction and weak planetary fill.
+const faces=[];for(let side=0;side<6;side++){const c=document.createElement('canvas');c.width=c.height=64;const ctx=c.getContext('2d');ctx.fillStyle='#030406';ctx.fillRect(0,0,64,64);if(side===0||side===2){const grad=ctx.createRadialGradient(28,24,1,28,24,25);grad.addColorStop(0,'#b8ada0');grad.addColorStop(.16,'#34383d');grad.addColorStop(1,'#030406');ctx.fillStyle=grad;ctx.fillRect(0,0,64,64);}faces.push(c);}const env=new T.CubeTexture(faces);env.encoding=T.sRGBEncoding;env.needsUpdate=true;
+
+// Remote stars remain a depth reference; the persistent foreground turns into the flow.
+let seed=17;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4296967296};const points=[];for(let i=0;i<500;i++)points.push((rand()-.5)*95,(rand()-.5)*160,-100-rand()*70);const g=new T.BufferGeometry();g.addAttribute('position',new T.Float32BufferAttribute(points,3));scene.add(new T.Points(g,new T.PointsMaterial({color:0x6f7a91,size:.09,transparent:true,opacity:.6})));
+const moonTex=new T.TextureLoader().load('/moon.jpg');moonTex.encoding=T.sRGBEncoding;
+const moon=new T.Mesh(new T.SphereBufferGeometry(9,64,48),new T.MeshStandardMaterial({map:moonTex,roughness:1,color:0x959595,transparent:true,opacity:0}));moon.position.set(-44,8,-150);scene.add(moon);
+// The same stars drift right, turn into depth, then gradually gain density.
+const flow=createStarFlow(T);flow.group.scale.setScalar(2.5);scene.add(flow.group);
+// A small four-point cartoon glint, without an expanding halo.
+const flashCanvas=document.createElement('canvas');flashCanvas.width=flashCanvas.height=64;const fc=flashCanvas.getContext('2d');fc.fillStyle='rgba(255,246,215,.95)';fc.beginPath();fc.moveTo(32,3);fc.lineTo(36,27);fc.lineTo(56,32);fc.lineTo(36,36);fc.lineTo(32,61);fc.lineTo(28,36);fc.lineTo(8,32);fc.lineTo(28,27);fc.closePath();fc.fill();const flash=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(flashCanvas),transparent:true,opacity:0,depthWrite:false}));scene.add(flash);
+const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
+// Interpolating projected position and inverse depth follows a straight spatial line.
+// It schedules what the viewer sees instead of accelerating apparent size near the lens.
+function screenTrack(out,a,b,q){
+ const inv=(1-q)/a.d+q/b.d,d=1/inv;
+ return out.set(((1-q)*a.x+q*b.x)*d,((1-q)*a.y+q*b.y)*d,-d);
+}
+const params=new URLSearchParams(location.search);let model,baseScale=1,t=Number(params.get("t")||0),playing=false,inspect=params.has("inspect"),last=performance.now();const status=document.querySelector('#status'),seek=document.querySelector('#seek');
+try{const data=await (await fetch('/voyager.glb')).arrayBuffer();const gltf=await new Promise((resolve,reject)=>new T.GLTFLoader().parse(data,'/',resolve,reject));const raw=gltf.scene;raw.updateMatrixWorld(true);const box=new T.Box3().setFromObject(raw),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());raw.position.sub(center);model=new T.Group();model.add(raw);const scale=4/Math.max(size.x,size.y,size.z);baseScale=scale;model.scale.setScalar(scale);raw.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;for(const m of (Array.isArray(o.material)?o.material:[o.material])){m.userData.originalOpacity=m.opacity;m.transparent=true;m.envMap=env;m.envMapIntensity=.32;m.needsUpdate=true;}}});scene.add(model);playing=(params.has("play")||!params.has("t"))&&!inspect;status.textContent='原始材质已加载 · 相机保持朝前';console.log('Voyager ready',size.toArray(),r.info);}catch(e){status.textContent='加载失败：'+e.message;console.error(e);}
+document.querySelector('#play').onclick=()=>{t=0;inspect=false;playing=true};document.querySelector('#pause').onclick=()=>{playing=!playing};document.querySelector('#close').onclick=()=>{inspect=true;playing=false;t=7};seek.oninput=()=>{t=Number(seek.value);inspect=false;playing=false};
+for(const [id,time] of [['phase1',0],['phase2',34],['phase3',76]])document.getElementById(id).onclick=()=>{t=time;inspect=false;playing=true};
+let captureFrames=0;
+function frame(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;if(playing){t+=dt;if(t>=118)t=0;}
+ const phase=t<34?0:t<70?1:2,elapsed=t-(phase===0?0:phase===1?34:80);
+ // Reveal the Moon before the near-camera departure begins.
+ moon.position.set(-44+41*smooth((t-72)/12),8-4*smooth((t-72)/28),-150+83*smooth((t-72)/28));moon.material.opacity=smooth((t-72)/4);moon.visible=t>=72;
+ if(model){model.scale.setScalar(baseScale);model.visible=inspect||(elapsed>=0&&elapsed<(phase===0?32:phase===1?36:34));
+  const visibility=inspect||phase===2?1:smooth(elapsed/3);
+  model.traverse(o=>{if(o.isMesh)for(const m of (Array.isArray(o.material)?o.material:[o.material]))m.opacity=m.userData.originalOpacity*visibility;});
+  if(inspect){model.position.set(0,0,-8);model.rotation.set(.25,.6,-.22);}
+  else if(phase===0){
+   // One straight 3D track continues behind the viewer on the left.
+   const q=Math.max(0,Math.min(1,elapsed/32));
+   model.position.set((10/105)*30*(1-q)-2.25*q,(-18/105)*30*(1-q)+.2*q,-30+33*q);
+   model.rotation.set(.28,.4,-.22);
+  }
+  else if(phase===1){
+   // Approach, match relative speed, then overtake: one observer, one travel axis.
+   const near=smooth(elapsed/14),pass=smooth((elapsed-24)/12);
+   const float=smooth((elapsed-12)/2)*(1-smooth((elapsed-24)/3));
+   if(elapsed<24)screenTrack(model.position,{x:-.015,y:.015,d:160},{x:-.105,y:.025,d:9},near);
+   else screenTrack(model.position,{x:-.105,y:.025,d:9},{x:-.85,y:.035,d:2.8},pass);
+   model.position.y+=.045*Math.sin(elapsed*.65)*float;
+   model.rotation.set(.08,-.48,.22);
+  }
+  else{
+   // One fixed spatial line, from below the viewer to the final lunar landing point.
+   // Keep the target fixed while the Moon approaches, so its animation cannot bend the track.
+   const target={x:-3,y:4,z:-58.1},d=-target.z;
+   const q=Math.pow(Math.max(0,Math.min(1,elapsed/34)),1.3);
+   screenTrack(model.position,{x:.19,y:-.6,d:3.2},{x:target.x/d,y:target.y/d,d},q);
+   model.rotation.set(.45,.7,-.25);model.scale.setScalar(baseScale*1.45);
+   const fade=1-smooth((elapsed-32.6)/1.4);
+   model.traverse(o=>{if(o.isMesh)for(const m of (Array.isArray(o.material)?o.material:[o.material]))m.opacity=m.userData.originalOpacity*fade;});
+  }
+  sun.target.position.copy(model.position);sun.position.copy(model.position).add(new T.Vector3(8,6,4));
+ }
+ // Earth continues toward the lower right throughout the first encounter.
+ const earthTime=t*.72;earth.position.set(10+1.5*earthTime,-18-2.7*earthTime,-105-2.4*earthTime);earth.rotation.y=2.6+t*.002;earth.visible=t<37;
+ flash.position.copy(moon.position).add(new T.Vector3(0,0,9.1));const flashTime=t-114;flash.material.opacity=flashTime>=0&&flashTime<.6?Math.sin(Math.PI*flashTime/.6)*.9:0;flash.scale.setScalar(.85);
+ updateStarFlow(flow,t-34,t);
+ r.render(scene,cam);if(params.has('capture')&&++captureFrames===90)fetch('/capture',{method:'POST',body:JSON.stringify({name:'frame-'+t,image:canvas.toDataURL('image/png')})});seek.value=t;document.querySelector('#clock').textContent=t.toFixed(1)+'s';status.textContent=['告别地球 · 从远处逐渐显现',elapsed<14?'深空 · 靠近':elapsed<24?'深空 · 并行漂浮':'深空 · 加速超过',elapsed<0?'月球从左侧进入':elapsed<14?'近景 · 从下方缓缓进入':'远去 · 逐渐显露全貌'][phase]+' · 旅行者号占位';requestAnimationFrame(frame);
+}requestAnimationFrame(frame);
+</script></html>

@@ -82,16 +82,24 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
     }
   } catch (_) {}
 
-  const EARTH_DISAPPEAR_AT = Math.max(0.0, Math.min(T_EARTH_EXIT, Number(tl.earthDisappearAtSec ?? 25.0) || 25.0));
-  const earthFadeSec = Math.max(0.0, Number(tl.earthFadeSec ?? 2.4) || 2.4);
-  const earthFadeStart = Math.max(0.0, EARTH_DISAPPEAR_AT - earthFadeSec);
-  const earthFadeK = smoothstep(earthFadeStart, earthFadeStart + earthFadeSec, t);
-  const earthScaleMul = 1.0 - earthFadeK;
-  const earthFinalScale = earthBaseScale * earthScaleMul;
-  mgr.globeGroup.scale.set(earthFinalScale, earthFinalScale, earthFinalScale);
-
   const SHOW_EARTH_AFTER_DEPARTURE = false;
-  mgr.globeGroup.visible = ((t < node1Time) && (earthScaleMul > 0.02)) || (SHOW_EARTH_AFTER_DEPARTURE && (t >= node2Time));
+  mgr.globeGroup.scale.setScalar(earthBaseScale);
+  mgr.globeGroup.visible = t < node1Time + 8;
+  if (t > 18 && t < node1Time + 8) {
+    const T = mgr.THREE, a = Math.pow(18 / T1, 3);
+    const anchorCamera = new T.Vector3().copy(s.camPos).lerp(new T.Vector3(0, 0, 5), a);
+    const anchorRotation = new T.Euler(s.camRot.x, s.camRot.y + (TARGET_ROT_Y - s.camRot.y) * a, s.camRot.z, mgr.camera.rotation.order);
+    const anchorQ = new T.Quaternion().setFromEuler(anchorRotation);
+    const anchor = new T.Vector3(s.globePos.x, s.globePos.y + (earthTargetY - s.globePos.y) * a, s.globePos.z + (earthTargetZ - s.globePos.z) * a).sub(anchorCamera).applyQuaternion(anchorQ.inverse());
+    const p = clamp01((t - 18) / (node1Time + 8 - 18));
+    const depth = -anchor.z + 12 * p;
+    const halfHeight = Math.tan(mgr.camera.fov * Math.PI / 360);
+    const nx = anchor.x / (-anchor.z * halfHeight * mgr.camera.aspect);
+    const ny = anchor.y / (-anchor.z * halfHeight);
+    anchor.set((nx + (1.65 - nx) * p) * depth * halfHeight * mgr.camera.aspect, (ny + (-1.5 - ny) * p) * depth * halfHeight, -depth);
+    mgr.globeGroup.position.copy(anchor.applyQuaternion(mgr.camera.quaternion).add(mgr.camera.position));
+    mgr.globeGroup.scale.setScalar((s.globeScale.x + (earthTargetScale - s.globeScale.x) * a) * (1 - .55 * p));
+  }
 
   if (mgr._moonDebug) {
     try {
@@ -139,7 +147,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
         const endDist = Math.max(1e-6, endVec.length());
         const dir = endVec.normalize();
         const right = new THREE.Vector3().crossVectors(dir, mgr.camera.up).normalize();
-        const startDir = dir.clone().addScaledVector(right, -0.85).normalize();
+        const startDir = dir.clone().addScaledVector(right, -0.04).normalize();
         const startDist = Math.max(12.0, endDist + 6.0);
         mgr._moonStartWorld.copy(mgr.camera.position).addScaledVector(startDir, startDist);
         mgr._moonStartReady = true;
@@ -501,7 +509,8 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
       const tuneCfg = (APP_CFG?.moonVoyage?.timeline?.companionRobot) || {};
       const cfg = mergeCompanionRobotCfg(baseCfg, tuneCfg);
       const robotActive = (t >= node1Time) && (t <= (node3Time + 3.0));
-      mgr._companionFx?.update?.({ cfg, t, node1Time, corridorActive: robotActive, dtSec });
+      mgr._companionFx?.update?.({ cfg, t, node1Time, node2Time, node3Time, moonMesh: mgr.moonMesh, globeGroup: mgr.globeGroup, dtSec });
+      if (t < node3Time) [mgr.milkyWayMesh, mgr._dustBgMesh, mgr._dustSlowMesh, mgr._dustFastMesh].forEach(m => { if (m) m.visible = false; });
     } catch (_) {}
 
     // Update Zodiac System

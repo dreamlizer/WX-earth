@@ -117,7 +117,7 @@ export function clearForcedCityCountries() {
 
 // —— 核心循环 ——
 
-export function updateLabels() {
+export function updateLabels(normalMode = true) {
   const ctx = getRenderContext();
   const { THREE, camera, scene, globeGroup, width, height } = ctx || {};
   if (!THREE || !camera || !globeGroup || !width || !height) return;
@@ -527,9 +527,10 @@ export function updateLabels() {
         
         // 颜色设置
         try {
-          const tag = isForced ? (meta && meta.isCity ? 'forced-city' : 'forced-country') : (meta && meta.isCity ? 'default-city' : 'default-country');
+          const tag = isForced ? (meta && meta.isCity ? 'forced-city' : 'forced-country') : (meta && meta.isCity ? 'default-city' : (normalMode ? 'normal-country' : 'default-country'));
           if (mesh.userData.colorTag !== tag) {
-            const colorVal = (meta && meta.isCity) ? '#ffffff' : (isForced ? '#ffd54f' : _const?.COUNTRY_TEXT_COLOR ?? '#ffffff');
+            const countryColor = normalMode ? _const.NORMAL_COUNTRY_TEXT_COLOR : _const.COUNTRY_TEXT_COLOR;
+            const colorVal = (meta && meta.isCity) ? '#ffffff' : (isForced ? '#ffd54f' : countryColor ?? '#ffffff');
             if (!mesh.material.color || typeof mesh.material.color.set !== 'function') {
                mesh.material.color = new THREE.Color(colorVal);
             } else {

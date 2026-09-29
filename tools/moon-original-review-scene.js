@@ -1,5 +1,5 @@
 // 构图检查：运行原 MV 的真实绕月模块；不冒充完整 MV/微信渲染。
-export function createMoonTrialScene(THREE) {
+export function createOriginalMoonScene(THREE) {
  const scene=new THREE.Scene();
  const camera=new THREE.PerspectiveCamera(45,390/720,.1,1000);
  camera.position.set(0,0,5);camera.rotation.y=.85;

@@ -2,6 +2,7 @@ export function createLightingManager(ctx){
   const { THREE, globeGroup, camera, dirLight, ambientLight, LIGHT_CFG, tweener } = ctx
   const __center = new THREE.Vector3()
   const __lightDir = new THREE.Vector3()
+  const __normalOffset = new THREE.Vector3()
   const __uvId = new THREE.Matrix3()
   const __uvTmp = new THREE.Matrix3()
   let __shaderDiagNext = 0
@@ -17,7 +18,10 @@ export function createLightingManager(ctx){
       globeGroup.getWorldPosition(__center)
       dirLight.position.set(__center.x + Math.max(1, d), __center.y, __center.z)
     } else {
-      dirLight.position.copy(camera.position)
+      const cfg = LIGHT_CFG.normal || {}
+      __normalOffset.set(cfg.lightOffsetX || 0, cfg.lightOffsetY || 0, 0)
+        .applyQuaternion(camera.quaternion).multiplyScalar(camera.position.length())
+      dirLight.position.copy(camera.position).add(__normalOffset)
     }
   }
   function syncDayNightShader(mat){

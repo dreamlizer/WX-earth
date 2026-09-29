@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>&#x592A;&#x9633;&#x7CFB;&#x6F2B;&#x6E38;</title>
+<link rel="stylesheet" href="style.css?v=20260411k">
+</head>
+<body>
+  <div id="appShell">
+    <canvas id="stage" aria-label="&#x592A;&#x9633;&#x7CFB; 2D &#x89C6;&#x56FE;"></canvas>
+
+    <button id="btnToggleMode" class="mode-btn" data-mode="ornamental" title="&#x5207;&#x6362;&#x79D1;&#x5B66; / &#x89C2;&#x8D4F;&#x6A21;&#x5F0F;">
+      <span>&#x1F441;&#xFE0F;</span> &#x89C2;&#x8D4F;
+    </button>
+
+    <div class="top-actions">
+      <button id="btnCinema" class="cinema-btn" aria-pressed="false" title="&#x5207;&#x6362;&#x5F71;&#x9662;&#x6A21;&#x5F0F;">
+        &#x5F71;&#x9662;&#x6A21;&#x5F0F;
+      </button>
+      <button id="btnClose" class="close-btn" type="button" aria-label="&#x5173;&#x95ED;&#x5E76;&#x8FD4;&#x56DE;&#x9996;&#x9875;">
+        &times;
+      </button>
+    </div>
+
+    <div class="bottom-pair">
+      <div class="speedbar" id="speedbar">
+        <button id="btnLudicrous" class="btn" aria-pressed="false">&#x6781;&#x901F;</button>
+        <span class="label">&#x901F;&#x5EA6;</span>
+        <div class="range-control">
+          <input id="speedRange" type="range" min="0.2" max="100" step="0.1" value="1" />
+          <span class="range-thumb" aria-hidden="true"></span>
+        </div>
+        <span id="speedVal">10.0 &#x79D2; / &#x5E74;</span>
+      </div>
+
+      <div class="zoombar" id="zoombar">
+        <span class="label">&#x7F29;&#x653E;</span>
+        <div class="range-control">
+          <input id="zoomRange" type="range" min="0.2" max="10" step="0.01" value="0.7" />
+          <span class="range-thumb" aria-hidden="true"></span>
+        </div>
+        <span id="zoomVal">0.70x</span>
+      </div>
+    </div>
+
+    <div class="tiltbar" id="tiltbar">
+      <span id="tiltVal">65&#176;</span>
+      <div id="tiltTrack" class="tilt-track" role="slider" tabindex="0" aria-label="&#x503E;&#x659C;&#x89D2;&#x5EA6;" aria-valuemin="0" aria-valuemax="90" aria-valuenow="65">
+        <div id="tiltFill" class="tilt-fill"></div>
+        <div id="tiltThumb" class="tilt-thumb"></div>
+      </div>
+    </div>
+
+    <div class="toolbar" id="toolbar">
+      <button id="btnPlayPause" class="btn" aria-pressed="true">&#x6682;&#x505C; / &#x6B64;&#x523B;</button>
+      <button id="btnBright" class="btn">&#x2600; &#x4EAE;&#x5EA6;</button>
+      <button id="btnReset" class="btn">&#x27F2; &#x91CD;&#x7F6E;</button>
+    </div>
+
+    <div id="brightnessPanel" style="display:none;">
+      <div class="panel-header">&#x4EAE;&#x5EA6;&#x8C03;&#x8282;</div>
+      <div class="panel-body">
+        <label><span class="brightness-label-text">&#x5C0F;&#x884C;&#x661F;&#x5E26;</span> <input id="slBelt" type="range" min="0" max="1.7" step="0.01" value="1"> <span id="lblBelt">1.00</span></label>
+        <label><span class="brightness-label-text">&#x67EF;&#x4F0A;&#x4F2F;&#x5E26;</span> <input id="slKuiper" type="range" min="0" max="1.7" step="0.01" value="1"> <span id="lblKuiper">1.00</span></label>
+        <label><span class="brightness-label-text">&#x94F6;&#x6CB3;&#x80CC;&#x666F;</span> <input id="slGalaxy" type="range" min="0" max="1" step="0.01" value="0.7"> <span id="lblGalaxy">0.70</span></label>
+        <label><span class="brightness-label-text">&#x6807;&#x7B7E;&#x4EAE;&#x5EA6;</span> <input id="slLabels" type="range" min="0" max="1" step="0.01" value="0.7"> <span id="lblLabels">1.00</span></label>
+      </div>
+    </div>
+
+    <div id="err" role="alert"></div>
+    <div id="angles" class="angles" aria-live="polite"></div>
+    <div id="infoPanel" class="info-panel">
+      <div class="info-header">
+        <h3 id="infoName"></h3>
+        <button id="infoCloseBtn" class="info-close" aria-label="&#x5173;&#x95ED;&#x4FE1;&#x606F;&#x9762;&#x677F;">&times;</button>
+      </div>
+      <div id="infoBody" class="info-body"></div>
+    </div>
+
+    <script src="Galaxy.js?v=20260411k"></script>
+    <script src="Controls.js?v=20260411k"></script>
+    <script src="Engine.js?v=20260411k"></script>
+    <script src="Controller_new.js?v=20260411k"></script>
+    <script src="UI_new.js?v=20260411k"></script>
+
+    <div id="snapshotPanel" class="snapshot-panel">
+      <div class="snapshot-header">&#x65F6;&#x7A7A;&#x5FEB;&#x7167;</div>
+      <div class="snapshot-body">
+        <p id="snapshotTime"></p>
+        <p id="snapshotData"></p>
+        <p id="snapshotLight"></p>
+        <p id="snapshotQuote" class="snapshot-quote"></p>
+      </div>
+    </div>
+
+    <div class="rotate-hint">&#x53CC;&#x6307;&#x7F29;&#x653E;&#xFF0C;&#x62D6;&#x52A8;&#x753B;&#x9762;&#xFF0C;&#x70B9;&#x51FB;&#x884C;&#x661F;&#x53EF;&#x67E5;&#x770B;&#x4FE1;&#x606F;&#x3002;</div>
+  </div>
+</body>
+</html>

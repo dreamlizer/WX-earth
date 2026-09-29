@@ -57,6 +57,14 @@ export class MoonOrbitSequence {
   }
 
   reset() {
+    if (this._farEarthCloud) {
+      this._farEarthCloud.parent?.remove(this._farEarthCloud);
+      this._farEarthCloud.geometry.dispose();
+      this._farEarthCloud.material.dispose();
+      this._farEarthCloudTexture?.dispose();
+    }
+    this._farEarthCloud = null;
+    this._farEarthCloudTexture = null;
     if (this._farEarth) {
       this.scene?.remove(this._farEarth);
       this._farEarth.geometry.dispose();
@@ -122,7 +130,7 @@ export class MoonOrbitSequence {
           float ray(vec2 p,float slope,float width,float reach){
             float d=root.y-p.y;
             float lateral=p.x-root.x-slope*d;
-            float w=width*(0.5+0.7*d);
+            float w=width*(0.85+0.55*d);
             return exp(-lateral*lateral/(w*w))*exp(-max(0.0,d)/reach)*smoothstep(0.0,0.12,d);
           }
           void main(){
@@ -131,14 +139,14 @@ export class MoonOrbitSequence {
             float slope=-root.x*0.35;
             // 单一宽主芒；周边只有低强度、连续的不规则散光。
             float d=max(0.0,root.y-p.y);
-            float rays=ray(p,slope+0.03,0.17,reach)*0.95;
+            float rays=ray(p,slope+0.03,0.36,reach)*0.62;
             float grain=0.70+0.16*sin(p.x*13.0+d*5.0+variation*9.0)
               +0.10*sin(p.x*23.0-d*8.0+variation*17.0);
-            float scatter=ray(p,slope-0.025,0.40,reach*0.85)*grain*0.16;
+            float scatter=ray(p,slope-0.025,0.65,reach*0.85)*grain*0.22;
             rays+=scatter;
             float halo=exp(-length(p-root)*3.5)*0.20;
             float a=1.0-exp(-strength*(halo+rays*(0.20+0.90*peak)));
-            gl_FragColor=vec4(vec3(1.0,0.96,0.86),a);
+            gl_FragColor=vec4(vec3(1.0,0.98,0.94),a);
           }`,
         transparent: true, depthWrite: false, depthTest: false, blending: THREE.NormalBlending
       });
@@ -156,9 +164,9 @@ export class MoonOrbitSequence {
     const pass=clamp01((180+360*Math.round((orbitDeg-180)/360))/orbitEndDeg);
     const center=pass<0.5?Math.cbrt(pass/4):1-Math.cbrt((1-pass)/4);
     const elapsed=Math.abs(orbitT-center)*orbitDurationSec;
-    // 每次 8 秒：3.5 秒线性渐入，1 秒保持，3.5 秒线性渐出。
+    // 每次 10 秒：4.5 秒线性渐入，1 秒保持，4.5 秒线性渐出。
     // 束形保持不变，只调强度，避免半秒内突然伸长再缩回。
-    const fade=clamp01((4-elapsed)/3.5);
+    const fade=clamp01((5-elapsed)/4.5);
     const strength=fade*envelope*visible*(local.z<0&&local.y>0?1:0);
     this._glare.children[0].material.uniforms.strength.value=strength;
     this._glare.visible=strength>0.0001;
@@ -604,7 +612,7 @@ export class MoonOrbitSequence {
         const halfHeight = 40 * moonR * Math.tan(camera.fov * Math.PI / 360);
         const geo = new THREE.SphereGeometry(1, 48, 32);
         // 远景冰雪不额外顶白，保留海洋与陆地的颜色层次。
-        const mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(1.35, 1.35, 1.35) });
+        const mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(1, 1, 1) });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.name = 'MOON_VOYAGE_FAR_EARTH';
         // 以原轨道终点的视野定地球，而不是转动镜头去找地球。
@@ -634,6 +642,25 @@ export class MoonOrbitSequence {
         mesh.visible = false;
         this._farEarth = mesh;
         this.scene.add(mesh);
+        // 复用包内灰度云图作透明度，黑色区域透出海陆；与地表共用原光照。
+        const cloudMaterial = new THREE.MeshLambertMaterial({
+          color: 0xffffff, transparent: true, opacity: 0.58, depthWrite: false
+        });
+        const cloud = new THREE.Mesh(new THREE.SphereGeometry(1.008, 48, 32), cloudMaterial);
+        cloud.name = 'MOON_VOYAGE_FAR_EARTH_CLOUD';
+        cloud.visible = false;
+        mesh.add(cloud);
+        this._farEarthCloud = cloud;
+        this._farEarthCloudTexture = new THREE.TextureLoader().load('/assets/textures/preview-cloud.png', texture => {
+          if (this._farEarthCloud !== cloud) return;
+          fixTexture(texture, isPC);
+          // alphaMap 是线性数据，不采用地表彩色贴图的 sRGB 解码。
+          texture.minFilter = THREE.LinearFilter;
+          texture.generateMipmaps = false;
+          cloudMaterial.alphaMap = texture;
+          cloudMaterial.needsUpdate = true;
+          cloud.visible = true;
+        }, undefined, () => { if (this._farEarthCloud === cloud) cloud.visible = false; });
         // 使用已有的自然色日间贴图；试验版素材在亚洲北部有大片白色覆盖。
         this._farEarthTexture = new THREE.TextureLoader().load('/assets/textures/preview-day.jpg', texture => {
           if (this._farEarth !== mesh) return;
@@ -651,6 +678,9 @@ export class MoonOrbitSequence {
       this._farEarth.quaternion.copy(this._farEarthFacing);
       // 以推近完成时刻为朝向基准，自转仍连续且可重复定位。
       this._farEarth.rotateY((t - node3Time - orbitDurationSec - finalApproachSec) * 0.009);
+      // 云层随地球转动，并带很轻的相对漂移；按绝对时间避免跳时积累误差。
+      if (this._farEarthCloud) this._farEarthCloud.rotation.y =
+        (t - node3Time - orbitDurationSec - finalApproachSec) * 0.00035;
       // 原 630 度环绕完整结束后才推近，前面的位置/朝向逐帧保持原值。
       const approach = smoothstep(node3Time + orbitDurationSec, node3Time + orbitDurationSec + finalApproachSec, t);
       if (approach > 0) {

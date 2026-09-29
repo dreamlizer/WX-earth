@@ -1,0 +1,13 @@
+{
+  "sourceVertices": 16,
+  "triangles": 16,
+  "renderVertices": 48,
+  "textureSize": [
+    128,
+    128
+  ],
+  "meshCount": 1,
+  "materialCount": 1,
+  "textureCount": 1,
+  "sourceSha256": "8c9f782e413f83da4940f9c2335f9422690dc86e8a10c1172aa999c8c29ab748"
+}

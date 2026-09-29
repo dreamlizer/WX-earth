@@ -67,9 +67,14 @@ for(const aspect of [.45,.5625,1.78]){
  tick(b,281,true);assert.ok(Math.abs(2*Math.acos(Math.min(1,Math.abs(earth.quaternion.dot(rotationAt261))))-.18)<1e-10, 'ending retains subtle continuous rotation');
  tick(b,261,true);assert.ok(1-Math.abs(earth.quaternion.dot(rotationAt261))<1e-10, 'rotation is deterministic on replay or seek');
  assert.ok(earth.position.equals(heldEarth) && b.camera.position.equals(heldCamera), 'spin must not move Earth or the held camera');
- let disposed=0;earth.material.map.addEventListener('dispose',()=>disposed++);b.seq.dispose();b.seq.dispose();assert.equal(disposed,1);assert.equal(b.scene.getObjectByName('MOON_VOYAGE_FAR_EARTH'),undefined);assert.equal(b.scene.getObjectByName('MOON_VOYAGE_SUN_GLARE'),undefined);
+ const cloud=b.seq._farEarthCloud;
+ assert.equal(cloud.parent,earth,'clouds inherit Earth orientation');
+ assert.ok(cloud.visible && cloud.material.alphaMap,'cloud mask is loaded');
+ assert.equal(cloud.material.depthWrite,false,'transparent clouds do not hide the globe with depth writes');
+ let cloudDisposed=0;cloud.material.alphaMap.addEventListener('dispose',()=>cloudDisposed++);
+ let disposed=0;earth.material.map.addEventListener('dispose',()=>disposed++);b.seq.dispose();b.seq.dispose();assert.equal(disposed,1);assert.equal(cloudDisposed,1);assert.equal(b.scene.getObjectByName('MOON_VOYAGE_FAR_EARTH'),undefined);assert.equal(b.scene.getObjectByName('MOON_VOYAGE_SUN_GLARE'),undefined);
 }
-const pending=setup(New,.5);tick(pending,113,true);const pendingMesh=pending.seq._farEarth;pending.seq.reset();images.splice(0).forEach(i=>i.dispatchEvent({type:'load'}));assert.equal(pendingMesh.visible,false,'late image cannot revive disposed Earth');
+const pending=setup(New,.5);tick(pending,113,true);const pendingMesh=pending.seq._farEarth;const pendingCloud=pending.seq._farEarthCloud;pending.seq.reset();images.splice(0).forEach(i=>i.dispatchEvent({type:'load'}));assert.equal(pendingMesh.visible,false,'late image cannot revive disposed Earth');assert.equal(pendingCloud.visible,false,'late cloud load cannot revive disposed clouds');
 console.log('original Earth integration: exact original orbit and lighting restored, early visibility, fixed Earth, final framing, disposal PASS');
 
 const blockedGlare=setup(New,.5625);tick(blockedGlare,113,true);
@@ -84,10 +89,10 @@ blockedGlare.seq.dispose();
 const fadeScene=setup(New,.5625);tick(fadeScene,113,true);
 for(const degrees of [180,540]){
  const p=degrees/630,u=p<.5?Math.cbrt(p/4):1-Math.cbrt((1-p)/4),center=113+u*130;
- for(const offset of [-4,-2.25,-.5,0,.5,2.25,4]){
+ for(const offset of [-5,-2.75,-.5,0,.5,2.75,5]){
   tick(fadeScene,center+offset,true);
-  const expected=Math.max(0,Math.min(1,(4-Math.abs(offset))/3.5));
-  assert.ok(Math.abs(fadeScene.seq._glare.children[0].material.uniforms.strength.value-expected)<1e-8,'both passages fade evenly over eight seconds');
+  const expected=Math.max(0,Math.min(1,(5-Math.abs(offset))/4.5));
+  assert.ok(Math.abs(fadeScene.seq._glare.children[0].material.uniforms.strength.value-expected)<1e-8,'both passages fade evenly over ten seconds');
  }
 }
 fadeScene.seq.dispose();

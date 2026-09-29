@@ -88,6 +88,9 @@ export function makeBorder(THREE, globeGroup, COUNTRY_FEATURES) {
   // 视觉完全等价：LineLoop 会自动闭合首尾，这里用线段对显式补上闭合段。
   const BORDER_GROUP = new THREE.Group();
   const lineMat = makeLineMat(THREE, 0xffffff, 20);
+  // Store the full color so zen still uses its own original dimming factor.
+  lineMat.userData.__origColor = lineMat.color.clone();
+  lineMat.color.multiplyScalar(APP_CFG.normal?.bordersColorFactor ?? 1);
   const positions = [];
 
   const addRing = (ring) => {
@@ -520,7 +523,9 @@ export function restoreOverlayFactors(BORDER_GROUP, TROPIC_GROUP){
       const handled = new Set();
       BORDER_GROUP.traverse(obj => {
         const m = obj?.material; if (!m || handled.has(m)) return; handled.add(m);
-        if (m.color && m.userData.__origColor) { m.color.copy(m.userData.__origColor); }
+        if (m.color && m.userData.__origColor) {
+          m.color.copy(m.userData.__origColor).multiplyScalar(APP_CFG.normal?.bordersColorFactor ?? 1);
+        }
       });
     }
     if (TROPIC_GROUP) {

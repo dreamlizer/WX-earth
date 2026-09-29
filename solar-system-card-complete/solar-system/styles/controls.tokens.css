@@ -1,0 +1,10 @@
+:root {
+  --slider-track-height: 10px;
+  --slider-thumb-size: 22px;
+  --control-track-border: #22306a;
+  --control-track-bg: linear-gradient(90deg, #1a234e, #263a7a);
+  --control-progress-bg: linear-gradient(90deg, rgba(108, 163, 255, 0.82), rgba(69, 124, 255, 0.95));
+  --control-thumb-border: #0f2f73;
+  --control-thumb-bg: radial-gradient(circle at 34% 34%, #ffffff 0%, #d9edff 46%, #66afff 100%);
+  --control-thumb-shadow: 0 0 0 2px rgba(10, 22, 58, 0.94), 0 0 16px rgba(118, 187, 255, 0.86);
+}

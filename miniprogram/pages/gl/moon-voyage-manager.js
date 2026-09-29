@@ -1,6 +1,6 @@
 
 import { MoonOrbitSequence } from './moon-orbit-sequence.js';
-import { CompanionRobotEffect } from './moon-voyage-companion.js';
+import { VoyageEncounters } from './moon-voyage-encounters.js';
 import { ZodiacSystem } from './moon-voyage-zodiac.js';
 import { detectEnvironment } from './platform-manager.js';
 
@@ -265,7 +265,7 @@ export class MoonVoyageManager {
     this._refreshMainStarfieldMesh();
     this._orbitSeq = this._orbitSeq || new MoonOrbitSequence();
     try { this._orbitSeq.init(THREE, scene); } catch (_) {}
-    this._companionFx = this._companionFx || new CompanionRobotEffect();
+    this._companionFx = this._companionFx || new VoyageEncounters();
     try { this._companionFx.setContext({ THREE, scene, camera, isDevtools: this._isDevtools, isPCClient: this._isPCClient }); } catch (_) {}
     this._zodiacSys = this._zodiacSys || new ZodiacSystem();
     try { 

@@ -52,12 +52,6 @@ export function createSceneUpdater(ctx) {
     const dtSec = perfMonitor.update(now);
     try { runtimeDiagnostics?.recordFrame?.(now, dtSec); } catch(_){}
 
-    // 实验场景独立渲染，原场景的相机、灯光和旋转不参与试航。
-    if (ctx.renderMoonTrial?.(now)) {
-      try { runtimeDiagnostics?.flush?.(now); } catch(_){}
-      return;
-    }
-
     tweener.update(now);
 
     // 0. Moon Voyage Override
@@ -206,8 +200,8 @@ export function createSceneUpdater(ctx) {
       // Label Updates
       const intervalMs = getLabelUpdateIntervalMs({ isDragging, idle, isFlying, hasInertia });
       if ((now - __lastLabelUpdateAt) >= intervalMs) {
-          if (runtimeDiagnostics?.isEnabled?.()) runtimeDiagnostics.measure('labels', () => updateLabels());
-          else updateLabels();
+          if (runtimeDiagnostics?.isEnabled?.()) runtimeDiagnostics.measure('labels', () => updateLabels(!zenActive));
+          else updateLabels(!zenActive);
           __lastLabelUpdateAt = now;
       }
 

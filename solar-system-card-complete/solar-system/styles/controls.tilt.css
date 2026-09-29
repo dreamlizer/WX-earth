@@ -1,0 +1,76 @@
+.tiltbar {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 40px;
+  height: min(52vh, 320px);
+  padding: 0;
+  overflow: visible;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.tiltbar .deg,
+.tiltbar .degree,
+.tiltbar .angle,
+.tiltbar .value,
+.tiltbar > span:first-child {
+  color: #e8f1ff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.tilt-track {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 18px;
+  flex: 1 1 auto;
+  border-radius: 999px;
+  border: 1px solid var(--control-track-border);
+  background: linear-gradient(180deg, #152557 0%, #1a2f6e 100%);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.tilt-fill {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  height: 72%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(108, 163, 255, 0.42) 0%, rgba(69, 124, 255, 0.92) 100%);
+}
+
+.tilt-thumb {
+  position: absolute;
+  left: 50%;
+  bottom: calc(72% - 11px);
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--control-thumb-border);
+  border-radius: 50%;
+  background: var(--control-thumb-bg);
+  box-shadow: var(--control-thumb-shadow);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.tilt-track:focus,
+.tilt-track:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(95, 168, 255, 0.28) !important;
+}

@@ -56,8 +56,6 @@ export const getInitialData = () => ({
   zenToastVisible: false,
   zenToastText: '',
   moonVoyageActive: false,
-  moonTrialActive: false,
-  moonTrialLoading: false,
   moonTimeVisible: false,
   moonTimerText: '',
   moonPhaseText: '',

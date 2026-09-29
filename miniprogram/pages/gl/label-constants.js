@@ -34,6 +34,7 @@ export const COUNTRY_MIN_WINNERS = 4;        // 12 -> 4 (减少强制显示的�
 
 // 新增：城市/国家标签的颜色配置（城市偏淡）
 export const COUNTRY_TEXT_COLOR = '#ffffff';  // 国家标签文本颜色
+export const NORMAL_COUNTRY_TEXT_COLOR = '#eeeeee'; // 普通模式非选中标签，略减白色对比
 export const CITY_TEXT_COLOR = '#0b2d52';     // 深蓝文字 (配合白底)
 export const CITY_BG_COLOR = 'rgba(255,255,255,0.85)'; // 白底半透明 (胶囊背景)
 

@@ -1,0 +1,11 @@
+{
+  "threeRevision": "108",
+  "triangles": 16,
+  "geometryBytes": 1536,
+  "geometryFileBytes": 7753,
+  "textureFileBytes": 974,
+  "textureDecodedBytes": 65536,
+  "drawCallsWithoutShadows": 1,
+  "engineConstruction": "PASS",
+  "wechatVisualAndFps": "NOT_TESTED"
+}

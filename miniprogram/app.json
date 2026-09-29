@@ -11,5 +11,14 @@
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2",
-  "lazyCodeLoading": "requiredComponents"
+  "lazyCodeLoading": "requiredComponents",
+  "subpackages": [
+    {
+      "root": "voyager-assets",
+      "name": "voyager-assets",
+      "pages": [
+        "index"
+      ]
+    }
+  ]
 }

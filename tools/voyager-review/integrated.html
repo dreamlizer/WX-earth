@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>正式登月 · 三段合并检查</title><style>body{background:#05070c;color:#c7d3e2;text-align:center;font:14px system-ui}canvas{width:390px;height:720px}a{color:#bacddd;padding:10px}</style><p>正式时间线 + 小程序模型数据 · 构图检查（不代替微信验收）</p><nav><a href="?t=27">第一次出现</a><a href="?t=37">地球离场</a><a href="?t=60">深空并行</a><a href="?t=96">月球旁出发</a><a href="?t=108">飞向月面</a></nav><p id="status"></p><canvas width="780" height="1440"></canvas><script>var exports={}</script><script src="/adapter.js"></script><script type="module">
+import {updateTimeline,VoyageEncounters} from '/runtime.js';
+const canvas=document.querySelector('canvas');canvas.createImage=()=>new Image();const T=exports.createScopedThreejs(canvas),r=new T.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});r.setSize(780,1440,false);r.gammaOutput=true;
+const scene=new T.Scene(),camera=new T.PerspectiveCamera(45,390/720,.1,1000);camera.position.z=5;
+const ambient=new T.AmbientLight(0xffffff,.6),light=new T.DirectionalLight(0xffffff,1.2);light.position.set(2,5,8);scene.add(ambient,light);
+const loader=new T.TextureLoader(),tex=async url=>new Promise(resolve=>loader.load(url,resolve));
+const earth=new T.Mesh(new T.SphereGeometry(1,48,32),new T.MeshPhongMaterial({map:await tex('/earth.jpg')})),globeGroup=new T.Group();globeGroup.add(earth);scene.add(globeGroup);
+const moon=new T.Mesh(new T.SphereGeometry(1,48,32),new T.MeshPhongMaterial({map:await tex('/moon.jpg')}));scene.add(moon);
+const fx=new VoyageEncounters();fx.setContext({THREE:T,scene,camera,readBuffer:()=>fetch('/voyager-assets/geometry.bin').then(r=>r.arrayBuffer())});await fx.preload();
+const mgr={THREE:T,scene,camera,globeGroup,moonMesh:moon,_moonTexReady:true,_voyageTargetRotY:.85,_startState:{camPos:camera.position.clone(),camRot:camera.rotation.clone(),globePos:globeGroup.position.clone(),globeScale:globeGroup.scale.clone(),ambInt:.6,dirInt:1.2,dirPos:light.position.clone()},_refreshMainStarfieldMesh(){},_companionFx:fx};
+const params=new URLSearchParams(location.search),end=Number(params.get('t')||37);for(let t=0;t<=end;t+=1/60)updateTimeline(mgr,t,1/60);r.render(scene,camera);document.querySelector('#status').textContent=end+' 秒 · 第三次启动 '+fx.moonStart?.toFixed(1)+' 秒';
+if(params.has('capture'))await fetch('/capture',{method:'POST',body:JSON.stringify({name:'integrated-'+end,image:canvas.toDataURL('image/png')})});
+</script>
