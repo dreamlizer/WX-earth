@@ -19,6 +19,27 @@
       "pages": [
         "index"
       ]
+    },
+    {
+      "root": "robot-assets",
+      "name": "robot-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "starship-assets",
+      "name": "starship-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "gundam-assets",
+      "name": "gundam-assets",
+      "pages": [
+        "index"
+      ]
     }
   ]
 }

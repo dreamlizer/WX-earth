@@ -40,7 +40,8 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
   const earthRaw = clamp01(t / T1);
   const earthP = earthRaw * earthRaw * earthRaw;
   const lightP = (t < T1) ? earthP : 1.0;
-  updateLighting(mgr, lightP);
+  const moonLightTime = T1 + T_CORRIDOR + T_MOON_APPROACH;
+  updateLighting(mgr, lightP, smoothstep(moonLightTime - 10, moonLightTime, t));
 
   mgr.camera.rotation.y = s.camRot.y + (TARGET_ROT_Y - s.camRot.y) * earthP;
   mgr.camera.position.x = s.camPos.x + (0 - s.camPos.x) * earthP;
@@ -147,7 +148,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
         const endDist = Math.max(1e-6, endVec.length());
         const dir = endVec.normalize();
         const right = new THREE.Vector3().crossVectors(dir, mgr.camera.up).normalize();
-        const startDir = dir.clone().addScaledVector(right, -0.04).normalize();
+        const startDir = dir.clone().addScaledVector(right, -0.85).normalize();
         const startDist = Math.max(12.0, endDist + 6.0);
         mgr._moonStartWorld.copy(mgr.camera.position).addScaledVector(startDir, startDist);
         mgr._moonStartReady = true;

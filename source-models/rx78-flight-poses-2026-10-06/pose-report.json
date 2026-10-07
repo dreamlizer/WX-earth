@@ -1,0 +1,77 @@
+[
+  {
+    "pose": "cruise",
+    "degrees": {
+      "shoulder": [
+        -38,
+        -32
+      ],
+      "elbow": [
+        60,
+        55
+      ],
+      "hip": [
+        8,
+        14
+      ],
+      "knee": [
+        -20,
+        -40
+      ]
+    },
+    "movedVertices": 28686,
+    "vertices": 38764,
+    "source": "RX78_game_asset.blend",
+    "method": "static bake from retained joint vertex groups"
+  },
+  {
+    "pose": "boost",
+    "degrees": {
+      "shoulder": [
+        -25,
+        145
+      ],
+      "elbow": [
+        40,
+        -35
+      ],
+      "hip": [
+        12,
+        8
+      ],
+      "knee": [
+        -75,
+        -15
+      ]
+    },
+    "movedVertices": 28686,
+    "vertices": 38764,
+    "source": "RX78_game_asset.blend",
+    "method": "static bake from retained joint vertex groups"
+  },
+  {
+    "pose": "bank",
+    "degrees": {
+      "shoulder": [
+        -45,
+        -20
+      ],
+      "elbow": [
+        65,
+        25
+      ],
+      "hip": [
+        8,
+        30
+      ],
+      "knee": [
+        -15,
+        -80
+      ]
+    },
+    "movedVertices": 28686,
+    "vertices": 38764,
+    "source": "RX78_game_asset.blend",
+    "method": "static bake from retained joint vertex groups"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "file": "Juno (A).glb",
+  "bytes": 8999028,
+  "sha256": "13f6bd48ff830a1890b21ef6e0182bb1043926feebb77af9733e7374b050367a",
+  "triangles": 17124,
+  "vertices": 24332,
+  "meshes": 10,
+  "materials": 9,
+  "images": 14,
+  "animations": 0,
+  "nodes": 10,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

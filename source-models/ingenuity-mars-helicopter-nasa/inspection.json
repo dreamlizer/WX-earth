@@ -1,0 +1,23 @@
+{
+  "file": "Ingenuity Mars Helicopter.glb",
+  "bytes": 2019408,
+  "sha256": "9e5a5398ab335eae7d46335085301ce46fb7de052300b645debe8bac6d39f2b5",
+  "triangles": 9124,
+  "vertices": 8512,
+  "meshes": 11,
+  "materials": 10,
+  "images": 16,
+  "animations": 0,
+  "nodes": 11,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

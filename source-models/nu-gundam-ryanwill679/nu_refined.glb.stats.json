@@ -1,0 +1,35 @@
+{
+  "file": "source-models/nu-gundam-ryanwill679/nu_refined.glb",
+  "bytes": 44581980,
+  "sha256": "b130b89b5c051893c0a15d4132c8c71d5579ac5a536eef2d255f878bdf8e2459",
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "vertices": 111557,
+  "triangles": 127637,
+  "meshes": 3,
+  "mesh_nodes": 3,
+  "materials": 11,
+  "textures": 29,
+  "images": 29,
+  "embedded_images": 29,
+  "external_image_uris": [],
+  "external_resources": [],
+  "external_resources_complete": true,
+  "animations": 0,
+  "extensions_used": [
+    "KHR_materials_emissive_strength"
+  ],
+  "source_bounds": {
+    "min": [
+      -11.39683723449707,
+      -2.161867141723633,
+      -3.562757968902588
+    ],
+    "max": [
+      12.18570327758789,
+      28.548572540283203,
+      5.316511154174805
+    ],
+    "note": "union of GLB POSITION accessor bounds"
+  }
+}

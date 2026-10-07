@@ -1,0 +1,33 @@
+{
+  "file": "source-models/freedom-gundam-k0077/freedom_refined.glb",
+  "bytes": 40020440,
+  "sha256": "6d27b64ce79469c14d878efc200636bdf9e68b06511f9d371f5e0dc3ac58ed73",
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "vertices": 583505,
+  "triangles": 429608,
+  "meshes": 2,
+  "mesh_nodes": 2,
+  "materials": 16,
+  "textures": 47,
+  "images": 46,
+  "embedded_images": 46,
+  "external_image_uris": [],
+  "external_resources": [],
+  "external_resources_complete": true,
+  "animations": 0,
+  "extensions_used": [],
+  "source_bounds": {
+    "min": [
+      -11.471282958984375,
+      -2.2499990463256836,
+      -4.16721248626709
+    ],
+    "max": [
+      11.516593933105469,
+      19.449674606323242,
+      4.977342128753662
+    ],
+    "note": "union of GLB POSITION accessor bounds"
+  }
+}

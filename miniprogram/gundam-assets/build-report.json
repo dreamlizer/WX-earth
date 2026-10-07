@@ -1,0 +1,12 @@
+{
+  "source_sha256": "35400009fac680152f71b8d4d00c4d28ebefed978f21d7582123771f0694d89d",
+  "source": "source-models/rx78-flight-poses-2026-10-06/bank.glb",
+  "pose": "bank",
+  "triangles": 77407,
+  "drawCalls": 2,
+  "geometryBytes": 1771992,
+  "textureBytes": 90690,
+  "staticPose": true,
+  "positionMaxError": 0.00014615305561416445,
+  "atlasTexCoord": 1
+}

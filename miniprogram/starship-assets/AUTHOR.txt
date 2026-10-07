@@ -1,0 +1,5 @@
+Luminaris Starship — Igor Puškarić (iggy-design)
+https://sketchfab.com/3d-models/luminaris-starship-b8001c7cf83240f383ccdbe75094e468
+Source files: https://vfxstudy.com/tutorials/starship-1/
+Source page lists CC BY: https://creativecommons.org/licenses/by/4.0/
+Modified: converted FBX to GLB, baked mesh transforms, resized textures to 512px, adapted materials.

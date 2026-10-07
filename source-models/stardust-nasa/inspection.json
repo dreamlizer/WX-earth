@@ -1,0 +1,23 @@
+{
+  "file": "Stardust.glb",
+  "bytes": 3800544,
+  "sha256": "1293ce064d66ae0ae288a4278ec2801b22a1a8e4858fe881382c6b1451ab9741",
+  "triangles": 14456,
+  "vertices": 19567,
+  "meshes": 14,
+  "materials": 7,
+  "images": 10,
+  "animations": 0,
+  "nodes": 14,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

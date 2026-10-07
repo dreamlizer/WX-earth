@@ -2,6 +2,7 @@
 page { background: #000; }
 
 .wrap {
+  z-index: 0;
   /* 改为固定填充视口，避免 Android 上 vw/vh 偶发计算偏差导致横向拉伸 */
   position: fixed;
   left: 0; right: 0; top: 0; bottom: 0;
@@ -92,6 +93,7 @@ canvas {
 .moon-phase-timer.visible { opacity: 1; }
 
 .moon-lyrics {
+  height: 150px;
   position: fixed;
   left: 0;
   width: 100%;
@@ -129,7 +131,7 @@ canvas {
   position: absolute;
   left: 50%;
   bottom: 0;
-  transform: translate3d(-50%, 10px, 0);
+  transform: translate(-50%, 10px);
   display: block;
   max-width: 96%;
   padding: 12rpx 18rpx;
@@ -147,9 +149,8 @@ canvas {
   overflow-wrap: normal;
   opacity: 0;
   text-shadow: 0 0 14px rgba(20,40,60,0.55);
-  will-change: opacity, transform;
 }
-.moon-lyrics-text.visible { opacity: 1; transform: translate3d(-50%, 0, 0); }
+.moon-lyrics-text.visible { opacity: 1; transform: translate(-50%, 0); }
 .top-icon-btn {
   width: 80rpx;  /* 与右侧齿轮统一尺寸（约 40px） */
   height: 80rpx;

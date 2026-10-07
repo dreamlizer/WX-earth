@@ -1,0 +1,1 @@
+module.exports = {"meshes":[{"count":56201,"indexCount":128625,"position":0,"normal":337208,"uv":505812,"index":730616},{"count":44386,"indexCount":103596,"position":987868,"normal":1254184,"uv":1387344,"index":1564888}],"extent":9.535620376467705,"height":18.586679458618164};

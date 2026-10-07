@@ -1,0 +1,5 @@
+Repository: https://github.com/RamonLinares/atlas-09
+Commit: 1b8fb9d54160215c071c5a29a49b1c36dc01f0df
+Model: https://raw.githubusercontent.com/RamonLinares/atlas-09/1b8fb9d54160215c071c5a29a49b1c36dc01f0df/public/models/ronin-04.glb
+Asset license: https://raw.githubusercontent.com/RamonLinares/atlas-09/1b8fb9d54160215c071c5a29a49b1c36dc01f0df/ASSET-LICENSE.md
+CC0 text: https://raw.githubusercontent.com/RamonLinares/atlas-09/1b8fb9d54160215c071c5a29a49b1c36dc01f0df/LICENSES/CC0-1.0.txt

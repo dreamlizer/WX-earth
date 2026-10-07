@@ -1,0 +1,33 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
+const T=require('../miniprogram/node_modules/threejs-miniprogram').createScopedThreejs({width:390,height:720,createImage(){return {}}});
+const file=path.resolve('miniprogram/pages/gl/moon-voyage-robot.js');
+const bytes=fs.readFileSync('miniprogram/robot-assets/robot.glb');
+const buffer=bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength);
+const paths=[],textures=[];
+T.TextureLoader=class {setCrossOrigin(){return this;}load(url,done){paths.push(url);const t=new T.Texture();textures.push(t);queueMicrotask(()=>done(t));return t;}};
+let ready=false;
+const box={module:{exports:{}},console,require(name,resolve){if(name==='../../robot-assets/ready.js'){ready=true;resolve(true);return;}return require('module').createRequire(file)(name);},wx:{getFileSystemManager(){return {readFile({filePath,success}){assert(ready,'Install subpackage before binary read');assert.equal(filePath,'robot-assets/robot.glb');success({data:buffer});}};}}};
+box.registerGLTFLoader=require('../miniprogram/pages/gl/vendor/gltf-loader.js').registerGLTFLoader;
+vm.runInNewContext(fs.readFileSync(file,'utf8').replace(/^import .*;$/m,'').replace('export { VoyageRobot, buildRobot, release };','module.exports = { VoyageRobot, buildRobot };'),box);
+const {VoyageRobot}=box.module.exports;
+(async()=>{
+ const scene=new T.Scene(),robot=new VoyageRobot({THREE:T,scene});
+ await robot.preload();assert(robot.model,'Actual packaged GLB, skin and materials must load without DOM globals');
+ assert.equal(paths.length,7);paths.forEach(p=>assert(p.startsWith('/robot-assets/')));
+ const body=robot.raw.getObjectByName('Body_00'),rotation=body.quaternion.clone(),position=body.position.clone();
+ robot.update(0,.5);const flame=robot.raw.getObjectByName('Cone1'),scale=flame.scale.clone();
+ robot.update(.5,1);assert(!flame.scale.equals(scale),'Native flame animation advances');
+ for(let t=0;t<32;t+=.5)robot.update(t,1);
+ assert(body.quaternion.equals(rotation)&&body.position.equals(position),'Source body turn cannot override fixed flight pose');
+ assert.equal(robot.arms.length,2,'Both arm joints are available');
+ robot.update(0,1);const armPose=robot.arms.map(a=>a.node.quaternion.clone());let maxArmChange=0;for(let t=0;t<12;t+=.2){robot.update(t,1);robot.arms.forEach((a,i)=>maxArmChange=Math.max(maxArmChange,a.node.quaternion.angleTo(armPose[i])));}
+ assert(maxArmChange>.15&&maxArmChange<.5,'Gentle but visible arm motion, not a large wave');
+ const fire=robot.materials.find(m=>m.name==='Fire');robot.update(12,.5);assert(Math.abs(fire.opacity-.275)<1e-6,'Fade preserves flame base opacity');
+ let released=0;textures.forEach(t=>t.addEventListener('dispose',()=>released++));
+ robot.model.visible=true;robot.reset();assert(!robot.model.visible);robot.dispose();robot.dispose();
+ assert.equal(scene.children.length,0);assert.equal(released,7,'Textures released exactly once');
+ let finish;const retired=new VoyageRobot({THREE:T,scene,readBuffer:()=>new Promise(r=>finish=r)});
+ const loading=retired.preload();await Promise.resolve();retired.dispose();finish(buffer);await loading;
+ assert(!retired.model&&scene.children.length===0,'Late load must not resurrect exited robot');
+ console.log('Robot package loading, frozen body, native flames, fading and asynchronous cleanup PASS');
+})().catch(e=>{console.error(e);process.exitCode=1;});

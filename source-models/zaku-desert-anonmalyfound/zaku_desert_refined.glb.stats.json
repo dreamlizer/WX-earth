@@ -1,0 +1,23 @@
+{
+  "file": "source-models/zaku-desert-anonmalyfound/zaku_desert_refined.glb",
+  "bytes": 7650140,
+  "sha256": "d7c323c273aa7a8f45153d66ebf25e0f202b2b5ba575b9efc2b666f722ea36fa",
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "vertices": 70335,
+  "triangles": 68004,
+  "meshes": 1,
+  "mesh_nodes": 1,
+  "materials": 1,
+  "textures": 4,
+  "images": 4,
+  "embedded_images": 4,
+  "external_image_uris": [],
+  "animations": 0,
+  "extensions_used": [],
+  "source_bounds": {
+    "min": [-5.736751556396484, -14.84678840637207, 0],
+    "max": [5.967491626739502, 3.0197062492370605, 18.070234298706055],
+    "note": "upstream conversion report reimported bounds"
+  }
+}

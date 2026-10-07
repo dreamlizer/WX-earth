@@ -1,0 +1,26 @@
+{
+  "urdf_source": "nasa-val-description.zip!/val_description/urdf/valkyrie_D.urdf (generated from valkyrie_D.xacro)",
+  "output": "valkyrie-r5.glb",
+  "links": 69,
+  "joints": 68,
+  "visuals": 57,
+  "mesh_objects": 59,
+  "vertices": 43564,
+  "polygons": 14522,
+  "materials": 59,
+  "images": 16,
+  "missing_meshes": [],
+  "bounds": {
+    "min": [
+      -0.25948330760002136,
+      -1.0328673124313354,
+      -1.1713063716888428
+    ],
+    "max": [
+      0.28010332584381104,
+      0.3893586993217468,
+      0.6968061327934265
+    ]
+  },
+  "output_size": 2900000
+}

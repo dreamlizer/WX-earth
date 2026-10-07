@@ -2,10 +2,11 @@ const smooth = x => { x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x); };
 const rampIntegral = (x,d) => x<=0?0:x>=d?x-d/2:d*(Math.pow(x/d,3)-.5*Math.pow(x/d,4));
 export const FLOW_COUNT = 840;
 // Camera-relative depth, not a scrolling backdrop. Motion stays continuous when scrubbing.
+// Keep cruise speed through the look-back; overtaking adds only 30 percent.
 export function flowMotion(elapsed) {
   return {
-    speed:8*smooth((elapsed+10)/18)-5.5*smooth((elapsed-10)/3)+15.5*smooth((elapsed-24)/6),
-    distance:8*rampIntegral(elapsed+10,18)-5.5*rampIntegral(elapsed-10,3)+15.5*rampIntegral(elapsed-24,6),
+    speed:8*smooth((elapsed+10)/18)+2.4*smooth((elapsed-33.375)/6.75),
+    distance:8*rampIntegral(elapsed+10,18)+2.4*rampIntegral(elapsed-33.375,6.75),
     lateral:.48*(elapsed+47-rampIntegral(elapsed+10,18))
   };
 }
@@ -24,7 +25,7 @@ export function createStarFlow(T) {
 }
 export function updateStarFlow(flow,elapsed,voyageTime=elapsed+47) {
   const {distance,speed,lateral}=flowMotion(elapsed);
-  const opacity=smooth(voyageTime/6)*(1-smooth((elapsed-36)/5));
+  const opacity=smooth(voyageTime/6)*(1-smooth((elapsed-49.5)/5));
   flow.group.visible=opacity>.001;
   if(!flow.group.visible)return;
   const p=flow.points.geometry.attributes,c=flow.trails.geometry.attributes;

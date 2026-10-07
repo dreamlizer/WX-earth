@@ -1,5 +1,5 @@
 
-export const updateLighting = (mgrState, p) => {
+export const updateLighting = (mgrState, p, moonP = 0) => {
   const s = mgrState._startState;
   if (!s) return;
   
@@ -23,5 +23,22 @@ export const updateLighting = (mgrState, p) => {
       dir.position.x = s.dirPos.x + (targetDirPos.x - s.dirPos.x) * p;
       dir.position.y = s.dirPos.y + (targetDirPos.y - s.dirPos.y) * p;
       dir.position.z = s.dirPos.z + (targetDirPos.z - s.dirPos.z) * p;
+  }
+  // Establish the existing orbit light while the Moon is still approaching.
+  // Its first stable view then has the same illumination as orbit entry.
+  if (moonP > 0) {
+    const moon = mgrState._tmpMoonStart || { x: -5.8, y: -1.2, z: 0 };
+    const dx = -moon.x, dy = -moon.y, dz = 5 - moon.z, distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    if (amb) amb.intensity = .6 + (.07 - .6) * moonP;
+    if (dir) {
+      dir.position.set(2 + (moon.x + dx/distance*28 - 2)*moonP,
+        5 + (moon.y + dy/distance*28 + 4.2 - 5)*moonP,
+        8 + (moon.z + dz/distance*28 - 8)*moonP);
+      if (dir.target) {
+        const start = s.dirTarget || { x: 0, y: 0, z: 0 };
+        dir.target.position.set(start.x + (moon.x-start.x)*moonP, start.y + (moon.y-start.y)*moonP, start.z + (moon.z-start.z)*moonP);
+        if (!dir.target.parent) scene.add(dir.target);
+      }
+    }
   }
 };

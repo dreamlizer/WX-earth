@@ -1,0 +1,26 @@
+{
+  "urdf": "/private/tmp/wx-earth-r2/r2_description/urdf/r2c6.urdf",
+  "output": "source-models/nasa-robonaut-r2/robonaut-r2.glb",
+  "links": 132,
+  "joints": 131,
+  "visuals": 69,
+  "mesh_objects": 90,
+  "vertices": 1038702,
+  "polygons": 346234,
+  "materials": 90,
+  "images": 12,
+  "missing_meshes": [],
+  "bounds": {
+    "min": [
+      -0.4112072288990021,
+      -1.1994014978408813,
+      -1.3970839977264404
+    ],
+    "max": [
+      0.3669736683368683,
+      1.204087495803833,
+      1.0010590553283691
+    ]
+  },
+  "output_size": 32995008
+}

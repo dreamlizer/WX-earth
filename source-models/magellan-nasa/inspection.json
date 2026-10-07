@@ -1,0 +1,23 @@
+{
+  "file": "Magellan.glb",
+  "bytes": 3156768,
+  "sha256": "8a7f61e467309865fb2bb3fc3b2d3efbc0898d9e15eb6afb2fd743b7cd9f5084",
+  "triangles": 7364,
+  "vertices": 6656,
+  "meshes": 6,
+  "materials": 5,
+  "images": 6,
+  "animations": 0,
+  "nodes": 6,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "file": "James Webb Space Telescope (A).glb",
+  "bytes": 4710016,
+  "sha256": "ea4a53f71f1e7477d8b90e30d1299b2cb33faea18acdcaf831dc9d3ebf1b7750",
+  "triangles": 493785,
+  "vertices": 508474,
+  "meshes": 1600,
+  "materials": 46,
+  "images": 0,
+  "animations": 0,
+  "nodes": 1882,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

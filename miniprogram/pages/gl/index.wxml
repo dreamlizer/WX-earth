@@ -24,10 +24,6 @@
   <text class="moon-phase-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonPhaseText}}</text>
 </view>
 
-<view wx:if="{{moonVoyageActive}}" class="moon-lyrics" style="bottom: {{moonLyricBottomPx}}px;">
-  <text class="moon-lyrics-text {{moonLyricA.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out, transform {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricA.text}}</text>
-  <text class="moon-lyrics-text {{moonLyricB.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out, transform {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricB.text}}</text>
-</view>
 
 <!-- 登月模式入口：右下角按钮（禅定模式下淡入显示，避免 wx:if 造成“闪现”） -->
 <view class="top-icon-btn moon-btn {{zenBtnVisible ? 'visible' : ''}}" bindtap="onEnterMoonVoyage" role="button">
@@ -143,7 +139,13 @@
     bindtouchmove="onTouchMove"
     bindtouchend="onTouchEnd"
     bindtouchcancel="onTouchEnd"
-  />
+  >
+    <!-- Native overlay: lyrics must cover the WebGL hull, including on devices. -->
+    <cover-view wx:if="{{moonVoyageActive}}" class="moon-lyrics" style="bottom: {{moonLyricBottomPx}}px;">
+      <cover-view class="moon-lyrics-text {{moonLyricA.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out, transform {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricA.text}}</cover-view>
+      <cover-view class="moon-lyrics-text {{moonLyricB.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out, transform {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricB.text}}</cover-view>
+    </cover-view>
+  </canvas>
   <!-- 已移除：PC 端滚轮触发空间 -->
   
 </scroll-view>

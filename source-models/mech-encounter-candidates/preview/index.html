@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>机甲相遇 · 3D 模型预览</title>
+  <style>
+    :root { color-scheme: dark; --ink:#e9eff7; --muted:#8e9aab; --line:rgba(178,203,236,.16); --accent:#a6d7ed; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; min-height:100%; background:#060c15; color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; }
+    button { font:inherit; cursor:pointer; }
+    .shell { min-height:100vh; display:grid; grid-template-columns:minmax(300px,350px) minmax(0,1fr); }
+    .sidebar { position:relative; z-index:2; display:flex; flex-direction:column; gap:26px; padding:32px 24px 24px 32px; border-right:1px solid var(--line); background:linear-gradient(155deg,#111d2c 0%,#0a1321 48%,#080e19 100%); }
+    .eyebrow { margin:0 0 13px; color:#83b9d1; font-size:10px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(29px,3vw,38px); font-weight:540; letter-spacing:.03em; line-height:1.18; }
+    .lede { margin:13px 0 0; color:var(--muted); font-size:13px; line-height:1.8; }
+    .section-label { margin:0 0 10px; color:#a7b9ca; font-size:11px; letter-spacing:.14em; }
+    .model-list { display:grid; gap:7px; max-height:min(58vh,590px); overflow-y:auto; padding-right:4px; scrollbar-color:rgba(143,181,207,.3) transparent; scrollbar-width:thin; }
+    .model-choice { width:100%; display:grid; grid-template-columns:31px 1fr auto; align-items:center; gap:11px; padding:12px 11px; color:#c5d1df; text-align:left; border:1px solid transparent; border-radius:9px; background:transparent; transition:background .18s,border-color .18s; }
+    .model-choice:hover { background:rgba(159,190,218,.07); }
+    .model-choice[aria-pressed="true"] { color:#f0f8ff; border-color:rgba(154,207,231,.33); background:rgba(110,169,197,.13); }
+    .num { color:#6f859a; font-size:11px; font-variant-numeric:tabular-nums; }
+    .model-choice[aria-pressed="true"] .num { color:#9ccee6; }
+    .choice-name { display:block; font-size:13px; line-height:1.25; }
+    .choice-type { display:block; margin-top:5px; color:#8595a6; font-size:11px; }
+    .choice-arrow { color:#7c9caf; font-size:17px; }
+    .sidebar-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--line); color:#7f8fa1; font-size:11px; line-height:1.8; }
+    .sidebar-foot a,.source-link { color:#a6d7ed; text-decoration:none; }
+    .sidebar-foot a:hover,.source-link:hover { text-decoration:underline; }
+    .viewer { min-width:0; min-height:100vh; display:flex; flex-direction:column; background:radial-gradient(ellipse 72% 56% at 52% 44%,#18304a 0%,#0b1727 53%,#060c15 100%); }
+    .topbar { position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding:29px 36px 0; }
+    .topbar small { color:#8aa2b8; font-size:10px; letter-spacing:.18em; text-transform:uppercase; }
+    .status { display:flex; align-items:center; gap:8px; color:#9bb3c4; font-size:11px; white-space:nowrap; }
+    .status::before { content:""; width:6px; height:6px; border-radius:50%; background:#95c5da; box-shadow:0 0 10px #7cc9e9; }
+    .status[data-kind="error"]::before { background:#e9a49b; box-shadow:0 0 10px #e98373; }
+    .stage { position:relative; flex:1; min-height:460px; overflow:hidden; }
+    .stage::before { content:""; position:absolute; left:50%; top:53%; width:min(65vw,680px); aspect-ratio:1; transform:translate(-50%,-50%); border:1px solid rgba(161,211,233,.07); border-radius:50%; box-shadow:0 0 0 100px rgba(148,200,224,.016),0 0 0 200px rgba(148,200,224,.012); pointer-events:none; }
+    .stage::after { content:""; position:absolute; left:50%; bottom:12%; width:min(44vw,520px); height:70px; transform:translateX(-50%); border-radius:50%; background:radial-gradient(ellipse,rgba(31,69,96,.25),transparent 70%); pointer-events:none; }
+    canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
+    canvas:active { cursor:grabbing; }
+    .loading { position:absolute; z-index:1; left:50%; top:50%; transform:translate(-50%,-50%); padding:9px 15px; border:1px solid var(--line); border-radius:20px; background:rgba(7,16,27,.72); color:#c6d7e4; font-size:12px; pointer-events:none; }
+    .loading[hidden] { display:none; }
+    .stage-hint { position:absolute; left:36px; bottom:29px; color:#7892a7; font-size:11px; pointer-events:none; }
+    .detail { position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-end; gap:24px; padding:0 36px 30px; }
+    .detail-main { min-width:0; }
+    .detail-index { display:block; margin-bottom:8px; color:#8cb7cb; font-size:10px; letter-spacing:.17em; }
+    h2 { margin:0; font-size:clamp(23px,2.6vw,35px); font-weight:510; letter-spacing:.015em; }
+    .meta { margin:10px 0 0; color:#92a5b7; font-size:12px; line-height:1.65; }
+    .source-link { display:inline-block; margin-top:9px; font-size:11px; }
+    .controls { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+    .control { min-width:70px; padding:9px 12px; border:1px solid rgba(155,193,220,.25); border-radius:6px; color:#c3d5e4; background:rgba(14,30,48,.68); font-size:11px; }
+    .control:hover,.control[aria-pressed="true"] { border-color:#8ebed5; color:#f4fbff; background:rgba(50,100,131,.38); }
+    @media(max-width:760px) { .shell { display:flex; flex-direction:column; } .sidebar { gap:17px; padding:20px 17px 16px; border-right:0; border-bottom:1px solid var(--line); } h1 { font-size:26px; } .lede,.sidebar-foot { display:none; } .section-label { display:none; } .model-list { display:flex; max-height:none; overflow-x:auto; overflow-y:hidden; margin:0 -17px; padding:0 17px 3px; scrollbar-width:none; } .model-choice { flex:0 0 175px; grid-template-columns:22px 1fr; padding:10px; } .choice-arrow { display:none; } .viewer { min-height:calc(100dvh - 185px); } .topbar { padding:18px 17px 0; } .stage { min-height:360px; } .stage-hint { left:17px; bottom:15px; } .detail { align-items:stretch; flex-direction:column; gap:17px; padding:0 17px 20px; } .controls { justify-content:flex-start; } .control { flex:1; } }
+  </style>
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+  <main class="shell">
+    <aside class="sidebar">
+      <header>
+        <p class="eyebrow">MOON ENCOUNTER / MODEL STUDY</p>
+        <h1>相遇之前，<br>先看清它们。</h1>
+        <p class="lede">汇集 18 款可飞行、可航行或可绕地运行的科幻、机器人与真实航天物体。拖拽旋转，检查轮廓、材质与细节。</p>
+      </header>
+      <section aria-label="模型列表">
+        <p class="section-label">当前预览 · 18 款</p>
+        <div class="model-list" id="model-list"></div>
+      </section>
+      <div class="sidebar-foot">本页直接读取本地源素材，不影响小程序。含 5 款科幻/概念对象、6 款高精细机器人/机甲与 7 款 NASA 航天器。<br><a href="../README.md" target="_blank" rel="noopener">查看完整来源清单 ↗</a></div>
+    </aside>
+    <section class="viewer" aria-label="3D 模型预览">
+      <div class="topbar"><small>THREE-DIMENSIONAL OBJECT VIEWER</small><span class="status" id="status" role="status">准备加载</span></div>
+      <div class="stage" id="stage"><canvas id="canvas" aria-label="可拖拽旋转的 3D 模型"></canvas><div class="loading" id="loading">正在读取模型…</div><div class="stage-hint">拖拽旋转 · 滚轮或双指缩放</div></div>
+      <div class="detail">
+        <div class="detail-main"><span class="detail-index" id="detail-index"></span><h2 id="detail-title"></h2><p class="meta" id="detail-meta"></p><a class="source-link" id="source-link" target="_blank" rel="noopener">原作品与作者 ↗</a></div>
+        <div class="controls"><button class="control" id="reset" type="button">重置视角</button><button class="control" id="rotate" type="button" aria-pressed="false">自动旋转</button><button class="control" id="animate" type="button" aria-pressed="true">暂停动画</button></div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "file": "Chandra X-ray Observatory.glb",
+  "bytes": 998500,
+  "sha256": "9383f44fc4c6eba73c40b0c2cfe33c08c90f1fb5230274bfdaa98e0c9f116a34",
+  "triangles": 30132,
+  "vertices": 29716,
+  "meshes": 6,
+  "materials": 5,
+  "images": 6,
+  "animations": 0,
+  "nodes": 6,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

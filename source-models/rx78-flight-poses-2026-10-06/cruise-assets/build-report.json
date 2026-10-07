@@ -1,0 +1,10 @@
+{
+  "source_sha256": "f57f0d3619cc8eefbd7a0eac3e0164f6be920ccd763e3ecbdc2a42da5d4e0ff3",
+  "triangles": 77407,
+  "drawCalls": 2,
+  "geometryBytes": 1772080,
+  "textureBytes": 90690,
+  "staticPose": true,
+  "positionMaxError": 0.00014550646040937078,
+  "atlasTexCoord": 1
+}

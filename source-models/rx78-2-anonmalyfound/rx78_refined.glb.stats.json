@@ -1,0 +1,33 @@
+{
+  "file": "source-models/rx78-2-anonmalyfound/rx78_refined.glb",
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "vertices": 100495,
+  "triangles": 77407,
+  "meshes": 2,
+  "mesh_nodes": 2,
+  "materials": 17,
+  "textures": 17,
+  "images": 1,
+  "embedded_images": 1,
+  "external_image_uris": [],
+  "animations": 0,
+  "extensions_used": [],
+  "mesh_names": [
+    "Cube.002",
+    "Cube.001"
+  ],
+  "source_bounds": {
+    "min": [
+      -5.322605133056641,
+      -3.46877121925354,
+      0
+    ],
+    "max": [
+      7.564638137817383,
+      3.5058765411376953,
+      18.586679458618164
+    ],
+    "note": "upstream conversion report reimported bounds"
+  }
+}

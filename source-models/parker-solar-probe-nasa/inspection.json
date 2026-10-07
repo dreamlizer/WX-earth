@@ -1,0 +1,23 @@
+{
+  "file": "Parker Solar Probe.glb",
+  "bytes": 443572,
+  "sha256": "4d26e84efd29a78c5d07e474f6272bb111668b58da5a7555e305a65c72ddb1c5",
+  "triangles": 39257,
+  "vertices": 39233,
+  "meshes": 14,
+  "materials": 6,
+  "images": 4,
+  "animations": 0,
+  "nodes": 14,
+  "externalDependencies": [],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "checks": {
+    "glbHeader": "PASS",
+    "chunkAlignment": "PASS",
+    "bufferViewBounds": "PASS",
+    "accessorBounds": "PASS",
+    "noExternalDependencies": "PASS"
+  }
+}

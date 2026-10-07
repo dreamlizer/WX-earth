@@ -1,0 +1,23 @@
+[
+  {
+    "pose": "cruise",
+    "vertices": 38764,
+    "edges": 114740,
+    "maxEdgeStretch": 1.8374697310759391,
+    "edgesOver3x": 0
+  },
+  {
+    "pose": "boost",
+    "vertices": 38764,
+    "edges": 114740,
+    "maxEdgeStretch": 2.771551298839542,
+    "edgesOver3x": 0
+  },
+  {
+    "pose": "bank",
+    "vertices": 38764,
+    "edges": 114740,
+    "maxEdgeStretch": 1.9705767258275035,
+    "edgesOver3x": 0
+  }
+]

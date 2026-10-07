@@ -1,0 +1,36 @@
+{
+  "file": "source-models/ronin-04-ramonlinares/ronin-04.glb",
+  "bytes": 7598824,
+  "sha256": "c73ba62bb8f6f2398f57085f211f01a4f150ff872e203dec2360ce2285d13cbc",
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v5.1.20",
+  "vertices": 45810,
+  "triangles": 31533,
+  "meshes": 1,
+  "mesh_nodes": 1,
+  "materials": 4,
+  "textures": 3,
+  "images": 3,
+  "embedded_images": 3,
+  "external_image_uris": [],
+  "external_resources": [],
+  "external_resources_complete": true,
+  "animations": 12,
+  "extensions_used": [
+    "KHR_materials_clearcoat",
+    "KHR_materials_emissive_strength"
+  ],
+  "source_bounds": {
+    "min": [
+      -6.480761528015137,
+      0,
+      -2.0409183502197266
+    ],
+    "max": [
+      4.308054447174072,
+      16,
+      5.923523902893066
+    ],
+    "note": "union of GLB POSITION accessor bounds"
+  }
+}

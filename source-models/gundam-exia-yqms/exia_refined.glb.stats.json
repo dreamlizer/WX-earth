@@ -1,0 +1,25 @@
+{
+  "file": "source-models/gundam-exia-yqms/exia_refined.glb",
+  "bytes": 21091628,
+  "sha256": "d428a49fd2ff9d2742f9930b5b40a37f17806f76c3151c8ecb76d972e2feeaea",
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "vertices": 390882,
+  "triangles": 283923,
+  "meshes": 2,
+  "mesh_nodes": 2,
+  "materials": 54,
+  "textures": 0,
+  "images": 0,
+  "embedded_images": 0,
+  "external_image_uris": [],
+  "animations": 0,
+  "extensions_used": [
+    "KHR_materials_emissive_strength"
+  ],
+  "source_bounds": {
+    "min": [-5.482477188110352, -4.0922040939331055, 0],
+    "max": [5.482477188110352, 2.253413200378418, 18.299999237060547],
+    "note": "upstream conversion report reimported bounds"
+  }
+}

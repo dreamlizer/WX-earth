@@ -1,0 +1,30 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8">
+<title>高达飞行姿势对比</title>
+<style>
+body{margin:0;background:#080b12;color:#d9e5f4;font:16px system-ui;text-align:center}
+h1{font-size:24px;margin:28px 0 10px}p{color:#9facbf;margin:10px 20px}
+main{display:flex;justify-content:center;flex-wrap:wrap;gap:16px;padding:16px}
+section{width:410px}h2{font-size:19px}iframe{border:0;width:410px;height:840px}
+a{color:#a7d4ff;margin:0 8px}small{display:block;color:#aab7c8;min-height:48px;padding:0 16px}
+</style>
+<h1>高达飞行姿势 · 三个候选</h1>
+<p>同一机体、同一镜头、同一灯光 · 离线固定姿势 · 不代替微信验收</p>
+<canvas width="1440" height="620" style="width:min(1440px,100%);height:auto"></canvas>
+<nav style="margin:20px"><a href="/?t=87.7&pose=cruise">A · 巡航完整画面</a><a href="/?t=87.7&pose=boost">B · 加速完整画面</a><a href="/?t=87.7&pose=bank">C · 转弯完整画面</a></nav>
+<p>C 已接入正式登月模型；A/B 保留对比。微信/真机效果待确认。</p>
+<script type="module">
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
+ctx.fillStyle='#080b12';ctx.fillRect(0,0,1440,620);
+const poses=[['cruise','A · 收臂巡航','双臂收拢，适度屈膝'],['boost','B · 单臂前伸','一臂前伸，另一臂收拢'],['bank','C · 错位转弯','两腿错位，一腿明显屈膝']];
+for(let i=0;i<poses.length;i++){
+ const [id,title,detail]=poses[i],x=i*480;
+ const img=new Image();img.src='/review-assets/pose-'+id+'-87.7.png';await img.decode();
+ ctx.textAlign='center';ctx.fillStyle='#d9e5f4';ctx.font='bold 27px system-ui';ctx.fillText(title,x+240,44);
+ ctx.fillStyle='#9facbf';ctx.font='18px system-ui';ctx.fillText(detail,x+240,77);
+ // Same crop and scale for all three; retain the complete model and weapon.
+ ctx.drawImage(img,0,280,780,700,x+12,98,456,409);
+ ctx.fillStyle='#304052';ctx.fillRect(x+12,530,456,1);
+}
+ctx.fillStyle='#9facbf';ctx.font='19px system-ui';ctx.fillText('87.7 秒 · 相同镜头 / 尺度 / 灯光 · 真实模型预览',720,575);
+if(new URLSearchParams(location.search).has('capture'))await fetch('/capture',{method:'POST',body:JSON.stringify({name:'pose-comparison-87.7',image:canvas.toDataURL('image/png')})});
+</script></html>

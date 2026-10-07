@@ -1,0 +1,5 @@
+Mech Drone — Willy Decarpentrie (skudgee)
+https://sketchfab.com/3d-models/mech-drone-8d06874aac5246c59edb4adbe3606e0e
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Source: https://github.com/jgbarah/aframe-playground/tree/master/assets/3d/mech_drone
+Modified: repackaged as GLB; textures resized to 512px; flight pose and animation selection adapted.

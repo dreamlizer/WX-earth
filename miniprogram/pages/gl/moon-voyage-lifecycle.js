@@ -145,6 +145,7 @@ export const restoreState = (mgr) => {
   if (dir && mgr._originalLights.dir !== undefined) {
     dir.intensity = mgr._originalLights.dir;
     if (mgr._originalLights.dirPos) dir.position.copy(mgr._originalLights.dirPos);
+    if (dir.target && mgr._originalLights.dirTarget) dir.target.position.copy(mgr._originalLights.dirTarget);
   }
 
   if (mgr.audioContext) {
@@ -172,6 +173,7 @@ export const captureStartState = (mgr) => {
   if (dir) {
     mgr._originalLights.dir = dir.intensity;
     mgr._originalLights.dirPos = dir.position.clone();
+    mgr._originalLights.dirTarget = dir.target?.position?.clone?.();
   }
 
   mgr._startState = {
@@ -181,7 +183,8 @@ export const captureStartState = (mgr) => {
     globeScale: mgr.globeGroup.scale.clone(),
     ambInt: amb ? amb.intensity : 0.6,
     dirInt: dir ? dir.intensity : 1.2,
-    dirPos: dir ? dir.position.clone() : new mgr.THREE.Vector3(1, 1, 1)
+    dirPos: dir ? dir.position.clone() : new mgr.THREE.Vector3(1, 1, 1),
+    dirTarget: dir?.target?.position?.clone?.() || new mgr.THREE.Vector3()
   };
 };
 

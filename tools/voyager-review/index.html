@@ -31,11 +31,11 @@ function screenTrack(out,a,b,q){
 const params=new URLSearchParams(location.search);let model,baseScale=1,t=Number(params.get("t")||0),playing=false,inspect=params.has("inspect"),last=performance.now();const status=document.querySelector('#status'),seek=document.querySelector('#seek');
 try{const data=await (await fetch('/voyager.glb')).arrayBuffer();const gltf=await new Promise((resolve,reject)=>new T.GLTFLoader().parse(data,'/',resolve,reject));const raw=gltf.scene;raw.updateMatrixWorld(true);const box=new T.Box3().setFromObject(raw),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());raw.position.sub(center);model=new T.Group();model.add(raw);const scale=4/Math.max(size.x,size.y,size.z);baseScale=scale;model.scale.setScalar(scale);raw.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;for(const m of (Array.isArray(o.material)?o.material:[o.material])){m.userData.originalOpacity=m.opacity;m.transparent=true;m.envMap=env;m.envMapIntensity=.32;m.needsUpdate=true;}}});scene.add(model);playing=(params.has("play")||!params.has("t"))&&!inspect;status.textContent='原始材质已加载 · 相机保持朝前';console.log('Voyager ready',size.toArray(),r.info);}catch(e){status.textContent='加载失败：'+e.message;console.error(e);}
 document.querySelector('#play').onclick=()=>{t=0;inspect=false;playing=true};document.querySelector('#pause').onclick=()=>{playing=!playing};document.querySelector('#close').onclick=()=>{inspect=true;playing=false;t=7};seek.oninput=()=>{t=Number(seek.value);inspect=false;playing=false};
-for(const [id,time] of [['phase1',0],['phase2',34],['phase3',76]])document.getElementById(id).onclick=()=>{t=time;inspect=false;playing=true};
+for(const [id,time] of [['phase1',0],['phase2',38],['phase3',76]])document.getElementById(id).onclick=()=>{t=time;inspect=false;playing=true};
 let captureFrames=0;
 function frame(now){
  const dt=Math.min((now-last)/1000,.05);last=now;if(playing){t+=dt;if(t>=118)t=0;}
- const phase=t<34?0:t<70?1:2,elapsed=t-(phase===0?0:phase===1?34:80);
+ const phase=t<38?0:t<74?1:2,elapsed=t-(phase===0?0:phase===1?38:80);
  // Reveal the Moon before the near-camera departure begins.
  moon.position.set(-44+41*smooth((t-72)/12),8-4*smooth((t-72)/28),-150+83*smooth((t-72)/28));moon.material.opacity=smooth((t-72)/4);moon.visible=t>=72;
  if(model){model.scale.setScalar(baseScale);model.visible=inspect||(elapsed>=0&&elapsed<(phase===0?32:phase===1?36:34));
@@ -45,8 +45,8 @@ function frame(now){
   else if(phase===0){
    // One straight 3D track continues behind the viewer on the left.
    const q=Math.max(0,Math.min(1,elapsed/32));
-   model.position.set((10/105)*30*(1-q)-2.25*q,(-18/105)*30*(1-q)+.2*q,-30+33*q);
-   model.rotation.set(.28,.4,-.22);
+   model.position.set((10/105)*30*(1-q)-.75*q,(-18/105)*30*(1-q)+.2*q,-30+33*q);
+   model.rotation.set(.28,.4,.45);
   }
   else if(phase===1){
    // Approach, match relative speed, then overtake: one observer, one travel axis.
@@ -72,7 +72,7 @@ function frame(now){
  // Earth continues toward the lower right throughout the first encounter.
  const earthTime=t*.72;earth.position.set(10+1.5*earthTime,-18-2.7*earthTime,-105-2.4*earthTime);earth.rotation.y=2.6+t*.002;earth.visible=t<37;
  flash.position.copy(moon.position).add(new T.Vector3(0,0,9.1));const flashTime=t-114;flash.material.opacity=flashTime>=0&&flashTime<.6?Math.sin(Math.PI*flashTime/.6)*.9:0;flash.scale.setScalar(.85);
- updateStarFlow(flow,t-34,t);
+ updateStarFlow(flow,t-38,t);
  r.render(scene,cam);if(params.has('capture')&&++captureFrames===90)fetch('/capture',{method:'POST',body:JSON.stringify({name:'frame-'+t,image:canvas.toDataURL('image/png')})});seek.value=t;document.querySelector('#clock').textContent=t.toFixed(1)+'s';status.textContent=['告别地球 · 从远处逐渐显现',elapsed<14?'深空 · 靠近':elapsed<24?'深空 · 并行漂浮':'深空 · 加速超过',elapsed<0?'月球从左侧进入':elapsed<14?'近景 · 从下方缓缓进入':'远去 · 逐渐显露全貌'][phase]+' · 旅行者号占位';requestAnimationFrame(frame);
 }requestAnimationFrame(frame);
 </script></html>
