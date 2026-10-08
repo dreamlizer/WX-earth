@@ -1,6 +1,27 @@
 /* 整页纯黑 */
 page { background: #000; }
 
+.saturn-preview-entry {
+  position: fixed; left: 30rpx; bottom: calc(env(safe-area-inset-bottom) + 36rpx);
+  z-index: 1500; display: flex; align-items: center; gap: 14rpx;
+  padding: 18rpx 12rpx; color: rgba(218, 222, 232, 0.40); font-size: 21rpx; letter-spacing: 2rpx;
+}
+.saturn-entry-symbol { position: relative; width: 36rpx; height: 28rpx; transform: rotate(-28deg); }
+.saturn-entry-body { position: absolute; width: 19rpx; height: 19rpx; border-radius: 50%; background: rgba(221,216,200,0.45); left: 9rpx; top: 4rpx; }
+.saturn-entry-ring { position: absolute; width: 36rpx; height: 10rpx; border: 1rpx solid rgba(221,216,200,0.45); border-radius: 50%; top: 8rpx; }
+.saturn-preview-heading { position: fixed; z-index: 3000; left: 40rpx; top: calc(env(safe-area-inset-top) + 34rpx); display: flex; flex-direction: column; gap: 12rpx; }
+.saturn-preview-name { color: #c9c8c5; font-size: 36rpx; letter-spacing: 12rpx; font-weight: 300; }
+.saturn-preview-caption { color: #c9c8c5; font-size: 17rpx; letter-spacing: 3rpx; opacity: 0.42; }
+.saturn-preview-exit { color: #c9c8c5; position: fixed; z-index: 3000; top: calc(env(safe-area-inset-top) + 30rpx); right: 28rpx; padding: 16rpx; font-size: 23rpx; opacity: 0.64; pointer-events: auto; }
+.saturn-preview-status { color: #c9c8c5; position: fixed; z-index: 3000; top: 48%; width: 100%; text-align: center; font-size: 24rpx; opacity: 0.6; }
+.saturn-preview-retry { pointer-events: auto; padding: 24rpx 0; }
+.saturn-preview-bottom { position: fixed; z-index: 3000; bottom: calc(env(safe-area-inset-bottom) + 28rpx); width: 100%; display: flex; align-items: center; flex-direction: column; gap: 20rpx; }
+.saturn-preview-hint { color: #c9c8c5; font-size: 20rpx; letter-spacing: 3rpx; opacity: 0.35; }
+.saturn-preview-views { display: flex; gap: 34rpx; pointer-events: auto; }
+.saturn-view { color: #c9c8c5; padding: 12rpx 20rpx; font-size: 24rpx; opacity: 0.45; border-bottom: 1rpx solid transparent; }
+.saturn-view.selected { opacity: 0.88; border-bottom-color: rgba(211,196,170,0.4); }
+.saturn-preview-credit { color: #c9c8c5; font-size: 15rpx; opacity: 0.24; letter-spacing: 1rpx; }
+
 .wrap {
   z-index: 0;
   /* 改为固定填充视口，避免 Android 上 vw/vh 偶发计算偏差导致横向拉伸 */
@@ -129,11 +150,11 @@ canvas {
 }
 .moon-lyrics-text {
   position: absolute;
-  left: 50%;
+  /* 原生 cover-view 固定宽度居中，避免文字改长后百分比平移重新定位。 */
+  left: 3%;
+  width: 94%;
   bottom: 0;
-  transform: translate(-50%, 10px);
   display: block;
-  max-width: 96%;
   padding: 12rpx 18rpx;
   color: #e8f6ff;
   background: rgba(10,22,36,0.38);
@@ -143,14 +164,13 @@ canvas {
   font-size: 30rpx;
   font-weight: 700;
   text-align: center;
-  line-height: 1.4;
-  white-space: pre;
-  word-break: keep-all;
-  overflow-wrap: normal;
+  line-height: 42rpx;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   opacity: 0;
-  text-shadow: 0 0 14px rgba(20,40,60,0.55);
 }
-.moon-lyrics-text.visible { opacity: 1; transform: translate(-50%, 0); }
+.moon-lyrics-text.visible { opacity: 1; }
 .top-icon-btn {
   width: 80rpx;  /* 与右侧齿轮统一尺寸（约 40px） */
   height: 80rpx;

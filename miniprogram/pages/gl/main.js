@@ -45,6 +45,10 @@ export function enterMoonVoyage() { engine.enterMoonVoyage(); }
 export function exitMoonVoyage() { engine.exitMoonVoyage(); }
 export function setMoonVoyageSpeed(mult) { engine.setMoonVoyageSpeed(mult); }
 export function isMoonVoyageActive() { return engine.isMoonVoyageActive(); }
+export function enterSaturnPreview() { return engine.enterSaturnPreview(); }
+export function exitSaturnPreview() { engine.exitSaturnPreview(); }
+export function retrySaturnPreview() { engine.retrySaturnPreview(); }
+export function setSaturnPreviewView(key) { engine.setSaturnPreviewView(key); }
 
 export function startPoetry3D(lines, conf) { engine.startPoetry3D(lines, conf); }
 export function stopPoetry3D() { engine.stopPoetry3D(); }

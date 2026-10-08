@@ -12,19 +12,30 @@ function screenTrack(out,a,b,q){
 // Frame-relative waypoints keep the upper arc consistent on a portrait phone.
 // Monotone Hermite slopes join each leg without a snap or depth overshoot.
 function voyagerTrack(out,cam,ray,e){
+ const approach=t=>{
+  const u=t/32-6*Math.pow(Math.max(0,1-t/24),3);
+  return out.set(ray.x*12*(1-u)-.3*u,ray.y*12*(1-u)+.08*u,-12+13.2*u);
+ };
+ if(e<=12)return approach(e);
  const half=Math.tan(cam.fov*Math.PI/360),wide=half*cam.aspect;
- const points=[[0,ray.x/wide,ray.y/half,92],[12,-.2,.1,25],[22,-.6,.55,5],[26,-.35,.75,6],[32,1.6,.95,10]];
+ // Keep the original distant entry through 22s, including its departure tangent.
+ approach(12);const depth=-out.z,du=.21875,dd=-13.2*du;
+ const startSlopes=[0,(((-12*ray.x-.3)*du)*depth-out.x*dd)/(depth*depth*wide),(((-12*ray.y+.08)*du)*depth-out.y*dd)/(depth*depth*half),dd];
+ const points=[[12,out.x/depth/wide,out.y/depth/half,depth],[22,-.6,.55,4.2],[26,-.35,.75,1.9],[32,1.6,.95,1.05]];
  let i=0;while(i<points.length-2&&e>points[i+1][0])i++;
  const a=points[i],b=points[i+1],span=b[0]-a[0],q=(e-a[0])/span;
  const slope=(n,k)=>{
+  if(n===0)return startSlopes[k];
   const p=points[n],before=points[Math.max(0,n-1)],after=points[Math.min(points.length-1,n+1)];
   const left=n?(p[k]-before[k])/(p[0]-before[0]):(after[k]-p[k])/(after[0]-p[0]);
   const right=n<points.length-1?(after[k]-p[k])/(after[0]-p[0]):left;
   return left*right>0?2*left*right/(left+right):0;
  };
  const value=k=>(2*q*q*q-3*q*q+1)*a[k]+(q*q*q-2*q*q+q)*span*slope(i,k)+(-2*q*q*q+3*q*q)*b[k]+(q*q*q-q*q)*span*slope(i+1,k);
- const d=value(3);
- return out.set(value(1)*wide*d,value(2)*half*d,-d);
+ const d=value(3),overhead=smooth((e-28)/4);
+ // Continue above the lens at close range; let the large hull clear the edges
+ // instead of shrinking into a distant point or hiding while still in frame.
+ return out.set((value(1)+2.2*overhead)*wide*d,(value(2)+1.4*overhead)*half*d,-d);
 }
 // Find an entry pose wholly below the viewport, including the hull's rotated extents.
 function shipEntry(T,actor,cam,landing){
@@ -92,10 +103,11 @@ export class VoyageEncounters {
       this.earthRay={x:source.x/Math.max(.1,-source.z),y:source.y/Math.max(.1,-source.z)};
     }
     if(e1>=0&&e1<32){
-      // Approach the upper left, round the bend, then recede out of the upper right.
+      // Approach the upper left, round the bend, then pass close overhead to the right.
       const local=voyagerTrack(new T.Vector3(),cam,this.earthRay||{x:.1,y:-.18},e1);
       x=local.x;y=local.y;z=local.z;
-      alpha=smooth(e1/3);rot[2]+=(e1-26)*.035;active=true;
+      const spinTime=Math.max(0,e1-12);
+      alpha=smooth(e1/3);rot[2]+=(e1-26)*.035+.025*spinTime*smooth(spinTime/5);active=true;
     }
     else if(e2>=0&&e2<41.5){
       const e=companionTime*36/32,near=Math.pow(smooth(e/14),1.25),pass=Math.pow(Math.max(0,Math.min(1,(e-24)/8.5)),1.7);

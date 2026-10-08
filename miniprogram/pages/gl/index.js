@@ -24,6 +24,7 @@ import { SettingsManager } from './settings-manager.js';
 import { formatThousandsInt, formatThousandsFixed } from './format-utils.js';
 import { getInitialData } from './page-state.js';
 import { getSystemInfo } from './sys-info.js';
+import { enterSaturnPreview, exitSaturnPreview, retrySaturnPreview, setSaturnPreviewView } from './main.js';
 
 Page({
   data: {
@@ -32,6 +33,10 @@ Page({
     moonToastVisible: false,
     moonToastText: '',
     moonToastOpacity: 0,
+    saturnPreviewActive: false,
+    saturnPreviewLoading: false,
+    saturnPreviewError: '',
+    saturnView: 'whole',
   },
 
   __schedulePageTask(callback, delayMs) {
@@ -70,6 +75,7 @@ Page({
 
   // 页面滚动事件：用于 PC 端鼠标滚轮触发缩放
   onPageScroll(e) {
+    if (this.data.saturnPreviewActive) return;
     return this.__getZoomMgr().pageScroll(e);
   },
 
@@ -82,6 +88,7 @@ Page({
 
   // 启动登月模式
   onEnterMoonVoyage() {
+    if (this.data.saturnPreviewActive) return;
     try {
       if (isMoonVoyageActive()) {
         exitMoonVoyage();
@@ -91,6 +98,16 @@ Page({
     try { if (this.__isMoonLocked()) return; } catch(_){ }
     enterMoonVoyage();
   },
+
+  onEnterSaturnPreview() {
+    if (this.data.zenMode || this.__isMoonLocked() || this.data.saturnPreviewActive) return;
+    if (enterSaturnPreview()) {
+      this.setData({ countryPanelOpen: false, searchOpen: false, settingsOpen: false, hoverText: '' });
+    }
+  },
+  onExitSaturnPreview() { exitSaturnPreview(); },
+  onRetrySaturnPreview() { retrySaturnPreview(); },
+  onSaturnPreviewView(e) { setSaturnPreviewView(e.currentTarget.dataset.view); },
 
   // Custom Moon Toast (Smoother Fade)
   showMoonToast(text, duration = 2500) {
@@ -288,6 +305,7 @@ Page({
   },
   // 拖动丝滑：一旦检测到拖动，自动关闭所有面板（国家/搜索/设置），避免重绘与事件干扰
   onTouchStart(e){
+    if (this.data.saturnPreviewActive) { onTouchStart(this.__normalizeToCanvasTouches(e)); return; }
     try { this.__dragClosedPanels = false; } catch(_){}
     // 拖动优先：若有面板打开，仅记录“待关闭”标记，不在本帧 setData
     try {
@@ -298,12 +316,14 @@ Page({
     try { this.__getPerfMgr().dragStart(); } catch(_){}
   },
   onTouchMove(e){
+    if (this.data.saturnPreviewActive) { onTouchMove(this.__normalizeToCanvasTouches(e)); return; }
     // 不在 move 阶段关闭面板，避免同步重排造成的顿挫
     // 仅把事件转交到渲染层，保持地球旋转的最高优先级
     const ev = this.__normalizeToCanvasTouches(e);
     onTouchMove(ev);
   },
   onTouchEnd(e){
+    if (this.data.saturnPreviewActive) { onTouchEnd(this.__normalizeToCanvasTouches(e)); return; }
     try { this.__dragClosedPanels = false; } catch(_){}
     const ev = this.__normalizeToCanvasTouches(e);
     onTouchEnd(ev);
@@ -412,6 +432,7 @@ Page({
   
   // 切换“禅定模式”按钮：进入/退出，仅控制 UI 显隐与面板关闭
   onToggleZenMode(){
+    if (this.data.saturnPreviewActive) return;
     try { if (this.__isMoonLocked()) return; } catch(_){ }
     // 委托给禅定管理器：统一处理面板淡出、渲染层切换与音频/诗句
     try { return this.__getZenModeMgr().toggle(); } catch(_){}

@@ -16,7 +16,12 @@ const cp=camera.position.clone(),cq=camera.quaternion.clone();const tick=t=>fx.u
 tick(10);assert.equal(fx.materials[0].opacity,0);tick(23);const distant=fx.model.position.distanceTo(camera.position);tick(35);assert(fx.model.position.distanceTo(camera.position)<distant);tick(47);assert.equal(fx.materials[0].opacity,0);tick(61);const p=fx.model.position.clone();tick(66);assert(fx.model.position.distanceTo(p)<.1,'alongside hold');
 // Check the actual portrait-camera projection, including the rotated NASA hull.
 const voyagerScreen=t=>{tick(t);return fx.model.position.clone().project(camera);};
-const approach=voyagerScreen(28),bend=voyagerScreen(32),turn=voyagerScreen(36),exit=voyagerScreen(41.8);
+for(const t of [10,14,18,22]){
+ tick(t);const e=t-10,u=e/32-6*Math.pow(Math.max(0,1-e/24),3),ray=fx.earthRay||{x:.1,y:-.18};
+ const original=new T.Vector3(ray.x*12*(1-u)-.3*u,ray.y*12*(1-u)+.08*u,-12+13.2*u);
+ assert(camera.worldToLocal(fx.model.position.clone()).distanceTo(original)<1e-8,'Original entry position and early approach remain unchanged');
+}
+const approach=voyagerScreen(30),bend=voyagerScreen(32),turn=voyagerScreen(36),exit=voyagerScreen(41.8);
 assert(approach.x<-.35&&approach.y>.25,'Voyager approaches the upper left');
 assert(Math.abs(bend.x+.6)<1e-8&&Math.abs(bend.y-.55)<1e-8,'Upper-left bend is visible in the phone frame');
 assert(turn.x>bend.x&&turn.x<0&&turn.y>bend.y,'Voyager rounds the bend upward and toward the right');
@@ -26,18 +31,38 @@ for(const t of [22,32,36]){
  assert(b.clone().sub(a).divideScalar(h).distanceTo(c.clone().sub(b).divideScalar(h))<.001,'Screen velocity is continuous across trajectory joins');
 }
 function voyagerBounds(t){
- tick(t);fx.model.updateMatrixWorld(true);const bounds=new T.Box3();
+ tick(t);fx.model.updateMatrixWorld(true);const bounds=new T.Box3();bounds.nearestDepth=Infinity;
  fx.model.traverse(o=>{if(!o.isMesh)return;const a=o.geometry.attributes.position;
-  for(let i=0;i<a.count;i++)bounds.expandByPoint(new T.Vector3().fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld).project(camera));
+  for(let i=0;i<a.count;i++){
+   const v=new T.Vector3().fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);
+   bounds.nearestDepth=Math.min(bounds.nearestDepth,-camera.worldToLocal(v.clone()).z);
+   bounds.expandByPoint(v.project(camera));
+  }
  });return bounds;
 }
 const readable=voyagerBounds(32);
 assert(readable.min.x>-1&&readable.max.x<1&&readable.min.y>-1&&readable.max.y<1,'Whole Voyager remains visible at the upper-left bend');
 assert(readable.max.x-readable.min.x>.25,'Voyager has a readable body before its turn');
+const close=voyagerBounds(36),overhead=voyagerBounds(39);
+assert(close.max.x-close.min.x>1.25,'Closer pass grows beyond sixty percent of the phone width');
+tick(36);assert(-camera.worldToLocal(fx.model.position.clone()).z<2,'Readable upper arc is closer than the previous 2.5-unit pass');
+tick(39);
+const projectedSize=b=>Math.hypot(b.max.x-b.min.x,b.max.y-b.min.y);
+assert(projectedSize(overhead)>projectedSize(close)*1.5,'Rotating hull keeps growing toward the upper-right exit rather than receding');
+assert(fx.model.scale.x===fx.baseScale&&fx.materials.every(m=>m.opacity===1),'Size comes from proximity, with no scale trick or departure dissolve');
+let previousDepth=Infinity;
+for(const t of [32,34,36,38,39,40,41,41.999]){
+ const hull=voyagerBounds(t),depth=-camera.worldToLocal(fx.model.position.clone()).z;
+ assert(depth<previousDepth,'Upper arc continues toward the observer');previousDepth=depth;
+ assert(hull.nearestDepth>camera.near,'Close overhead hull avoids near-plane slicing');
+}
 assert(voyagerBounds(41.8).min.x>1,'Entire Voyager clears the upper-right edge before the encounter ends');
 tick(10);assert(camera.worldToLocal(fx.model.position.clone()).z<-80,'Voyager begins far behind the Earth instead of already large');
-tick(41);assert(camera.worldToLocal(fx.model.position.clone()).z<-8,'Upper-right departure recedes into the distance');
-tick(23);const spinA=fx.model.quaternion.clone();tick(33);assert(Math.abs(spinA.angleTo(fx.model.quaternion)-.35)<1e-6,'Slow continuous self rotation');
+tick(41);assert(-camera.worldToLocal(fx.model.position.clone()).z<1.5,'Upper-right departure passes close overhead');
+tick(23);const spinA=fx.model.quaternion.clone();tick(33);const spinAngle=spinA.angleTo(fx.model.quaternion);
+assert(spinAngle>.55&&spinAngle<.7,'More visible self rotation remains gentle over ten seconds');
+tick(36);const spinB=fx.model.quaternion.clone();tick(36.1);assert(spinB.angleTo(fx.model.quaternion)<.01,'Close-pass self rotation has no sudden spin');
+tick(30);tick(36);assert(spinB.angleTo(fx.model.quaternion)<1e-7,'Self rotation is deterministic when replaying');
 tick(43);assert(!fx.model.visible,'Breathing space after first pass');
 tick(46);assert(!fx.model.visible,'Second encounter does not appear during the gap');
 for(let t=0;t<113;t+=.1){if(t>86)moon.visible=true;tick(t);assert(camera.position.equals(cp));assert(camera.quaternion.equals(cq));assert(fx.model.position.toArray().every(Number.isFinite));}

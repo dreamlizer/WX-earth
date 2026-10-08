@@ -31,6 +31,7 @@ import { createLightingManager } from './lighting-manager.js';
 import { createFlyManager } from './fly-manager.js';
 import { ZenModeManager, applyZenAutoRotate, applyZenBrake, advanceZenAnimation, advanceRotationFrame, zenState, enterZenMode, exitZenMode, resetZenState, createZenController } from './zen-mode-manager.js';
 import { MoonVoyageManager } from './moon-voyage-manager.js';
+import { SaturnPreviewManager } from './saturn-preview-manager.js';
 import { clearZenAudioSaved } from './zen-audio.js';
 import { createTweenManager } from './tween-manager.js';
 import { createFadeOverlay } from './fade-overlay.js';
@@ -60,6 +61,7 @@ export class AppEngine {
     this.sys = getSystemInfo();
     this.state = null; // 核心状态容器 (THREE, scene, etc.)
     this.moonMgr = null;
+    this.saturnPreview = null;
     this.managers = {}; // 存放 input, fly, lighting 等管理器
     
     // 配置相关
@@ -150,6 +152,7 @@ export class AppEngine {
     this.loop = null;
     this.sceneCtx = null;
     this.moonMgr = null;
+    this.saturnPreview = null;
   }
 
   // 初始化入口
@@ -465,7 +468,11 @@ export class AppEngine {
       isMoonVoyageActive: () => this.moonMgr && this.moonMgr.isActive()
     });
 
-    const render = () => { sceneUpdater.update(); };
+    this.saturnPreview = new SaturnPreviewManager(THREE, renderer, page);
+    const render = () => {
+      if (this.saturnPreview?.active) this.saturnPreview.render();
+      else sceneUpdater.update();
+    };
     this.loop.start(render);
 
     const viewport = createViewportManager({ wx, renderer, camera, state: { width, height } }); 
@@ -517,6 +524,7 @@ export class AppEngine {
     ];
     try { if (state?.onWinResizeCb) wx.offWindowResize(state.onWinResizeCb); } catch(_){ }
     try { this.loop?.stop(); } catch(_){ }
+    try { this.saturnPreview?.dispose(); } catch(_){ }
     try { this.moonMgr?.dispose?.(); } catch(_){ }
     try { this.poetry3d?.stop?.(); this.poetry3d?.setEnabled?.(false); } catch(_){ }
 
@@ -626,14 +634,17 @@ export class AppEngine {
   
   setPaused(on) {
     const p = !!on;
+    this.saturnPreview?.pause();
     if (p) this.loop?.stop(); else this.loop?.start(); 
   }
   
   setZenMode(on) {
+    if (this.saturnPreview?.active) return;
     this.managers.zenController?.setMode(on);
   }
   
   enterMoonVoyage() {
+    if (this.saturnPreview?.active) return;
     try { TWEEN?.removeAll?.(); } catch(e){ console.warn('[Moon] Tween clear fail', e); }
     if (this.moonMgr) this.moonMgr.enter();
   }
@@ -649,6 +660,18 @@ export class AppEngine {
   isMoonVoyageActive() {
     return !!(this.moonMgr?.isActive());
   }
+
+  enterSaturnPreview() {
+    if (!this.state || !this.earthReady || zenState.active || this.isMoonVoyageActive() || this.state.page?.__isMoonLocked?.()) return false;
+    this.touch.isDragging = false;
+    this.touch.velX = 0;
+    this.touch.velY = 0;
+    return this.saturnPreview.enter();
+  }
+
+  exitSaturnPreview() { this.saturnPreview?.exit(); }
+  retrySaturnPreview() { if (this.saturnPreview?.active) this.saturnPreview.retry(); }
+  setSaturnPreviewView(key) { this.saturnPreview?.setView(key); }
   
   startPoetry3D(lines, conf) {
     try {
@@ -723,9 +746,9 @@ export class AppEngine {
   }
   
   // Event Handlers
-  onTouchStart(e) { this.managers.input?.onTouchStart(e); }
-  onTouchMove(e) { this.managers.input?.onTouchMove(e); }
-  onTouchEnd(e) { this.managers.input?.onTouchEnd(); }
+  onTouchStart(e) { if (this.saturnPreview?.active) this.saturnPreview.touchStart(e); else this.managers.input?.onTouchStart(e); }
+  onTouchMove(e) { if (this.saturnPreview?.active) this.saturnPreview.touchMove(e); else this.managers.input?.onTouchMove(e); }
+  onTouchEnd(e) { if (this.saturnPreview?.active) this.saturnPreview.touchEnd(e); else this.managers.input?.onTouchEnd(); }
   
   nudgeCenter(latDeg, lonDeg) {
      // Placeholder
