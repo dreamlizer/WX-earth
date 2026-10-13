@@ -1,0 +1,69 @@
+{
+  "sourceSha256": "13f6bd48ff830a1890b21ef6e0182bb1043926feebb77af9733e7374b050367a",
+  "triangles": 17124,
+  "drawCalls": 10,
+  "textureMax": 512,
+  "geometryBytes": 878774,
+  "files": {
+    "color-0.jpg": {
+      "bytes": 44170,
+      "sha256": "535cb0cfcce80a1b89f8276ae9f81961e948607379336c2edb19b04575cd7269"
+    },
+    "index.wxml": {
+      "bytes": 14,
+      "sha256": "d16dc18ee35b96877a143dc5c4862b4482266bdf4c47943d7a04464bb1b0fed1"
+    },
+    "color-1.jpg": {
+      "bytes": 85317,
+      "sha256": "8dd63dfbcde9de07a2e81ffa2494b46e3abbe645246caf9b61cff6e1147de9ab"
+    },
+    "color-3.jpg": {
+      "bytes": 105212,
+      "sha256": "ffd6edbbd87439924a515c610e604e09f6a3856734dc1751ac50d314583e6a15"
+    },
+    "color-2.jpg": {
+      "bytes": 34257,
+      "sha256": "b2406e71cfe04bcf848b917ee41121480455718b408280fddf7e469a725f19a4"
+    },
+    "color-6.jpg": {
+      "bytes": 68210,
+      "sha256": "cb5c5bf4dfe29c15313775b298f0653ecbfd6d38e2799bd92adb269740755750"
+    },
+    "index.js": {
+      "bytes": 10,
+      "sha256": "0895cb310fb18e3f6b35229e90218b9bd57abde1bb8820f33ff98f73fe83a0d5"
+    },
+    "index.wxss": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "color-5.jpg": {
+      "bytes": 49177,
+      "sha256": "a4582d9556b2734c5f2160e16bd16a282543deb4683f2b4bfd5eec4b4b6dee26"
+    },
+    "color-4.jpg": {
+      "bytes": 68833,
+      "sha256": "68d3e68e041543987bf25aeec5213016470b025d00d5022a2edb063e5fb67199"
+    },
+    "geometry.bin": {
+      "bytes": 878774,
+      "sha256": "f9480f170b611996af5cf802e7c88fe6811229b075d79fce5d9d7ca1d03baba9"
+    },
+    "AUTHOR.md": {
+      "bytes": 274,
+      "sha256": "9d697f21cac1b59f959cda06b97595d2c300d89ff1b437d517937e220bb4516e"
+    },
+    "model.js": {
+      "bytes": 6965,
+      "sha256": "b44822cc97e243b42873d6f90689520a238196afde600df0385e4562862ecaf4"
+    },
+    "ready.js": {
+      "bytes": 40,
+      "sha256": "340501a281d8ee4dc7455f0e56ef6c44ce31bc07530b48f1a6ba0b37d155613a"
+    },
+    "index.json": {
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    }
+  }
+}

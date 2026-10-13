@@ -30,7 +30,8 @@ export function createInputManager(ctx){
     logThrottleMs,
     debugSelect,
     lonSameSign,
-    isInteractionBlocked
+    isInteractionBlocked,
+    onAmbientTap
   } = ctx
 
   const gesture = createGestureManager({
@@ -79,6 +80,7 @@ export function createInputManager(ctx){
     const isTap = (Date.now()-touch.downTime) <= TAP_MAX_DURATION_MS && Math.hypot(touch.lastX-touch.downX, touch.lastY-touch.downY) <= TAP_MAX_MOVE_PX
     touch.isDragging = false; if (!isTap) return
     if (isInteractionBlocked && isInteractionBlocked()) return
+    if (onAmbientTap && onAmbientTap({ downX: touch.downX, downY: touch.downY, width, height })) return
     const res = selMgr.tap({ downX: touch.downX, downY: touch.downY, width, height })
     const hit = res && res.hit ? res.hit : null
     const lon = res ? res.lon : undefined

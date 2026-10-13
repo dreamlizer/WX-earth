@@ -3,15 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-function loadTextureSource({ platform = 'ios', forceCloudTextures = false } = {}) {
+function loadTextureSource({ platform = 'ios', forceCloudTextures = false, packageAvailable = true, initialStorage = {} } = {}) {
   const file = path.join(__dirname, '..', 'miniprogram', 'pages', 'gl', 'texture-source.js');
   let source = fs.readFileSync(file, 'utf8');
   source = source.replace(/import\s+\{\s*getSystemInfo\s*\}\s+from\s+['"].\/sys-info\.js['"];\s*/, '');
+  source = source.replace(/^import.*scene-art-loader.*$/gm, '');
   source = source.replace(/export\s+(async\s+function|function)\s+([A-Za-z0-9_]+)/g, '$1 $2');
   source += '\nmodule.exports = { getTextureUrl, ensureOfflineTextures, prefetchTextureUrls, clearTextureCache, clearTextureSaved };';
 
-  const storage = {};
-  const calls = { downloadFile: 0, saveFile: 0, getTempFileURL: 0 };
+  const storage = { ...initialStorage };
+  const calls = { downloadFile: 0, saveFile: 0, getTempFileURL: 0, packageLoad: 0 };
   const existingFiles = new Set();
 
   const sandbox = {
@@ -28,6 +29,15 @@ function loadTextureSource({ platform = 'ios', forceCloudTextures = false } = {}
     Array,
     Math,
     isFinite,
+    ensureSceneArtPackage: () => {
+      calls.packageLoad += 1;
+      return packageAvailable ? Promise.resolve() : Promise.reject(new Error('package unavailable'));
+    },
+    require(modulePath, resolve, reject) {
+      assert.strictEqual(modulePath, '../../earth-look-assets/ready.js');
+      calls.packageLoad += 1;
+      setTimeout(() => packageAvailable ? resolve({}) : reject(new Error('package unavailable')), 0);
+    },
     getApp: () => ({ globalData: { env: 'test-env', forceCloudTextures } }),
     getSystemInfo: () => ({ platform, environment: 'miniprogram' }),
     wx: {
@@ -113,7 +123,7 @@ async function testDesktopPreviewUsesRealLocalTextures() {
     for (const name of ['earth', 'earth_night', 'earth_day', 'cloud']) {
       for (const preferNetwork of [false, true]) {
         const result = await api.getTextureUrl(name, preferNetwork);
-        assert.ok(result.url.startsWith('/assets/textures/'), 'desktop preview must use a real packaged texture, not a 1x1 placeholder');
+        assert.strictEqual(result.url, name === 'earth' ? '/earth-look-assets/earth-default.jpg' : name === 'earth_night' ? '/earth-look-assets/earth-night.jpg' : `/scene-art-assets/textures/preview-${name === 'earth_day' ? 'day' : 'cloud'}.${name === 'cloud' ? 'png' : 'jpg'}`);
         const asset = path.join(__dirname, '../miniprogram', result.url);
         assert.ok(fs.statSync(asset).size > 1024, 'preview image must be packaged');
       }
@@ -129,7 +139,31 @@ async function testCloudRoutePreserved() {
     assert.strictEqual(result.url, 'https://test.example/earth.jpg');
     assert.ok(result.fallback.startsWith('data:image/png'), 'phone failure fallback remains unchanged');
     assert.strictEqual(calls.getTempFileURL, 1);
+    assert.strictEqual(calls.packageLoad, 0, 'cloud route does not depend on the desktop preview package');
   }
+}
+
+async function testDesktopPackageFailureKeepsPreview() {
+  const { api, calls } = loadTextureSource({ platform: 'devtools', packageAvailable: false });
+  for (const [name, filename] of [['earth', 'earth'], ['earth_night', 'night']]) {
+    const result = await api.getTextureUrl(name);
+    assert.strictEqual(result.url, `/assets/textures/preview-${filename}.jpg`);
+  }
+  for (const name of ['earth_day', 'cloud']) {
+    assert.ok((await api.getTextureUrl(name)).url.startsWith('data:image/png'), 'failed art package retains a valid placeholder');
+  }
+  assert.strictEqual(calls.downloadFile + calls.getTempFileURL, 0);
+}
+
+async function testNightPreviewIgnoresOldLowResolutionCache() {
+  const { api, calls } = loadTextureSource({ platform: 'devtools', initialStorage: {
+    __texture_urls_cache_v1: { earth_night: { url: '/assets/textures/preview-night.jpg', exp: Date.now() + 60000 } }
+  } });
+  assert.strictEqual((await api.getTextureUrl('earth_night')).url, '/earth-look-assets/earth-night.jpg');
+  assert.strictEqual(calls.downloadFile + calls.getTempFileURL, 0);
+  const phone = loadTextureSource({ platform: 'ios' });
+  assert.ok((await phone.api.getTextureUrl('earth_night')).url.startsWith('/user/'));
+  assert.strictEqual(phone.calls.packageLoad, 0);
 }
 
 (async () => {
@@ -138,6 +172,8 @@ async function testCloudRoutePreserved() {
   await testPreferNetworkWaitsForActiveSameTexture();
   await testDesktopPreviewUsesRealLocalTextures();
   await testCloudRoutePreserved();
+  await testDesktopPackageFailureKeepsPreview();
+  await testNightPreviewIgnoresOldLowResolutionCache();
   console.log('texture-source tests passed');
 })().catch((err) => {
   console.error(err);

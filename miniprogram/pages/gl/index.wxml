@@ -1,4 +1,5 @@
 <!-- 统一顶部工具栏：语言 | 时间 | 设置 -->
+<view capture-bind:touchstart="onAmbientDismiss">
 <view wx:if="{{!saturnPreviewActive}}" class="top-bar">
   <view id="langBtn" class="top-icon-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleLang" role="button">{{lang === 'zh' ? '中' : 'EN'}}</view>
   <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onTapTimePill">{{currentTime}}</text>
@@ -52,10 +53,10 @@
 <!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
 <view wx:if="{{zenMode && !moonVoyageActive}}" class="poetry-layer">
   <view id="poetryA" class="poetry-item {{poetryHorizontal?'horizontal':''}} {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryA.fadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
-    <text class="poetry-text {{poetryAFirst?'first-line':''}}">{{poetryA.text}}</text>
+    <text class="poetry-text {{poetryAFirst?'first-line':''}}" style="font-size: {{poetryHorizontal ? 82 : 100}}%; line-height: {{poetryHorizontal ? poetryFontSizePx * 1.4 + 'px' : 'inherit'}};">{{poetryA.text}}</text>
   </view>
   <view id="poetryB" class="poetry-item {{poetryHorizontal?'horizontal':''}} {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryB.fadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
-    <text class="poetry-text {{poetryBFirst?'first-line':''}}">{{poetryB.text}}</text>
+    <text class="poetry-text {{poetryBFirst?'first-line':''}}" style="font-size: {{poetryHorizontal ? 82 : 100}}%; line-height: {{poetryHorizontal ? poetryFontSizePx * 1.4 + 'px' : 'inherit'}};">{{poetryB.text}}</text>
   </view>
 </view>
 
@@ -140,17 +141,52 @@
     bindtouchend="onTouchEnd"
     bindtouchcancel="onTouchEnd"
   >
+    <cover-view wx:if="{{zenMode && !moonVoyageActive && lang === 'zh'}}" class="zen-chinese-line {{zenChineseA.visible ? 'visible' : ''}}" style="bottom: {{zenChineseBottomPx}}px; transition: transform {{zenChineseA.moveMs}}ms ease, opacity {{zenChineseA.moveMs}}ms ease; transform: translate3d(0, {{zenChineseA.y - 14}}px, 0);"><cover-view class="zen-chinese-text">{{zenChineseA.text}}</cover-view></cover-view>
+    <cover-view wx:if="{{zenMode && !moonVoyageActive && lang === 'zh'}}" class="zen-chinese-line {{zenChineseB.visible ? 'visible' : ''}}" style="bottom: {{zenChineseBottomPx}}px; transition: transform {{zenChineseB.moveMs}}ms ease, opacity {{zenChineseB.moveMs}}ms ease; transform: translate3d(0, {{zenChineseB.y - 14}}px, 0);"><cover-view class="zen-chinese-text">{{zenChineseB.text}}</cover-view></cover-view>
     <!-- Native overlay: lyrics must cover the WebGL hull, including on devices. -->
+    <cover-view wx:if="{{ambientName && !zenMode && !moonVoyageActive && !saturnPreviewActive}}" class="ambient-caption" bindtap="onAmbientDismiss">
+      <cover-view class="ambient-caption-name">{{ambientName}}</cover-view>
+      <cover-view class="ambient-caption-description">{{ambientDescription}}</cover-view>
+    </cover-view>
     <cover-view wx:if="{{moonVoyageActive}}" class="moon-lyrics" style="bottom: {{moonLyricBottomPx}}px;">
       <cover-view class="moon-lyrics-text {{moonLyricA.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricA.text}}</cover-view>
       <cover-view class="moon-lyrics-text {{moonLyricB.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricB.text}}</cover-view>
     </cover-view>
 
-<!-- 临时共同评审入口：只在普通地球模式出现。 -->
-<cover-view wx:if="{{!zenMode && !moonVoyageActive && !saturnPreviewActive && !loading}}" class="saturn-preview-entry" bindtap="onEnterSaturnPreview" role="button" aria-label="预览土星模型">
+<!-- 临时共同评审入口：本次发布关闭；恢复原条件即可重新启用。 -->
+<cover-view wx:if="{{false}}" class="saturn-preview-entry" bindtap="onEnterSaturnPreview" role="button" aria-label="预览土星模型">
   <cover-view class="saturn-entry-symbol"><cover-view class="saturn-entry-ring"></cover-view><cover-view class="saturn-entry-body"></cover-view></cover-view>
   <cover-view>土星预览</cover-view>
 </cover-view>
+
+<cover-view wx:if="{{saturnPreviewActive}}" class="saturn-preview-heading"><cover-view class="saturn-preview-name">土星</cover-view><cover-view class="saturn-preview-caption">SATURN · 模型预览</cover-view></cover-view>
+  <cover-view wx:if="{{saturnPreviewActive}}" class="saturn-preview-exit" bindtap="onExitSaturnPreview" role="button" aria-label="返回地球">返回地球</cover-view>
+  <cover-view wx:if="{{saturnPreviewActive && saturnPreviewLoading}}" class="saturn-preview-status">正在载入土星…</cover-view>
+  <cover-view wx:if="{{saturnPreviewActive && saturnPreviewError}}" class="saturn-preview-status saturn-preview-retry" bindtap="onRetrySaturnPreview">{{saturnPreviewError}}</cover-view>
+  <cover-view wx:if="{{saturnPreviewActive && !saturnPreviewLoading && !saturnPreviewError}}" class="saturn-preview-bottom">
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-voyage-stage">{{saturnVoyageComplete ? '已抵达 · 阴影中回望' : saturnVoyageStage}}</cover-view>
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-voyage-time">{{saturnVoyageTime}}</cover-view>
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-preview-hint">{{saturnVoyagePaused ? '已停留 · 仍可拖动观看' : '拖动观看 · 航线自动前行'}}</cover-view>
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-voyage-controls">
+      <cover-view wx:if="{{!saturnVoyageComplete}}" class="saturn-voyage-button primary" bindtap="onToggleSaturnVoyagePause">{{saturnVoyagePaused ? '继续航行' : '暂停航行'}}</cover-view>
+      <cover-view class="saturn-voyage-button" bindtap="onResetSaturnVoyageGaze">回正视线</cover-view>
+      <cover-view class="saturn-voyage-button" bindtap="onStartSaturnVoyage">{{saturnVoyageComplete ? '再次航行' : '重新起航'}}</cover-view>
+      <cover-view class="saturn-voyage-button" bindtap="onStopSaturnVoyage">模型预览</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-voyage-start" bindtap="onStartSaturnVoyage">开始航行 · 约 2 分钟</cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-look-caption">{{saturnLookCaption}}</cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-looks">
+      <cover-view wx:for="{{saturnLooks}}" wx:key="key" class="saturn-look {{saturnLook === item.key ? 'selected' : ''}}" data-look="{{item.key}}" bindtap="onSaturnPreviewLook">{{item.label}}</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-hint">拖动环绕 · 双指远近</cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-views">
+      <cover-view class="saturn-view {{saturnView === 'whole' ? 'selected' : ''}}" data-view="whole" bindtap="onSaturnPreviewView">整体</cover-view>
+      <cover-view class="saturn-view {{saturnView === 'close' ? 'selected' : ''}}" data-view="close" bindtap="onSaturnPreviewView">近看</cover-view>
+      <cover-view class="saturn-view {{saturnView === 'rings' ? 'selected' : ''}}" data-view="rings" bindtap="onSaturnPreviewView">掠环</cover-view>
+      <cover-view class="saturn-view {{saturnView === 'ice' ? 'selected' : ''}}" data-view="ice" bindtap="onSaturnPreviewView">冰环近景</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-credit">SSS · Björn Jónsson · Spacekit · I,Voyager</cover-view>
+  </cover-view>
 
   </canvas>
   <!-- 已移除：PC 端滚轮触发空间 -->
@@ -207,16 +243,4 @@
   <text>{{moonToastText}}</text>
 </view>
 
-<view wx:if="{{saturnPreviewActive}}" class="saturn-preview-heading"><view class="saturn-preview-name">土星</view><view class="saturn-preview-caption">SATURN · 模型预览</view></view>
-  <view wx:if="{{saturnPreviewActive}}" class="saturn-preview-exit" bindtap="onExitSaturnPreview" role="button" aria-label="返回地球">返回地球</view>
-  <view wx:if="{{saturnPreviewActive && saturnPreviewLoading}}" class="saturn-preview-status">正在载入土星…</view>
-  <view wx:if="{{saturnPreviewActive && saturnPreviewError}}" class="saturn-preview-status saturn-preview-retry" bindtap="onRetrySaturnPreview">{{saturnPreviewError}}</view>
-  <view wx:if="{{saturnPreviewActive && !saturnPreviewLoading && !saturnPreviewError}}" class="saturn-preview-bottom">
-    <view class="saturn-preview-hint">拖动环绕 · 双指远近</view>
-    <view class="saturn-preview-views">
-      <view class="saturn-view {{saturnView === 'whole' ? 'selected' : ''}}" data-view="whole" bindtap="onSaturnPreviewView">整体</view>
-      <view class="saturn-view {{saturnView === 'close' ? 'selected' : ''}}" data-view="close" bindtap="onSaturnPreviewView">近看</view>
-      <view class="saturn-view {{saturnView === 'rings' ? 'selected' : ''}}" data-view="rings" bindtap="onSaturnPreviewView">掠环</view>
-    </view>
-    <view class="saturn-preview-credit">贴图 Solar System Scope · 渲染改编自 Spacekit</view>
-  </view>
+</view>

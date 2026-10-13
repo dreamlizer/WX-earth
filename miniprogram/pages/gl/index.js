@@ -24,7 +24,8 @@ import { SettingsManager } from './settings-manager.js';
 import { formatThousandsInt, formatThousandsFixed } from './format-utils.js';
 import { getInitialData } from './page-state.js';
 import { getSystemInfo } from './sys-info.js';
-import { enterSaturnPreview, exitSaturnPreview, retrySaturnPreview, setSaturnPreviewView } from './main.js';
+import { enterSaturnPreview, exitSaturnPreview, retrySaturnPreview, setSaturnPreviewView, setSaturnPreviewLook, startSaturnVoyage, toggleSaturnVoyagePause, stopSaturnVoyage, resetSaturnVoyageGaze } from './main.js';
+import { SATURN_LOOKS, DEFAULT_SATURN_LOOK } from './saturn-preview-looks.js';
 
 Page({
   data: {
@@ -37,6 +38,14 @@ Page({
     saturnPreviewLoading: false,
     saturnPreviewError: '',
     saturnView: 'whole',
+    saturnLook: DEFAULT_SATURN_LOOK,
+    saturnLooks: Object.keys(SATURN_LOOKS).map(key => ({ key, label: SATURN_LOOKS[key].label })),
+    saturnLookCaption: SATURN_LOOKS[DEFAULT_SATURN_LOOK].caption,
+    saturnVoyageActive: false,
+    saturnVoyagePaused: false,
+    saturnVoyageComplete: false,
+    saturnVoyageStage: '',
+    saturnVoyageTime: '',
   },
 
   __schedulePageTask(callback, delayMs) {
@@ -108,6 +117,11 @@ Page({
   onExitSaturnPreview() { exitSaturnPreview(); },
   onRetrySaturnPreview() { retrySaturnPreview(); },
   onSaturnPreviewView(e) { setSaturnPreviewView(e.currentTarget.dataset.view); },
+  onSaturnPreviewLook(e) { setSaturnPreviewLook(e.currentTarget.dataset.look); },
+  onStartSaturnVoyage() { startSaturnVoyage(); },
+  onToggleSaturnVoyagePause() { toggleSaturnVoyagePause(); },
+  onStopSaturnVoyage() { stopSaturnVoyage(); },
+  onResetSaturnVoyageGaze() { resetSaturnVoyageGaze(); },
 
   // Custom Moon Toast (Smoother Fade)
   showMoonToast(text, duration = 2500) {
@@ -284,8 +298,8 @@ Page({
     this.__zenAudioMgr = null;
     teardown({ deferResourceDisposal: true });
   },
-  onShow() { try { setPaused(false); } catch(_){ } },
-  onHide() { try { setPaused(true); } catch(_){ } },
+  onShow() { try { setPaused(false); this.__zenModeMgr?.resume(); } catch(_){ } },
+  onHide() { try { this.__zenModeMgr?.suspend(); setPaused(true); } catch(_){ } },
   // 发送给朋友（右上角“转发”或 button open-type=share 触发）
   onShareAppMessage(res){
     try {
@@ -304,6 +318,9 @@ Page({
     } catch(_){ return { title: '行星物语' }; }
   },
   // 拖动丝滑：一旦检测到拖动，自动关闭所有面板（国家/搜索/设置），避免重绘与事件干扰
+  onAmbientDismiss(){
+    if (this.data.ambientName) this.setData({ ambientName: '', ambientDescription: '' });
+  },
   onTouchStart(e){
     if (this.data.saturnPreviewActive) { onTouchStart(this.__normalizeToCanvasTouches(e)); return; }
     try { this.__dragClosedPanels = false; } catch(_){}
@@ -580,7 +597,7 @@ Page({
             let hasSafeUpdates = false;
             Object.keys(obj).forEach(key => {
               // Allow hiding, disallow showing
-              if (key.includes('visible')) {
+              if (/visible/i.test(key)) {
                 safeObj[key] = false;
                 hasSafeUpdates = true;
               }

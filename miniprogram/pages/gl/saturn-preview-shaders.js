@@ -30,11 +30,13 @@ export const SATURN_VERTEX = `
   varying vec3 vLocalPosition;
   uniform vec3 lightDirection;
   varying vec3 vLight;
+  varying vec3 vEye;
   void main() {
     vUv = uv;
     vNormal = normalize(normalMatrix * normal);
     vLight = normalize((viewMatrix * modelMatrix * vec4(lightDirection / vec3(1.0, 0.902, 1.0), 0.0)).xyz);
     vLocalPosition = vec3(position.x, position.y * 0.902, position.z);
+    vEye = -(modelViewMatrix * vec4(position, 1.0)).xyz;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
@@ -80,7 +82,8 @@ export const RING_VERTEX = `
 
 export const RING_FRAGMENT = `
   uniform sampler2D ringTexture;
-  uniform vec3 lightDirection;
+  uniform vec3 lightDirection, localCamera;
+  uniform float iceBlend;
   varying vec3 vPos;
   vec4 color() {
     float u = (length(vPos.xz) - 1.24) / (2.32 - 1.24);
@@ -102,6 +105,7 @@ export const RING_FRAGMENT = `
     vec4 pixel = color();
     if (pixel.a < 0.025) discard;
     vec3 lit = pow(pixel.rgb, vec3(2.2)) * shade * vec3(1.25, 1.18, 1.04);
-    gl_FragColor = vec4(pow(vec3(1.0) - exp(-lit * 1.22), vec3(1.0 / 2.2)), pixel.a);
+    float nearFade = mix(1.0, smoothstep(.045, .28, length(localCamera - vPos)), iceBlend);
+    gl_FragColor = vec4(pow(vec3(1.0) - exp(-lit * 1.22), vec3(1.0 / 2.2)), pixel.a * nearFade);
   }
 `;

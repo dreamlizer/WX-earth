@@ -1,0 +1,22 @@
+Saturn preview visual variants, 2026-10-11
+
+Planet color map: INOVE / Solar System Scope, CC BY 4.0.
+https://www.solarsystemscope.com/textures/
+https://creativecommons.org/licenses/by/4.0/
+
+Ring profiles created by Bjoern Jonsson (Björn Jónsson).
+https://bjj.mmedia.is/data/s_rings/
+Use permitted with attribution: https://bjj.mmedia.is/acknow.html
+Modified: five radial data profiles baked into a 4096 x 16 lookup atlas;
+representative geometry inversion and optical-depth encoding for WebGL 1.
+
+Ring reflection/transmission adapted from I,Voyager rings.gdshader.
+Copyright 2019-2026 Charlie Whitfield.
+Apache License 2.0; full text included in IVoyager-LICENSE.txt.
+https://github.com/ivoyager/ivoyager_core/blob/master/shaders/rings.gdshader
+Modified: homogeneous slab only, GLSL ES 1.0, atlas sampling, softened phase
+curve, artistic exposure, flattened planet shadows and radial filtering.
+No full I,Voyager/Godot engine or calibrated photometric model is included.
+
+Original sphere/ring shaders adapted from Spacekit.
+Copyright (c) 2019 Ian Webster, MIT; license retained in the shader source.

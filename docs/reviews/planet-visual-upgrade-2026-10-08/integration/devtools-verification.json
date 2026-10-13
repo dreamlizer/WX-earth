@@ -1,0 +1,132 @@
+{
+  "page": "pages/gl/index",
+  "errors": [],
+  "normal": {
+    "material": "ShaderMaterial",
+    "uuid": "C30080C5-39C1-4999-8ADD-26B9E68A2853",
+    "look": true,
+    "normal": 2048,
+    "cloudMaterial": "ShaderMaterial",
+    "cloudVisible": false,
+    "cloudEnabled": 0,
+    "pureNight": 0,
+    "brightness": 1,
+    "sun": [
+      0.1743258963100265,
+      0.17793929195013256,
+      0.9684772017223695
+    ],
+    "program": null
+  },
+  "zen": {
+    "material": "ShaderMaterial",
+    "uuid": "C30080C5-39C1-4999-8ADD-26B9E68A2853",
+    "look": true,
+    "normal": 2048,
+    "cloudMaterial": "ShaderMaterial",
+    "cloudVisible": false,
+    "cloudEnabled": 0,
+    "pureNight": 0,
+    "brightness": 1,
+    "sun": [
+      1,
+      0,
+      0
+    ],
+    "program": null
+  },
+  "nightCloud": {
+    "material": "ShaderMaterial",
+    "uuid": "C30080C5-39C1-4999-8ADD-26B9E68A2853",
+    "look": true,
+    "normal": 2048,
+    "cloudMaterial": "ShaderMaterial",
+    "cloudVisible": true,
+    "cloudEnabled": 1,
+    "pureNight": 1,
+    "brightness": 1,
+    "sun": [
+      1,
+      0,
+      0
+    ],
+    "program": null
+  },
+  "returned": {
+    "material": "ShaderMaterial",
+    "uuid": "C30080C5-39C1-4999-8ADD-26B9E68A2853",
+    "look": true,
+    "normal": 2048,
+    "cloudMaterial": "ShaderMaterial",
+    "cloudVisible": false,
+    "cloudEnabled": 0,
+    "pureNight": 0,
+    "brightness": 1,
+    "sun": [
+      0.1743258963100265,
+      0.17793929195013256,
+      0.9684772017223695
+    ],
+    "program": null
+  },
+  "brightness": {
+    "material": "ShaderMaterial",
+    "uuid": "C30080C5-39C1-4999-8ADD-26B9E68A2853",
+    "look": true,
+    "normal": 2048,
+    "cloudMaterial": "ShaderMaterial",
+    "cloudVisible": false,
+    "cloudEnabled": 0,
+    "pureNight": 0,
+    "brightness": 1.4999999999999998,
+    "sun": [
+      0.1743258963100265,
+      0.17793929195013256,
+      0.9684772017223695
+    ],
+    "program": null
+  },
+  "moonTextures": {
+    "ready": true,
+    "colorSize": [
+      2048,
+      1024
+    ],
+    "normalSize": [
+      2048,
+      1024
+    ],
+    "normalScale": [
+      1,
+      1
+    ],
+    "roughness": 0.96
+  },
+  "moonProgram": {
+    "compiled": true,
+    "log": "",
+    "fragmentLog": ""
+  },
+  "refreshed": {
+    "material": "ShaderMaterial",
+    "uuid": "884EF83E-11C1-4BCE-9E1D-8E1FC38858B0",
+    "look": true,
+    "normal": 2048,
+    "cloudMaterial": "ShaderMaterial",
+    "cloudVisible": false,
+    "cloudEnabled": 0,
+    "pureNight": 0,
+    "brightness": 1,
+    "sun": [
+      0.1743258963100265,
+      0.17793929195013256,
+      0.9684772017223695
+    ],
+    "program": null
+  },
+  "earthProgram": {
+    "compiled": true,
+    "log": ""
+  },
+  "atmospheres": 1
+}

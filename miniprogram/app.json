@@ -16,7 +16,9 @@
     {
       "root": "saturn-assets",
       "name": "saturn-assets",
-      "pages": ["index"]
+      "pages": [
+        "index"
+      ]
     },
     {
       "root": "voyager-assets",
@@ -42,6 +44,62 @@
     {
       "root": "gundam-assets",
       "name": "gundam-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "earth-look-assets",
+      "name": "earth-look-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "moon-look-assets",
+      "name": "moon-look-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "chandra-assets",
+      "name": "chandra-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "juno-assets",
+      "name": "juno-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "magellan-assets",
+      "name": "magellan-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "eve-assets",
+      "name": "eve-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "astronaut-assets",
+      "name": "astronaut-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "scene-art-assets",
+      "name": "scene-art-assets",
       "pages": [
         "index"
       ]

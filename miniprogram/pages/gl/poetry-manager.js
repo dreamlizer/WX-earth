@@ -55,6 +55,8 @@ export class PoetryManager {
   getIndex(){ return Number(this._idx || 0); }
 
   stop(){
+    this._subtitle?.stop();
+    this._subtitle = null;
     try {
       this._playVersion++; // 增加版本号，立即使所有 pending 的 showLineOn 失效
       // 若启用 3D 模式，先停止 three 层
@@ -87,6 +89,8 @@ export class PoetryManager {
   }
 
   resetImmediate(){
+    this._subtitle?.stop();
+    this._subtitle = null;
     try {
       this._placements = {};
       // 立即清空当前状态：不等待淡出
@@ -109,6 +113,8 @@ export class PoetryManager {
     try {
       clearTimeout(this._timer); clearTimeout(this._timer2);
       this._timer = null; this._timer2 = null; this._idx = Math.max(0, Number(startIdx || 0));
+      this._subtitle?.stop();
+      this._subtitle = opts.subtitle || null;
       const cfg = this.appCfg?.poetry || {};
       const fadeInMs = Math.max(0, Number(cfg.fadeInMs || 600));
       const fadeOutMs = Math.max(0, Number(cfg.fadeOutMs || fadeInMs));
@@ -118,7 +124,7 @@ export class PoetryManager {
       const margin = Number(cfg.safeMarginPx || 18);
       const isEnglishLyrics = Number(preset) >= 101 || String(this.getLang?.() || 'zh') === 'en';
       this.setData({ poetryHorizontal: isEnglishLyrics });
-      this._hasShownFirstLine = false;
+      this._hasShownFirstLine = !!opts.metadataPresented;
 
       // 诊断与正确性：不再在目标预设缺失时回退到 1，避免造成“切到第三首仍显示第一套”错觉。
       const lines = Array.isArray(presetsMap[preset]) ? presetsMap[preset] : [];
@@ -212,6 +218,7 @@ export class PoetryManager {
         setText[useA ? 'poetryA.moveMs' : 'poetryB.moveMs'] = 0;
         const isFirstLine = !this._hasShownFirstLine;
         setText[useA ? 'poetryAFirst' : 'poetryBFirst'] = !!isFirstLine;
+        Object.assign(setText, this._subtitle?.prepare(this._idx, useA) || {});
         this.setData(setText);
         const rect = await this.measure(id);
         if (this._playVersion !== currentVer) return; // 版本检查
@@ -228,6 +235,7 @@ export class PoetryManager {
         // 优先级开关：preferLineDuration=true 时以当前句的 showMs 为主，否则以配置 displayMs 为主
         const preferLine2 = !!cfg.preferLineDuration;
         const showDuration = Number(preferLine2 ? (showMs || cfg.displayMs || 7000) : (cfg.displayMs || showMs || 7000));
+        const fadeDelay = Math.max(0, showDuration - ((Number(preset) === 102 || Number(preset) === 103) ? 1000 : 0));
         const totalDuration = Math.max(0, showDuration + crossMs);
         let move = this.computeMove(start, itemW, itemH, moveSpeed, totalDuration, bounds);
         const otherId = useA ? 'poetryB' : 'poetryA';
@@ -250,8 +258,8 @@ export class PoetryManager {
           this.setData({[otherId+'.fadeMs']:0, [otherId+'.visible']:false});
           previous.visibleUntil = now;
         }
-        const placement = {x:start.x,y:start.y,w:itemW,h:itemH,tx:move.tx,ty:move.ty,
-          motionStart:now+32,duration:totalDuration,visibleUntil:now+32+showDuration+fadeOutMs};
+        const placement = {index:this._idx,x:start.x,y:start.y,w:itemW,h:itemH,tx:move.tx,ty:move.ty,
+          motionStart:now+32,duration:totalDuration,visibleUntil:now+32+fadeDelay+fadeOutMs};
         this._placements[id] = placement;
 
         try {
@@ -271,6 +279,7 @@ export class PoetryManager {
         phase1[useA ? 'poetryA.fadeMs' : 'poetryB.fadeMs'] = fadeInMs;
         phase1[useA ? 'poetryA.visible' : 'poetryB.visible'] = true;
         this._hasShownFirstLine = true;
+        Object.assign(phase1, this._subtitle?.show(this._idx, useA) || {});
         this.setData(phase1);
         await new Promise(r => setTimeout(r, 16)); // 等一帧确保初始样式应用
         if (this._playVersion !== currentVer) return; // 版本检查
@@ -281,7 +290,7 @@ export class PoetryManager {
         if (this._playVersion !== currentVer) return; // 版本检查
 
         placement.motionStart = Date.now();
-        placement.visibleUntil = placement.motionStart + showDuration + fadeOutMs;
+        placement.visibleUntil = placement.motionStart + fadeDelay + fadeOutMs;
         // Phase3：设置目标位移，开始移动动画
         const phase3 = {}; phase3[useA ? 'poetryA.tx' : 'poetryB.tx'] = move.tx; phase3[useA ? 'poetryA.ty' : 'poetryB.ty'] = move.ty; this.setData(phase3);
 
@@ -308,15 +317,23 @@ export class PoetryManager {
             await showLineOn(!useA, nextItem.text, ms, nextStart);
           }, nearEnd);
         }
-        // 独立定时：在本句完整显示时长到达后，开始旧句淡出
+        // English song fade starts 1000ms earlier; motion and next cue stay unchanged.
         this._timer = setTimeout(() => {
           if (this._playVersion !== currentVer) return; // 版本检查
           if (this._placements[id] !== placement) return;
           const hide = {};
           hide[useA ? 'poetryA.fadeMs' : 'poetryB.fadeMs'] = fadeOutMs;
           hide[useA ? 'poetryA.visible' : 'poetryB.visible'] = false;
+          if (fadeDelay === showDuration) Object.assign(hide, this._subtitle?.hide(placement.index) || {});
           this.setData(hide);
-        }, showDuration);
+        }, fadeDelay);
+        if (this._subtitle && fadeDelay !== showDuration) {
+          const subtitleTimer = setTimeout(() => {
+            if (this._playVersion !== currentVer || this._placements[id] !== placement) return;
+            this.setData(this._subtitle?.hide(placement.index) || {});
+          }, showDuration);
+          this._timers.push(subtitleTimer);
+        }
       };
       this._showLineOn = showLineOn;
 

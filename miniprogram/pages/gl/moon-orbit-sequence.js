@@ -1,4 +1,5 @@
 import { fixTexture } from './asset-manager.js';
+import { ensureSceneArtPackage } from './scene-art-loader.js';
 
 export class MoonOrbitSequence {
   constructor() {
@@ -651,27 +652,30 @@ export class MoonOrbitSequence {
         cloud.visible = false;
         mesh.add(cloud);
         this._farEarthCloud = cloud;
-        this._farEarthCloudTexture = new THREE.TextureLoader().load('/assets/textures/preview-cloud.png', texture => {
-          if (this._farEarthCloud !== cloud) return;
-          fixTexture(texture, isPC);
-          // alphaMap 是线性数据，不采用地表彩色贴图的 sRGB 解码。
-          texture.minFilter = THREE.LinearFilter;
-          texture.generateMipmaps = false;
-          cloudMaterial.alphaMap = texture;
-          cloudMaterial.needsUpdate = true;
-          cloud.visible = true;
-        }, undefined, () => { if (this._farEarthCloud === cloud) cloud.visible = false; });
-        // 使用已有的自然色日间贴图；试验版素材在亚洲北部有大片白色覆盖。
-        this._farEarthTexture = new THREE.TextureLoader().load('/assets/textures/preview-day.jpg', texture => {
+        ensureSceneArtPackage().then(() => {
           if (this._farEarth !== mesh) return;
-          fixTexture(texture, isPC);
-          texture.encoding = THREE.sRGBEncoding;
-          texture.minFilter = THREE.LinearFilter;
-          texture.generateMipmaps = false;
-          mat.map = texture;
-          mat.needsUpdate = true;
-          mesh.visible = true;
-        }, undefined, () => { if (this._farEarth === mesh) mesh.visible = false; });
+          this._farEarthCloudTexture = new THREE.TextureLoader().load('/scene-art-assets/textures/preview-cloud.png', texture => {
+            if (this._farEarthCloud !== cloud) return;
+            fixTexture(texture, isPC);
+            // alphaMap 是线性数据，不采用地表彩色贴图的 sRGB 解码。
+            texture.minFilter = THREE.LinearFilter;
+            texture.generateMipmaps = false;
+            cloudMaterial.alphaMap = texture;
+            cloudMaterial.needsUpdate = true;
+            cloud.visible = true;
+          }, undefined, () => { if (this._farEarthCloud === cloud) cloud.visible = false; });
+          // 使用已有的自然色日间贴图；试验版素材在亚洲北部有大片白色覆盖。
+          this._farEarthTexture = new THREE.TextureLoader().load('/scene-art-assets/textures/preview-day.jpg', texture => {
+            if (this._farEarth !== mesh) return;
+            fixTexture(texture, isPC);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.minFilter = THREE.LinearFilter;
+            texture.generateMipmaps = false;
+            mat.map = texture;
+            mat.needsUpdate = true;
+            mesh.visible = true;
+          }, undefined, () => { if (this._farEarth === mesh) mesh.visible = false; });
+        }).catch(error => console.warn('[Moon voyage] Scene art package unavailable:', error?.message || error));
       }
       // 约每分钟转 31 度，仅转动地表；固定地球位置、太阳方向和相机均不变。
       // 按绝对旅程时间计算，暂停/跳时/帧率变化不会累计出不同朝向。

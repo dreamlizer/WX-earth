@@ -1,3 +1,5 @@
+import { ZenChineseLyrics } from './zen-chinese-lyrics.js';
+import { ZenSongOpening } from './zen-song-opening.js';
 
 // 禅定模式 - 诗词管理模块
 // 职责：诗词的加载、播放、特殊彩蛋文本处理
@@ -90,7 +92,28 @@ export async function playPoetry(page, preset, startIdx, opts) {
         useMap = sanitized;
       } catch(_){ useMap = presetsMap; }
     }
-    page?.__getPoetryMgr?.().start(p, useMap, Number(startIdx || 0), opts || {});
+    page.__zenSongOpening?.stop();
+    page.__zenSongOpening = null;
+    let opening = null;
+    if (page.__zenAudioMgr && (p === 102 || p === 103)) {
+      const lines = useMap[p] || [];
+      const firstLyricMs = Math.max(0,Number(lines[2]?.['start-time'] || (p === 103 ? 34000 : 18000)) - Number(APP_CFG.poetry.leadInMs || 0));
+      const viewport = page.__getLayoutMgr().getViewport();
+      opening = new ZenSongOpening({setData: patch => page.setData(patch),
+        getAudio: () => page.__zenAudioMgr?.audio,firstLyricMs,
+        topPx: Math.round(viewport.windowHeight*.23),preset:p});
+      page.__zenSongOpening = opening;
+      // Keep original body indices and timestamps. Only these two metadata rows
+      // are presented by the new opening instead of drifting with the lyrics.
+      useMap = {...useMap,[p]:lines.map((line,index)=>index<2?{...line,text:''}:line)};
+    }
+    const subtitle = page.__zenAudioMgr && (p === 102 || p === 103) ? new ZenChineseLyrics({
+      preset:p,
+      lines: useMap[p] || [], translations: presetsMap[p - 100] || [],
+      getLang: () => page.data?.lang || 'zh',
+      setData: patch => page.setData(patch), onStop: () => opening?.stop()
+    }) : null;
+    page?.__getPoetryMgr?.().start(p, useMap, Number(startIdx || 0), { ...(opts || {}), subtitle, metadataPresented:!!opening });
   } catch(_){ }
 }
 

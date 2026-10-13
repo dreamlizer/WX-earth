@@ -11,6 +11,8 @@
 
 ## 本地文件
 
+2026-10-12：原始文件保留，已生成 `miniprogram/juno-assets/`，用于普通浏览随机飞行器及点选名称。资源、几何、包体和逻辑测试通过；本轮独立微信模拟器启动受阻，微信视觉及手机性能尚未验收。参见 `docs/AMBIENT-CHANDRA.md` 和分包 `build-report.json`。
+
 - `Juno (A).glb`
 - `Juno (A).png`（NASA 官方 1920×1080 预览）
 - `inspection.json`

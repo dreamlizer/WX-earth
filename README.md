@@ -14,6 +14,10 @@
 - 四种模型分别使用独立资源分包，原绕月、太阳、远地球与终景保留。纸飞机、太阳帆离线试验未合入正式 MV。
 - 当前31个 `tools/*.test.cjs` 测试文件通过，覆盖全身可见、逐步加速、光段后移/衰减及清理。微信模拟器已核对入画和转弯，并运行79–93秒正常速度播放至尾迹清空，无新增运行错误；完整MV及真机视觉/性能尚未验收，补查动态帧时Mac锁屏。未上传、发布或推送；当前工作区改动随本次文档同步合并为一次本地提交，不改变微信、真机或发布状态。
 
+## 禅定歌曲视频制作
+
+独立片头、手机录屏正文、黑屏起始片尾、画布与配乐对齐、稳定文件交付约定见 [视频制作规范](docs/VIDEO-PRODUCTION-GUIDE.md)。新曲制作线程先读该文档；旧素材切点不直接套用新录屏。
+
 ## 当前入口
 
 - 小程序入口：`miniprogram/pages/gl/index`
@@ -84,7 +88,7 @@ for f in tools/*.test.cjs; do node "$f"; done
 
 如果云端数据或贴图不可用，先确认微信开发者工具云环境、云函数部署状态和本地兜底资源，再改业务逻辑。
 
-开发者工具和 PC 客户端默认不请求云贴图（`forceCloudTextures: false`），使用 `miniprogram/assets/textures/preview-*` 的 512×256 本地预览图。它们分别由仓库根目录的 `earth.jpg`、`earth_day8k.webp`、`earth_night.webp`、`cloud.webp` 缩小生成，合计约 260 KiB。手机端仍走原来的云端高清贴图路径。
+开发者工具和 PC 客户端默认不请求云贴图（`forceCloudTextures: false`）。默认地球优先使用 `miniprogram/earth-look-assets/earth-default.jpg` 的 2048×1024 原图预览，由根目录 `earth.jpg` 缩小生成；地球分包加载失败时退回旧的 512×256 `preview-earth.jpg`。白昼、夜景、云层仍使用 `miniprogram/assets/textures/preview-*` 的小图。手机端仍走原来的云端贴图路径，实际加载尺寸与视觉效果需真机确认。
 
 此前桌面兜底只有 1×1 占位图，导致地球无纹理，并被健康检查反复判为坏图、重载同一占位图；刷新无法解决。2026-09-09 已替换桌面预览资源，自动测试通过；因 Mac 锁屏，修正后的模拟器画面验收仍待完成。
 

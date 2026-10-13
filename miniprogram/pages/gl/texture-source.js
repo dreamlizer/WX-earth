@@ -2,6 +2,7 @@
 // 用途：通过云存储 fileID -> 临时 HTTPS URL（CDN），失败则回退到本地图片。
 
 import { getSystemInfo } from './sys-info.js';
+import { ensureSceneArtPackage } from './scene-art-loader.js';
 
 const CACHE_KEY = '__texture_urls_cache_v1';
 const SAVED_PATHS_KEY = '__texture_saved_paths_v1';
@@ -30,13 +31,13 @@ const FALLBACK_MAP = {
   cloud: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/WWy3XQAAAAASUVORK5CYII=',
 };
 
-// 桌面预览默认不请求云端，使用真实的低分辨率贴图，避免 1×1 占位触发健康检查重载循环。
+// 桌面默认图和夜景优先使用地球资源分包内的 2K 原图；小图作为分包失败兜底。
 // 手机端仍使用上面的云资源和原有失败兜底。
 const DESKTOP_PREVIEW_MAP = {
   earth: '/assets/textures/preview-earth.jpg',
-  earth_day: '/assets/textures/preview-day.jpg',
+  earth_day: '/scene-art-assets/textures/preview-day.jpg',
   earth_night: '/assets/textures/preview-night.jpg',
-  cloud: '/assets/textures/preview-cloud.png',
+  cloud: '/scene-art-assets/textures/preview-cloud.png',
 };
 
 function now() { return Date.now(); }
@@ -134,6 +135,27 @@ async function resolveTextureUrl(name, preferNetwork = false) {
   })();
 
   let fallback = (isDevtools && !forceCloud ? DESKTOP_PREVIEW_MAP[name] : '') || FALLBACK_MAP[name];
+  if (isDevtools && !forceCloud && (name === 'earth_day' || name === 'cloud')) {
+    try {
+      await ensureSceneArtPackage();
+    } catch (_) {
+      fallback = FALLBACK_MAP[name];
+      console.warn('[texture] Scene art package unavailable; keeping placeholder');
+    }
+    return { url: fallback, fallback };
+  }
+  if (isDevtools && !forceCloud && (name === 'earth' || name === 'earth_night')) {
+    try {
+      await new Promise((resolve, reject) => {
+        require('../../earth-look-assets/ready.js', resolve, reject);
+      });
+      fallback = name === 'earth' ? '/earth-look-assets/earth-default.jpg' : '/earth-look-assets/earth-night.jpg';
+    } catch (_) {
+      console.warn('[texture] Earth preview package unavailable; keeping small local preview');
+    }
+    // 旧 URL 缓存不应覆盖已选择的桌面高清图；手机和显式云端模式仍走原缓存链路。
+    return { url: fallback, fallback };
+  }
   try {
     if (!fallback && (name === 'earth_night' || name === 'earth_day8k')) {
       const savedDay = readSavedPaths()['earth'];

@@ -102,11 +102,41 @@ async function testEnglishPresetUsesHorizontalLayoutInChineseInterface() {
   assert.equal(updates.some(update => update.poetryHorizontal === true), true);
 }
 
+async function testEarlierEnglishFadeKeepsMotionAndChineseEnd() {
+  for (const preset of [2, 102, 103]) {
+    const {manager,timers,updates}=await buildTimeline([
+      {text:'First lyric',duration:5000,'start-time':3000}
+    ],{preset});
+    let subtitleEnds=0;
+    manager._subtitle={prepare:()=>({}),show:()=>({}),hide:()=>{subtitleEnds++;return {'zenChineseA.visible':false};},stop:()=>{}};
+    const showing=manager._showLineOn(true,'First lyric',6200);
+    // Complete the original measure + two animation-frame preparation stages.
+    for (let step=0;step<2;step++) {
+      await Promise.resolve();await Promise.resolve();
+      const frame=[...timers].find(([,t])=>t.delay===16);
+      assert.ok(frame);timers.delete(frame[0]);frame[1].fn();
+    }
+    await showing;
+    assert.ok(updates.some(p=>p['poetryA.moveMs']===7000),'Original movement duration remains 6200 + crossfade 800');
+    const fade=[...timers].find(([,t])=>t.delay===(preset===2?6200:5200));
+    assert.ok(fade);timers.delete(fade[0]);fade[1].fn();
+    assert.equal(updates.at(-1)['poetryA.visible'],false);
+    assert.equal(updates.at(-1)['poetryA.fadeMs'],1200,'Original fade duration remains unchanged');
+    if(preset===2) assert.equal(subtitleEnds,1,'Other poetry keeps its original end');
+    else {
+      assert.equal(subtitleEnds,0,'Chinese does not inherit the earlier English end');
+      const chineseEnd=[...timers].find(([,t])=>t.delay===6200);
+      assert.ok(chineseEnd);chineseEnd[1].fn();assert.equal(subtitleEnds,1);
+    }
+  }
+}
+
 (async () => {
   await testTimestampedLyricsLeadInWithoutShorteningCueDuration();
   await testLeadInIsClampedAtAudioStart();
   await testUntimedPoetryStillStartsWithAudio();
   await testEnglishPresetUsesHorizontalLayoutInChineseInterface();
+  await testEarlierEnglishFadeKeepsMotionAndChineseEnd();
   console.log('poetry timing tests passed');
 })().catch((error) => {
   console.error(error);

@@ -165,7 +165,7 @@ fx.reset();assert.equal(fx.moonStart,null);fx.dispose();fx.dispose();console.log
  assert(Math.abs(robotScreen(55)-robotScreen(54))>Math.abs(robotScreen(50)-robotScreen(49))*2,'Arrival accelerates into the encounter');
  assert(Math.abs(robotScreen(82)-robotScreen(80))>Math.abs(robotScreen(78)-robotScreen(76))*1.5,'Departure accelerates toward the left rear');
 
- assert(!JSON.parse(fs.readFileSync('miniprogram/app.json')).subpackages.some(p=>p.root==='eve-assets'),'EVE removed from runtime packages');
+ assert(!loaded.eve,'EVE remains absent from Moon encounters; its new package belongs to zen only');
  loaded.update({t:102,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});assert(loaded.starship.model.scale.x<loaded.starship.baseScale*.9,'Visible retreat starts earlier and lasts longer');
  loaded.dispose();await loaded.preload();await loaded.robot.preload();await loaded.starship.preload();await loaded.gundam.preload();assert(loaded.robot.model&&loaded.starship.model&&loaded.gundam.model,'All replacement crafts reload after exit and re-entry');loaded.dispose();T.TextureLoader=NativeLoader;
  console.log('WeChat subpackage API and async asset loading PASS');

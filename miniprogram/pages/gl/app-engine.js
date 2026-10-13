@@ -1,3 +1,4 @@
+import { ZenOpeningArt } from './zen-opening-art.js';
 
 // app-engine.js —— 核心引擎 (AppEngine)
 // 职责：负责 3D 环境初始化、Manager 组装、状态管理及核心业务逻辑
@@ -32,11 +33,13 @@ import { createFlyManager } from './fly-manager.js';
 import { ZenModeManager, applyZenAutoRotate, applyZenBrake, advanceZenAnimation, advanceRotationFrame, zenState, enterZenMode, exitZenMode, resetZenState, createZenController } from './zen-mode-manager.js';
 import { MoonVoyageManager } from './moon-voyage-manager.js';
 import { SaturnPreviewManager } from './saturn-preview-manager.js';
+import { AmbientEncounterManager, ambientBrowseState } from './ambient-encounter-manager.js';
 import { clearZenAudioSaved } from './zen-audio.js';
 import { createTweenManager } from './tween-manager.js';
 import { createFadeOverlay } from './fade-overlay.js';
 import { fixTexture, loadTextureWithRetry, reloadAllTextures, dumpTextureInfo } from './asset-manager.js';
 import { loadTexturesSequentially } from './scene-loader.js';
+import { installEarthVisual } from './planet-visual-loader.js';
 import { createPerfMonitor } from './perf-monitor.js';
 import { createRuntimeDiagnostics } from './runtime-diagnostics.js';
 import { createTextureHealthChecker } from './texture-health.js';
@@ -62,6 +65,8 @@ export class AppEngine {
     this.state = null; // 核心状态容器 (THREE, scene, etc.)
     this.moonMgr = null;
     this.saturnPreview = null;
+    this.ambientEncounter = null;
+    this.zenEncounter = null;
     this.managers = {}; // 存放 input, fly, lighting 等管理器
     
     // 配置相关
@@ -153,6 +158,8 @@ export class AppEngine {
     this.sceneCtx = null;
     this.moonMgr = null;
     this.saturnPreview = null;
+    this.ambientEncounter = null;
+    this.zenEncounter = null;
   }
 
   // 初始化入口
@@ -356,7 +363,8 @@ export class AppEngine {
     const setZenMode = zenController.setMode;
 
     // 10. 资源加载
-    loadTexturesSequentially(sceneCtx).then(() => {
+    loadTexturesSequentially(sceneCtx).then(async () => {
+       await installEarthVisual(sceneCtx);
        if (!this._isLifecycleCurrent(lifecycleToken)) return;
        // Keep first paint on one loading path. Warm offline caches only after
        // the foreground earth texture has had time to settle on WebGL.
@@ -450,7 +458,8 @@ export class AppEngine {
       logThrottleMs: INERTIA_LOG_THROTTLE_MS,
       debugSelect: DEBUG_SELECT,
       lonSameSign: DEBUG.lonSameSign,
-      isInteractionBlocked: () => this.isMoonVoyageActive()
+      isInteractionBlocked: () => this.isMoonVoyageActive(),
+      onAmbientTap: (point) => this.ambientEncounter?.tap(point)
     });
     this.managers.input = input;
 
@@ -469,7 +478,20 @@ export class AppEngine {
     });
 
     this.saturnPreview = new SaturnPreviewManager(THREE, renderer, page);
+    this.ambientEncounter = new AmbientEncounterManager({ THREE, scene, camera, globeGroup, renderer, page });
+    this.zenOpeningArt = new ZenOpeningArt({ THREE, scene, camera, getViewport: () => page.__getLayoutMgr().getViewport() });
     const render = () => {
+      const openingEnabled = page.data.zenMode && zenState.active && !page.__zenPoetryPaused &&
+        !page.data.specialVisible && !page.data.moonVoyageActive && !this.moonMgr?._entering &&
+        !this.moonMgr?._exiting && !page.__isMoonLocked?.() && !this.saturnPreview?.active;
+      page.__zenSongOpening?.update(openingEnabled);
+      this.zenOpeningArt.update(page.__zenSongOpening,openingEnabled);
+      this.ambientEncounter.update(Date.now(), ambientBrowseState({
+        page, touch: this.touch, ready: this.earthReady, zen: zenState.active,
+        moon: this.isMoonVoyageActive() || this.moonMgr?._entering || this.moonMgr?._exiting || page.__isMoonLocked?.(),
+        saturn: this.saturnPreview?.active,
+        flying: flyMgr?.isFlying?.(), transitioning: zenState.anim || zenState.brake || zenState.delayEnter
+      }));
       if (this.saturnPreview?.active) this.saturnPreview.render();
       else sceneUpdater.update();
     };
@@ -520,10 +542,15 @@ export class AppEngine {
     const rootTextures = [
       this.earthDayTex,
       this.earthPureDayTex,
-      this.earthNightTex
+      this.earthNightTex,
+      this.earthMesh?.userData?.landNormal?.normal,
+      this.earthMesh?.userData?.landNormal?.mask
     ];
     try { if (state?.onWinResizeCb) wx.offWindowResize(state.onWinResizeCb); } catch(_){ }
     try { this.loop?.stop(); } catch(_){ }
+    try { this.ambientEncounter?.dispose(); } catch(_){ }
+    try { this.zenEncounter?.dispose(); } catch(_){ }
+    try { this.zenOpeningArt?.dispose(); } catch(_){ }
     try { this.saturnPreview?.dispose(); } catch(_){ }
     try { this.moonMgr?.dispose?.(); } catch(_){ }
     try { this.poetry3d?.stop?.(); this.poetry3d?.setEnabled?.(false); } catch(_){ }
@@ -634,6 +661,7 @@ export class AppEngine {
   
   setPaused(on) {
     const p = !!on;
+    if (p) this.ambientEncounter?.pause();
     this.saturnPreview?.pause();
     if (p) this.loop?.stop(); else this.loop?.start(); 
   }
@@ -672,6 +700,11 @@ export class AppEngine {
   exitSaturnPreview() { this.saturnPreview?.exit(); }
   retrySaturnPreview() { if (this.saturnPreview?.active) this.saturnPreview.retry(); }
   setSaturnPreviewView(key) { this.saturnPreview?.setView(key); }
+  setSaturnPreviewLook(key) { this.saturnPreview?.setLook(key); }
+  startSaturnVoyage() { this.saturnPreview?.startVoyage(); }
+  toggleSaturnVoyagePause() { this.saturnPreview?.toggleVoyagePause(); }
+  stopSaturnVoyage() { this.saturnPreview?.stopVoyage(); }
+  resetSaturnVoyageGaze() { this.saturnPreview?.resetVoyageGaze(); }
   
   startPoetry3D(lines, conf) {
     try {

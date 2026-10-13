@@ -1,0 +1,172 @@
+[
+  {
+    "file": "tools/ambient-encounter.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/app-engine-lifecycle.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/city-markers-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/console-noise-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/country-info-manager-timezone.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/country-selection-init-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/flag-sprite-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/highlight-manager-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/labels-layout-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/labels-workset-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-encounters.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-gundam.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-light-continuity.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-original-earth.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-paper-plane.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-robot.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/moon-voyage-lifecycle.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/page-lifecycle.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/perf-monitor-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/planet-visual.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/poetry-cache.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/poetry-overlap.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/poetry-timing.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/render-loop.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/runtime-diagnostics.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/saturn-preview.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/scene-updater-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/texture-health.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/texture-source.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/timezone-manager-policy.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/update-country-meta-imf-weo.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/update-country-meta-worldbank.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/zen-english-tracks.test.cjs",
+    "pass": true,
+    "output": ""
+  },
+  {
+    "file": "tools/zen-lifecycle.test.cjs",
+    "pass": true,
+    "output": ""
+  }
+]

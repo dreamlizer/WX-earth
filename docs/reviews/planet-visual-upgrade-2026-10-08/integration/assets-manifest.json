@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-09",
+  "resolution": [
+    2048,
+    1024
+  ],
+  "mipmaps": false,
+  "assets": [
+    {
+      "path": "miniprogram/earth-look-assets/cloud-density.jpg",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 770733,
+      "sha256": "bd2c69c41e34011c0e6be7d123d7ccdb225af406290eef6752d10f7eec7c70b1"
+    },
+    {
+      "path": "miniprogram/earth-look-assets/earth-day.jpg",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 270185,
+      "sha256": "ab9c304e69a89873f9f91ebe694cf18883e826cde1395002ba24a89cfadf1adf"
+    },
+    {
+      "path": "miniprogram/earth-look-assets/earth-night.jpg",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 184783,
+      "sha256": "e21378472b54d0c305c246a7ab0ce6d0d5ba5846ff84d6838b51f2a80313de99"
+    },
+    {
+      "path": "miniprogram/earth-look-assets/earth-normal.jpg",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 336774,
+      "sha256": "3fc43e9639c34e8223c4a871e3bdf5b2d52ee79f7e89ce3f28cba45d4cac031a"
+    },
+    {
+      "path": "miniprogram/earth-look-assets/earth-water-mask.png",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 192443,
+      "sha256": "974c99426085ae384c5bf002704759db4667951c7cd45a2a957649b93f69700b"
+    },
+    {
+      "path": "miniprogram/moon-look-assets/moon-color.jpg",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 436840,
+      "sha256": "ae15d6afd1e6b4e94146b454a3641906b0ad55071d4fb9f84d40554ee31cb6dc"
+    },
+    {
+      "path": "miniprogram/moon-look-assets/moon-normal.jpg",
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "bytes": 1244532,
+      "sha256": "0973ef2beeccf90bfec04ac8c9f7b1a7c8192e6fbd9fef78a59fc2eb8a10cac4"
+    }
+  ],
+  "packages": {
+    "earth-look-assets": 1754962,
+    "moon-look-assets": 1681416
+  }
+}

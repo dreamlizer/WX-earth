@@ -1,0 +1,53 @@
+{
+  "sourceSha256": "9383f44fc4c6eba73c40b0c2cfe33c08c90f1fb5230274bfdaa98e0c9f116a34",
+  "triangles": 30132,
+  "drawCalls": 6,
+  "textureMax": 512,
+  "geometryBytes": 1139484,
+  "files": {
+    "color-0.jpg": {
+      "bytes": 3768,
+      "sha256": "23d258c2d951150d762d701912ad3b6bf28e067cacce1bbf77ea0b9f9399593c"
+    },
+    "index.wxml": {
+      "bytes": 14,
+      "sha256": "d16dc18ee35b96877a143dc5c4862b4482266bdf4c47943d7a04464bb1b0fed1"
+    },
+    "color-1.jpg": {
+      "bytes": 3232,
+      "sha256": "1cbbbe3818824feec0a9c9f6233c55580dc0eeb7c9532a91cb199ebad335dc83"
+    },
+    "color-2.jpg": {
+      "bytes": 45585,
+      "sha256": "22c2a8c35e2afc94bdd222a110a71b98e53350b2d53d0426a18f4b9b3675e2ae"
+    },
+    "index.js": {
+      "bytes": 10,
+      "sha256": "0895cb310fb18e3f6b35229e90218b9bd57abde1bb8820f33ff98f73fe83a0d5"
+    },
+    "index.wxss": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "geometry.bin": {
+      "bytes": 1139484,
+      "sha256": "392c8a42e97b9e02be5784f09a7d236f5a1f81192d23f63866d4e3e392a43b65"
+    },
+    "AUTHOR.md": {
+      "bytes": 400,
+      "sha256": "0c71d1dc629c963a3ef0baa3315648da5a1e9322d924ce580e73c5bf9f6da82b"
+    },
+    "model.js": {
+      "bytes": 3255,
+      "sha256": "f7d9ae849bdcc9a638ccd6571f91927ed8e2d1a08ec3d05426734afa4c19f136"
+    },
+    "ready.js": {
+      "bytes": 40,
+      "sha256": "340501a281d8ee4dc7455f0e56ef6c44ce31bc07530b48f1a6ba0b37d155613a"
+    },
+    "index.json": {
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    }
+  }
+}

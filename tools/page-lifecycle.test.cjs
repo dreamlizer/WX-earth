@@ -7,6 +7,9 @@ function loadPage() {
   const file = path.join(__dirname, '..', 'miniprogram', 'pages', 'gl', 'index.js');
   let source = fs.readFileSync(file, 'utf8');
   source = source.replace(/^import[\s\S]*?;\s*$/gm, '');
+  // Load the page's shared visual labels after stripping ES imports in this VM.
+  const looks = fs.readFileSync(path.join(path.dirname(file), 'saturn-preview-looks.js'), 'utf8').replace(/export /g, '');
+  source = looks + '\n' + source;
 
   let nextId = 1;
   const timers = new Map();

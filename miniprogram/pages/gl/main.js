@@ -49,6 +49,11 @@ export function enterSaturnPreview() { return engine.enterSaturnPreview(); }
 export function exitSaturnPreview() { engine.exitSaturnPreview(); }
 export function retrySaturnPreview() { engine.retrySaturnPreview(); }
 export function setSaturnPreviewView(key) { engine.setSaturnPreviewView(key); }
+export function setSaturnPreviewLook(key) { engine.setSaturnPreviewLook(key); }
+export function startSaturnVoyage() { engine.startSaturnVoyage(); }
+export function toggleSaturnVoyagePause() { engine.toggleSaturnVoyagePause(); }
+export function stopSaturnVoyage() { engine.stopSaturnVoyage(); }
+export function resetSaturnVoyageGaze() { engine.resetSaturnVoyageGaze(); }
 
 export function startPoetry3D(lines, conf) { engine.startPoetry3D(lines, conf); }
 export function stopPoetry3D() { engine.stopPoetry3D(); }

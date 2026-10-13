@@ -53,11 +53,14 @@ function loadZenAudio() {
           stopCount: 0,
           destroyCount: 0,
           playCount: 0,
+          pauseCount: 0,
+          paused: false,
           volume: 1,
           currentTime: 0,
           stop() { this.stopCount += 1; },
           destroy() { this.destroyCount += 1; },
-          play() { this.playCount += 1; },
+          play() { this.playCount += 1; this.paused = false; },
+          pause() { this.pauseCount += 1; this.paused = true; },
           onPlay(cb) { this.playListener = cb; },
           onEnded(cb) { this.endedListener = cb; },
           onError(cb) { this.errorListener = cb; }
@@ -96,8 +99,8 @@ function loadZenModeManager() {
     ZenUI: { updateSensors() {}, closeList() {} },
     ZenPoetry: {
       stopPoetry() {},
+      resolvePresetForLang(page,current,isEn){ return current===102||current===103 ? current : isEn?101:1; },
       stopSpecial() {},
-      resolvePresetForLang: (preset) => preset,
       playPoetry(...args) { poetryCalls.push(args); }
     }
   };
@@ -252,6 +255,28 @@ async function testAudioResumeRealignsWithoutRestartingLyrics() {
   assert.deepEqual(alignments, [4250], 'resuming audio realigns the existing lyric timeline');
 }
 
+function testLanguageRefreshPreservesCurrentAudioTrack() {
+  const runtime=loadZenModeManager();
+  runtime.poetryCalls.length=0;
+  const page={data:{zenMode:true,lang:'en'},__zenPreset:102,__getPoetryMgr:()=>({resetImmediate(){}})};
+  const manager=new runtime.ZenModeManager(page);
+  // The real preset resolver is covered in zen-english-tracks; here verify no audio restart.
+  let stopped=0;manager._stopAudio=()=>stopped++;
+  manager._playAudio=()=>{throw new Error('Language refresh must retain audio context');};
+  manager.refreshLanguage();
+  assert.equal(stopped,0);assert.equal(page.__zenPreset,102);
+}
+
+function testAudioBackgroundFreezeAndResume() {
+  const {ZenAudio,contexts}=loadZenAudio();
+  const audio=new ZenAudio({fileIds:{1:'one'},appCfg:{}});
+  audio.start(1); const ctx=contexts[0]; ctx.currentTime=18.4;
+  audio.suspend(); assert.equal(ctx.pauseCount,1); assert.equal(ctx.paused,true);
+  audio.resume(); assert.equal(ctx.paused,false); assert.equal(ctx.currentTime,18.4);
+  audio.resume(); assert.equal(ctx.playCount,2,'One resume play after initial start');
+  audio.dispose();
+}
+
 function testTrackNameToastIsAnchoredToButtonLeft() {
   const cssFile = path.join(__dirname, '..', 'miniprogram', 'pages', 'gl', 'index.wxss');
   const css = fs.readFileSync(cssFile, 'utf8');
@@ -269,6 +294,8 @@ function testTrackNameToastIsAnchoredToButtonLeft() {
   testModeManagerRegistersOnceAndUnsubscribes();
   await testLyricsWaitForActualAudioPlayback();
   await testAudioResumeRealignsWithoutRestartingLyrics();
+  testLanguageRefreshPreservesCurrentAudioTrack();
+  testAudioBackgroundFreezeAndResume();
   testTrackNameToastIsAnchoredToButtonLeft();
   console.log('zen lifecycle tests passed');
 })().catch((error) => {

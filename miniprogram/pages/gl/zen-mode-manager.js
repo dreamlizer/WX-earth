@@ -187,19 +187,7 @@ export class ZenModeManager {
         }
       } catch(_){ }
 
-      // 显示歌名 Toast（锚定在按钮左侧）
-      const labels = this.page.__presetLabels || {};
-      const label = ZenPoetry.resolvePresetLabel(labels, nextPreset, isEn);
-
-      this.page.setData({
-        zenToastVisible: true,
-        zenToastText: label
-      });
-
-      clearTimeout(this.page._zenToastTimer);
-      this.page._zenToastTimer = this._schedule(() => {
-        this.page.setData({ zenToastVisible: false });
-      }, 3000); // 3 秒后隐藏歌名提示
+      this.page.setData({zenToastVisible:false});
 
       this.switchToPreset(nextPreset);
     } catch(_){ }
@@ -241,12 +229,33 @@ export class ZenModeManager {
   }
 
   _onAudioEnded(){
-    try {
-      const pmgr = this.page?.__getPoetryMgr?.();
-      if (!pmgr) return;
-      if (typeof pmgr.resetImmediate === 'function') { pmgr.resetImmediate(); } else { pmgr.stop(); }
-      try { ZenPoetry.playPoetry(this.page, this.page.__zenPreset || 1, 0); } catch(_){ }
-    } catch(_){ }
+    if (this._disposed || !this.page?.data?.zenMode || this.page.__zenPoetryPaused) return;
+    const preset = Number(this.page.__zenPreset || 1);
+    const audioPreset = ZenAudio.resolveAudioPresetForLang(preset, this.page.data.lang === 'en');
+    this.page.__getPoetryMgr?.()?.resetImmediate?.();
+    this._queuePoetryForAudio(preset, audioPreset);
+    this._playAudio(audioPreset);
+  }
+
+  refreshLanguage(){
+    if (this._disposed || !this.page?.data?.zenMode || this.page.__zenPoetryPaused) return;
+    const preset = ZenPoetry.resolvePresetForLang(this.page, this.page.__zenPreset, this.page.data.lang === 'en');
+    this.page.__zenPreset = preset;
+    this.page.__getPoetryMgr?.()?.resetImmediate?.();
+    ZenPoetry.playPoetry(this.page, preset, 0);
+  }
+
+  suspend(){
+    if (!this.page?.data?.zenMode || this.page.__zenPoetryPaused) return;
+    this.page.__poetryMgr?.stop();
+    this.page.__zenAudioMgr?.suspend();
+  }
+
+  resume(){
+    if (!this.page?.data?.zenMode || this.page.__zenPoetryPaused || !this.page.__zenAudioMgr?._suspended) return;
+    const preset = Number(this.page.__zenPreset || 1);
+    this._queuePoetryForAudio(preset, ZenAudio.resolveAudioPresetForLang(preset, this.page.data.lang === 'en'));
+    this.page.__zenAudioMgr.resume();
   }
 
   // —— 音频与诗句控制 ——

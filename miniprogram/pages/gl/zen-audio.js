@@ -169,6 +169,21 @@ export class ZenAudio {
     return () => this._listeners.play.delete(cb);
   }
 
+  suspend() {
+    if (this._suspended) return;
+    this._suspended = true;
+    this._resumeAfterSuspend = !!this.ctx && !this.ctx.paused;
+    try { this.ctx?.pause(); } catch (_) { }
+  }
+
+  resume() {
+    if (!this._suspended) return;
+    this._suspended = false;
+    const resume = this._resumeAfterSuspend;
+    this._resumeAfterSuspend = false;
+    try { if (resume) this.ctx?.play(); } catch (_) { }
+  }
+
   dispose() {
     this._disposed = true;
     this.stop();

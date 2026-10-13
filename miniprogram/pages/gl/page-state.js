@@ -3,6 +3,8 @@ import { APP_CFG } from './config.js';
 export const getInitialData = () => ({
   currentTime: '--:--:--',
   hoverText: '',
+  ambientName: '',
+  ambientDescription: '',
   countryPanelTop: 0,
   // PC 端滚轮代理：scroll-view 的滚动位置维持为 0，避免视觉滚动
   scrollTop: 0,
@@ -95,6 +97,15 @@ export const getInitialData = () => ({
   poetryAFirst: false,
   poetryBFirst: false,
   poetryHorizontal: false,
+  zenOpeningEnabled: false,
+  zenOpeningTopPx: 170,
+  zenOpeningTitleOpacity: 0,
+  zenOpeningStarOpacity: 0,
+  zenOpeningArtistOpacity: 0,
+  zenOpeningFadeMs: 0,
+  zenChineseBottomPx: 22,
+  zenChineseA: { text: '', visible: false, y: 20, moveMs: 0 },
+  zenChineseB: { text: '', visible: false, y: 20, moveMs: 0 },
   // 诗句残影层：由 _startPoetry 按配置生成，按偏移/透明度渲染
   // 移除拖影层：保留纯文字项以降低资源消耗
   // 云端音频 FileID（只走云端，不再回退本地）

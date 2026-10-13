@@ -2,6 +2,7 @@
 import { APP_CFG } from './config.js';
 import { createMilkyWay, createStarDustLayer } from './moon-voyage-visuals.js';
 import { fixTexture } from './asset-manager.js';
+import { PLANET_PARAMS } from './planet-materials.js';
 
 export const rebuildMilkyWay = (THREE, scene, mgrState) => {
   if (!THREE || !scene) return;
@@ -84,32 +85,41 @@ export const createMoon = (THREE, scene, mgrState) => {
   if (mgrState.moonMesh || !mgrState.texPath) return;
 
   const lifecycleToken = mgrState._lifecycleToken;
-  const markTextureReady = () => {
-    if (typeof mgrState._isLifecycleCurrent === 'function' &&
-        !mgrState._isLifecycleCurrent(lifecycleToken)) return;
-    mgrState._moonTexReady = true;
-  };
+  const current = () => !mgrState._isLifecycleCurrent || mgrState._isLifecycleCurrent(lifecycleToken);
   const geometry = new THREE.SphereGeometry(1, 64, 64);
   const loader = new THREE.TextureLoader();
-  
+  let remaining = mgrState.normPath ? 2 : 1;
   mgrState._moonTexReady = false;
-  const map = loader.load(
-    mgrState.texPath,
-    markTextureReady,
-    null,
-    markTextureReady
-  );
-  
+  const loaded = texture => {
+    if (!current()) { texture?.dispose?.(); return; }
+    if (--remaining === 0) mgrState._moonTexReady = true;
+  };
+  const failed = () => {
+    if (!current()) return;
+    console.warn('[Moon] Local visual texture failed');
+    if (--remaining === 0) mgrState._moonTexReady = true;
+  };
+  const map = loader.load(mgrState.texPath, loaded, null, failed);
   map.encoding = THREE.sRGBEncoding;
-  // PC 微信客户端忽略 flipY，会让月球贴图上下颠倒；与地球同款纹理矩阵翻转修正（非 PC 下为 no-op）
-  try { fixTexture(map, !!mgrState._isPCClient); } catch (_) {}
-
+  map.minFilter = THREE.LinearFilter; map.generateMipmaps = false;
+  fixTexture(map, !!mgrState._isPCClient);
+  const normalMap = mgrState.normPath ? loader.load(mgrState.normPath, loaded, null, failed) : null;
+  if (normalMap) {
+    normalMap.encoding = THREE.LinearEncoding;
+    normalMap.minFilter = THREE.LinearFilter; normalMap.generateMipmaps = false;
+    fixTexture(normalMap, !!mgrState._isPCClient);
+  }
   const material = new THREE.MeshStandardMaterial({
-    map: map,
-    roughness: 0.9,
-    metalness: 0.0,
-    color: 0xdddddd
+    map, normalMap,
+    normalScale: new THREE.Vector2(PLANET_PARAMS.moonNormalScale, PLANET_PARAMS.moonNormalScale),
+    roughness: PLANET_PARAMS.moonRoughness, metalness: 0, color: 0xeeeeee
   });
+  // r108 renderer currently uses LinearEncoding. Keep this correction local to
+  // the Moon so existing spacecraft, stars and Saturn retain their appearance.
+  material.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <encodings_fragment>',
+      'gl_FragColor = LinearTosRGB( gl_FragColor );');
+  };
   material.transparent = true;
   material.opacity = 0.0;
 

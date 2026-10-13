@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const cp = require('node:child_process');
 const {createScopedThreejs} = require('../miniprogram/node_modules/threejs-miniprogram');
 function load(source) {
- const box={module:{exports:{}},console,fixTexture(){}};
+ const box={module:{exports:{}},console,fixTexture(){},ensureSceneArtPackage:()=>Promise.resolve()};
  vm.runInNewContext(source.replace(/^import .*;$/gm,'').replace('export class','class')+'\nmodule.exports=MoonOrbitSequence',box);
  return box.module.exports;
 }
@@ -21,12 +21,13 @@ function setup(Type,aspect){
  return {scene,camera,seq,moon,light};
 }
 function tick(s,t,enabled){return s.seq.tick({t,node3Time:113,camera:s.camera,moonWorld:s.moon.position,globeGroup:null,orbitDurationSec:130,orbitEndDeg:630,moonRadius:.9,cameraMinY:5.4,cameraLiftEndDeg:70,lookBlendDeg:55,enableSun:false,farEarth:enabled,sunGlare:enabled,maxAmbient:.07,minDir:1.1,sunLightDist:28});}
+(async()=>{
 for(const aspect of [.45,.5625,1.78]){
  const a=setup(Old,aspect),b=setup(New,aspect);let firstVisible=0; const sightings=[];
  let fixed,previous;
  for(let t=113;t<=265;t+=.1){
   tick(a,t,false);tick(b,t,true);
-  if(t<113.2){images.splice(0).forEach(i=>i.dispatchEvent({type:'load'}));}
+  if(t<113.2){await Promise.resolve();images.splice(0).forEach(i=>i.dispatchEvent({type:'load'}));}
   if(t<=243){assert.ok(a.camera.position.distanceTo(b.camera.position)<1e-10,'original orbit position must remain exact');assert.ok(1-Math.abs(a.camera.quaternion.dot(b.camera.quaternion))<1e-10,'original orientation stays exact throughout orbit');}
   assert.ok(1-Math.abs(a.camera.quaternion.dot(b.camera.quaternion))<1e-10, 'push-in must not rotate the camera either');
   assert.ok(a.light.position.equals(b.light.position),'restore exact original solar position every frame');
@@ -74,7 +75,7 @@ for(const aspect of [.45,.5625,1.78]){
  let cloudDisposed=0;cloud.material.alphaMap.addEventListener('dispose',()=>cloudDisposed++);
  let disposed=0;earth.material.map.addEventListener('dispose',()=>disposed++);b.seq.dispose();b.seq.dispose();assert.equal(disposed,1);assert.equal(cloudDisposed,1);assert.equal(b.scene.getObjectByName('MOON_VOYAGE_FAR_EARTH'),undefined);assert.equal(b.scene.getObjectByName('MOON_VOYAGE_SUN_GLARE'),undefined);
 }
-const pending=setup(New,.5);tick(pending,113,true);const pendingMesh=pending.seq._farEarth;const pendingCloud=pending.seq._farEarthCloud;pending.seq.reset();images.splice(0).forEach(i=>i.dispatchEvent({type:'load'}));assert.equal(pendingMesh.visible,false,'late image cannot revive disposed Earth');assert.equal(pendingCloud.visible,false,'late cloud load cannot revive disposed clouds');
+const pending=setup(New,.5);tick(pending,113,true);const pendingMesh=pending.seq._farEarth;const pendingCloud=pending.seq._farEarthCloud;pending.seq.reset();await Promise.resolve();assert.equal(images.length,0,'reset during package loading must not allocate textures');assert.equal(pendingMesh.visible,false,'late image cannot revive disposed Earth');assert.equal(pendingCloud.visible,false,'late cloud load cannot revive disposed clouds');
 console.log('original Earth integration: exact original orbit and lighting restored, early visibility, fixed Earth, final framing, disposal PASS');
 
 const blockedGlare=setup(New,.5625);tick(blockedGlare,113,true);
@@ -96,3 +97,4 @@ for(const degrees of [180,540]){
  }
 }
 fadeScene.seq.dispose();
+})().catch(error=>{console.error(error);process.exitCode=1;});

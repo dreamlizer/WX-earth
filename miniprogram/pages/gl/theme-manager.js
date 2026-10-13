@@ -1,4 +1,5 @@
 import { createDayNightMaterial } from './shaders/dayNightMix.glsl.js';
+import { applyLandNormal } from './earth-land-normal.js';
 
 // 辅助函数：安全更新 Uniform
 const setVal = (u, key, val) => { if (u[key]) u[key].value = val; };
@@ -24,6 +25,8 @@ export function applyTheme(opts) {
     
     // 判定是否正在使用 Zen Shader 材质（即使 zenActive=false，如果在退出动画中，材质可能仍是 Shader）
     const isUsingShader = __dayNightMat && earthMesh?.material === __dayNightMat;
+    applyLandNormal(THREE, earthMesh?.material, earthMesh?.userData?.landNormal,
+      !zenActive && !isUsingShader && currentTheme !== 'night');
 
     if (zenActive || isUsingShader) {
       // Zen 模式下(或退出动画中)，如果已经是 ShaderMaterial，尝试更新 Shader Uniforms
@@ -225,6 +228,7 @@ export function applyZenMaterial(opts) {
   
   try {
     res.earthOldMat = earthMesh.material;
+    applyLandNormal(THREE, earthMesh.material, earthMesh.userData.landNormal, false);
     const APP_CFG = LIGHT_CFG;
     let __dayNightMat = null;
 

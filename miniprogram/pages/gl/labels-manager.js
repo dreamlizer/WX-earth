@@ -82,30 +82,9 @@ export class LabelsManager {
       }
     } catch(_){ }
 
-    // 若处于禅定模式：切换对应语言的诗句预设组（中文1，英文4）
-    try {
-      if (this.page?.data?.zenMode) {
-        let preset = (next === 'en') ? 101 : 1;
-        if (next === 'en') {
-          try {
-            const map = this.page?.__poetryPresets || {};
-            const keys = Object.keys(map).map(k=>Number(k)).filter(n=>n>=101).sort((a,b)=>a-b);
-            if (keys.length) preset = keys[0];
-          } catch(_){ }
-        }
-        this.page.__zenPreset = preset;
-        // 视觉平滑：淡出当前，再在1秒后切入新预设（与切换逻辑一致）
-        try { this.page?._stopZenAudio?.(2000); } catch(_){ }
-        try { this.page?.setData?.({ 'poetryA.fadeMs': 2000, 'poetryB.fadeMs': 2000, 'poetryA.visible': false, 'poetryB.visible': false }); } catch(_){ }
-        setTimeout(() => {
-          // 英文仍播放 1–3 三首：将 4–6 映射到 1–3
-          const audioPreset = (next === 'en') ? Math.max(1, preset - 100) : preset;
-        try { this.page?._startZenAudio?.(audioPreset); } catch(_){ }
-        try { this.page?.__getPoetryMgr?.().resetImmediate?.(); } catch(_){ }
-        try { this.page?.__startPoetryViaMgr?.(preset, 0); } catch(_){ }
-        }, 1000);
-      }
-    } catch(_){}
+    // Language changes keep the current audio and its exact position.
+    if (this.page?.data?.zenMode) this.page.__getZenModeMgr?.()?.refreshLanguage?.();
+
   }
 
   initOnce(lang){

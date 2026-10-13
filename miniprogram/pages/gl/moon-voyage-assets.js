@@ -1,6 +1,7 @@
 
 import { APP_CFG } from './config.js';
 import { createMoon } from './moon-voyage-scene-setup.js';
+import { ensureMoonVisualPackage } from './planet-visual-loader.js';
 
 const mergeCompanionRobotCfg = (baseCfg, tuneCfg) => {
   const b = baseCfg || {};
@@ -114,14 +115,14 @@ export const preloadAssets = async (mgrState, ASSETS) => {
   const companionCfg = mergeCompanionRobotCfg(companionBase, companionTune);
   const lifecycleToken = mgrState._lifecycleToken;
   const preloadPromise = Promise.all([
-    downloadFile(ASSETS.TEXTURE, mgrState, lifecycleToken),
+    ensureMoonVisualPackage().then(() => '/moon-look-assets/moon-color.jpg'),
     downloadFile(ASSETS.AUDIO, mgrState, lifecycleToken),
     Promise.resolve().then(() => mgrState._companionFx?.preload?.(companionCfg)).catch(() => null)
   ]).then(([texPath, audioPath]) => {
     if (typeof mgrState._isLifecycleCurrent === 'function' &&
         !mgrState._isLifecycleCurrent(lifecycleToken)) return false;
     mgrState.texPath = texPath;
-    mgrState.normPath = null;
+    mgrState.normPath = '/moon-look-assets/moon-normal.jpg';
     mgrState.audioPath = audioPath;
     console.log('[Moon] Assets downloaded');
     
@@ -162,6 +163,7 @@ export const refreshAssets = async (mgrState, opts = {}, ASSETS) => {
       try {
         const m = mgrState.moonMesh.material;
         if (m && m.map) { try { m.map.dispose?.(); } catch (_) {} }
+        try { m?.normalMap?.dispose?.(); } catch (_) {}
         try { m?.dispose?.(); } catch (_) {}
       } catch (_) {}
     }
