@@ -4,8 +4,8 @@ import SONG_TRANSLATIONS from '../../assets/data/zen-song-translations.js';
 const lyricKey = text => String(text || '').toLowerCase().replace(/[^a-z0-9]/g,'');
 // The original PoetryManager owns every cue. This helper only animates its translation.
 export class ZenChineseLyrics {
-  constructor({lines, translations, getLang, setData, onStop, preset}) {
-    Object.assign(this,{lines,getLang,setData,onStop});
+  constructor({lines, translations, getLang, setData, onStop, onEnglishShow, preset}) {
+    Object.assign(this,{lines,getLang,setData,onStop,onEnglishShow});
     this.songTranslations = SONG_TRANSLATIONS[preset] || {};
     this.byTime = new Map((translations || []).filter(l => Number.isFinite(Number(l?.['start-time'])))
       .map(l => [Number(l['start-time']),String(l.text || '')]));
@@ -23,6 +23,7 @@ export class ZenChineseLyrics {
     return {[slot]:{text,visible:false,y:20,moveMs:0}};
   }
   show(index,useA) {
+    this.onEnglishShow?.(index);
     clearTimeout(this.pending);
     this.pending = null;
     const next = this.prepared;

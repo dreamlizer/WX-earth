@@ -103,6 +103,11 @@ export async function playPoetry(page, preset, startIdx, opts) {
         getAudio: () => page.__zenAudioMgr?.audio,firstLyricMs,
         topPx: Math.round(viewport.windowHeight*.23),preset:p});
       page.__zenSongOpening = opening;
+      // Keep the original cue data; environment light uses the English visibility event.
+      opening.visualLines = lines;
+      opening.visualLeadInMs = Number(APP_CFG.poetry.leadInMs || 0);
+      opening.visualResumeAt = Number(opening.getAudio()?.currentTime || 0);
+      opening.visualCueTimes = new Map();
       // Keep original body indices and timestamps. Only these two metadata rows
       // are presented by the new opening instead of drifting with the lyrics.
       useMap = {...useMap,[p]:lines.map((line,index)=>index<2?{...line,text:''}:line)};
@@ -111,6 +116,11 @@ export async function playPoetry(page, preset, startIdx, opts) {
       preset:p,
       lines: useMap[p] || [], translations: presetsMap[p - 100] || [],
       getLang: () => page.data?.lang || 'zh',
+      onEnglishShow: index => {
+        if (opening && !opening.stopped && !opening.visualCueTimes.has(index)) {
+          opening.visualCueTimes.set(index, Number(opening.getAudio()?.currentTime || 0));
+        }
+      },
       setData: patch => page.setData(patch), onStop: () => opening?.stop()
     }) : null;
     page?.__getPoetryMgr?.().start(p, useMap, Number(startIdx || 0), { ...(opts || {}), subtitle, metadataPresented:!!opening });

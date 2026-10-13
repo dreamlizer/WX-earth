@@ -87,3 +87,226 @@ export class ZenOpeningArt {
     this.textures.forEach(t=>t.dispose());this.textures.clear();
   }
 }
+
+// Out of Darkness environment; shares the continuous audio clock above.
+
+const darknessClamp = v => Math.max(0, Math.min(1, v));
+const darknessEase = v => { v = darknessClamp(v); return v*v*(3-2*v); };
+const darknessLyricKey = text => String(text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const MOTIFS = {
+  listentomyvoice: 'call', pullingyououtofdarkness: 'darkness',
+  stillidreamofyourspiritleadingyoubackhome: 'home',
+  thelightinyoureyesisanangeluphigh: 'light', withthewindyougo: 'wind'
+};
+
+// Derived from the loaded song, never another song's fixed seconds.
+export function buildDarknessTimeline(lines, leadInMs = 1200) {
+  const body = (lines || []).map((line,index) => ({ index, motif:MOTIFS[darknessLyricKey(line.text)],
+    at:Math.max(0,(Number(line['start-time'])-leadInMs)/1000),
+    end:(Number(line['start-time'])+Number(line.duration || 0))/1000
+  })).filter(line => line.index >= 2 && Number.isFinite(line.at));
+  const events = body.filter(line => line.motif);
+  return { events, end:Math.max(0,...body.map(line => line.end)),
+    valid:events.some(e => e.motif === 'call') && events.some(e => e.motif === 'darkness') };
+}
+
+export function darknessVisualFrame(time, timeline, cueTimes, resumeAt = 0) {
+  // Future lyric events stay dormant until PoetryManager makes the English visible.
+  const events = timeline.events.map(e => ({...e, at:cueTimes?.has(e.index)
+    ? cueTimes.get(e.index) : (!cueTimes || e.at < resumeAt ? e.at : Infinity)}));
+  const first = motif => events.find(e => e.motif === motif)?.at ?? Infinity;
+  const call = darknessEase((time-first('call'))/5);
+  const release = darknessEase((time-first('darkness'))/9);
+  const home = darknessEase((time-first('home'))/10);
+  const light = darknessEase((time-first('light'))/10);
+  const intro = darknessEase((time-1.2)/6);
+  const tail = darknessEase((time-(timeline.end+1))/10);
+  let pulse = 0;
+  for (const e of events) {
+    if (e.motif !== 'darkness' && e.motif !== 'light') continue;
+    const age = time-e.at;
+    if (age >= 0 && age <= 14) pulse = Math.max(pulse,Math.sin(Math.PI*age/14));
+  }
+  const settle = 1-tail*.32;
+  return {
+    time, surface:(.075*intro+.075*call+.25*release+.16*home+.36*light)*settle,
+    dayGain:.32+.68*light, nightGain:.75+.25*home,
+    rim:(.016*intro+.045*call+.13*release+.12*home+.22*light+.10*pulse)*settle,
+    warmth:.08*home+.26*light, stars:(.018*intro+.055*call+.11*release+.08*home+.10*light)*settle,
+    arc:(.60*release+.24*pulse)*(1-tail*.75),
+    rotationSpeed:2.1+.3*light,
+    meteors:events.filter(e => ['call','wind','light'].includes(e.motif)).slice(0,3)
+      .map(e => ({index:e.index,progress:(time-e.at)/3.6})).filter(e => e.progress >= 0 && e.progress <= 1)
+  };
+}
+
+const sparkVertex = `
+  attribute float strength; attribute float pointSize;
+  uniform float pixelRatio; uniform float gain;
+  varying float vStrength;
+  void main(){ vStrength=strength*gain;
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+    gl_PointSize=pointSize*pixelRatio; }
+`;
+const sparkFragment = `
+  precision mediump float; varying float vStrength;
+  void main(){vec2 p=gl_PointCoord-.5;float r=length(p);
+    float core=exp(-r*r*90.0), glow=exp(-r*r*19.0)*.28;
+    float rays=exp(-abs(p.x)*90.0-abs(p.y)*9.0)+exp(-abs(p.y)*90.0-abs(p.x)*9.0);
+    float a=(core+glow+rays*.13)*vStrength*(1.0-smoothstep(.32,.5,r));
+    gl_FragColor=vec4(vec3(.56,.78,1.0),a); }
+`;
+
+export class DarknessVisual {
+  constructor({THREE,scene,camera,globeGroup,starCtl,renderer}) {
+    Object.assign(this,{THREE,scene,camera,globeGroup,starCtl,renderer});
+    this.clock = new ZenVisualClock();
+    this.group = new THREE.Group(); this.group.name = 'ZEN_DARKNESS_LIGHT';
+    this.group.visible = false; scene.add(this.group);
+    this.center = new THREE.Vector3(); this.saved = new Map(); this.frame = null;
+    this.build();
+  }
+  build() {
+    const T=this.THREE;
+    this.halo = new T.Mesh(new T.SphereBufferGeometry(1.022,64,40),new T.ShaderMaterial({
+      uniforms:{gain:{value:0},warmth:{value:0}},
+      vertexShader:`varying vec3 vNormal; varying vec3 vEye;
+        void main(){vec4 p=modelViewMatrix*vec4(position,1.0);vNormal=normalize(normalMatrix*normal);
+        vEye=normalize(-p.xyz);gl_Position=projectionMatrix*p;}`,
+      fragmentShader:`precision mediump float; varying vec3 vNormal; varying vec3 vEye;
+        uniform float gain;uniform float warmth;
+        void main(){float edge=pow(1.0-abs(dot(normalize(vNormal),normalize(vEye))),4.5);
+        float side=smoothstep(-.7,.75,vNormal.x);
+        vec3 c=mix(vec3(.18,.48,.85),vec3(.85,.72,.53),warmth);
+        gl_FragColor=vec4(c,edge*gain*(.22+.78*side));}`,
+      transparent:true,depthTest:true,depthWrite:false,blending:T.AdditiveBlending
+    }));
+    this.group.add(this.halo);
+    const particles = count => {
+      const g=new T.BufferGeometry();
+      g.addAttribute('position',new T.Float32BufferAttribute(new Float32Array(count*3),3));
+      g.addAttribute('strength',new T.Float32BufferAttribute(new Float32Array(count),1));
+      g.addAttribute('pointSize',new T.Float32BufferAttribute(new Float32Array(count),1));
+      const m=new T.ShaderMaterial({vertexShader:sparkVertex,fragmentShader:sparkFragment,
+        uniforms:{gain:{value:0},pixelRatio:{value:this.renderer.getPixelRatio()}},
+        transparent:true,depthTest:true,depthWrite:false,blending:T.AdditiveBlending});
+      const p=new T.Points(g,m);p.frustumCulled=false;return p;
+    };
+    this.arc=particles(84);this.group.add(this.arc);
+    this.meteor=particles(28);this.meteor.name='ZEN_DARKNESS_METEOR';
+    this.meteor.visible=false;this.scene.add(this.meteor);
+  }
+  prepare(opening, enabled, paused, now) {
+    if (!enabled) { this.reset();return null; }
+    if (paused && this.frame) return {...this.frame,rotationSpeed:0};
+    // Selecting the song precedes its audio-ready subtitle controller. Hold black
+    // during this short loading window instead of flashing the ordinary globe.
+    if (!opening || opening.preset !== 103) {
+      this.frame=darknessVisualFrame(0,{events:[],end:Infinity},new Map());
+      return this.frame;
+    }
+    if (opening.stopped) {this.reset();return null;}
+    if (this.opening !== opening) {
+      this.opening=opening;this.timeline=buildDarknessTimeline(opening.visualLines,opening.visualLeadInMs);
+      this.clock.reset();
+    }
+    if (!this.timeline.valid) {this.reset();return null;}
+    const audio=opening.getAudio();
+    const time=this.clock.read(audio,now);
+    this.frame=darknessVisualFrame(time,this.timeline,opening.visualCueTimes,opening.visualResumeAt);
+    if (audio?.paused) return {...this.frame,rotationSpeed:0};
+    return this.frame;
+  }
+  save(object,property) {
+    if (!object) return;
+    let properties=this.saved.get(object);
+    if (!properties) {properties={};this.saved.set(object,properties);}
+    if (!(property in properties)) properties[property]=object[property];
+  }
+  apply(material,cloudMesh) {
+    const f=this.frame;if (!f) return;
+    const u=material?.uniforms;
+    if (u?.uSongSurfaceGain) {
+      u.uSongSurfaceGain.value=f.surface;u.uSongDayGain.value=f.dayGain;
+      u.uSongNightGain.value=f.nightGain;u.uSongRim.value=f.rim;u.uSongWarmth.value=f.warmth;
+    } else if (material?.color) {
+      // Shader fallback still supports the dark-to-light curve without touching other themes.
+      this.save(material,'opacity');this.save(material,'transparent');
+      material.transparent=true;material.opacity=f.surface;
+    }
+    if (cloudMesh?.material) {
+      this.save(cloudMesh.material,'opacity');
+      cloudMesh.material.opacity=this.saved.get(cloudMesh.material).opacity*f.surface;
+    }
+    // Keep map outlines from floating brightly over an almost invisible globe.
+    this.globeGroup.traverse(o=>{
+      if (!o.material) return;
+      // Country/city text sprites would remain bright against the dark opening.
+      if (o.renderOrder === 999 && typeof o.userData?.baseScaleX === 'number') {
+        this.save(o.material,'opacity');o.material.opacity=0;return;
+      }
+      const ro=o.material.userData?.ro;
+      if (![20,28,40].includes(ro)) return;
+      this.save(o.material,'opacity');this.save(o.material,'transparent');
+      o.material.transparent=true;
+      o.material.opacity=this.saved.get(o.material).opacity*f.surface*(ro===28?.16:.55);
+    });
+    const su=this.starCtl?.mesh?.material?.uniforms;
+    for (const name of ['uOpacity','uBreathSpeed','uBreathStrength','time']) if (su?.[name]) this.save(su[name],'value');
+    if (su?.uOpacity) {
+      this.save(this.starCtl.mesh,'visible');
+      su.uOpacity.value=f.stars;this.starCtl.mesh.visible=f.stars>0;
+    }
+    if (su?.uBreathSpeed) su.uBreathSpeed.value=.22;
+    if (su?.uBreathStrength) su.uBreathStrength.value=.18;
+    if (su?.time) su.time.value=f.time;
+    this.material=material;
+    this.globeGroup.getWorldPosition(this.center);
+    this.group.position.copy(this.center);this.group.quaternion.copy(this.camera.quaternion);
+    this.group.visible=true;
+    this.halo.material.uniforms.gain.value=f.rim;
+    this.halo.material.uniforms.warmth.value=f.warmth;
+    const g=this.arc.geometry,p=g.attributes.position,s=g.attributes.strength,z=g.attributes.pointSize;
+    const angle=-f.time*.095+1.2;
+    for(let i=0;i<p.count;i++) {
+      const age=i/(p.count-1),a=angle+age*1.13,r=1.09;
+      p.setXYZ(i,Math.cos(a)*r,Math.sin(a)*r*.64,Math.sin(a)*r*.77);
+      s.setX(i,Math.pow(1-age,1.5));z.setX(i,i===0?13:3.8*(1-age)+1.2);
+    }
+    p.needsUpdate=s.needsUpdate=z.needsUpdate=true;
+    this.arc.material.uniforms.gain.value=f.arc*.7;
+    this.arc.material.uniforms.pixelRatio.value=this.renderer.getPixelRatio();
+    this.updateMeteor(f);
+  }
+  updateMeteor(f) {
+    const e=f.meteors[0];this.meteor.visible=!!e;if(!e)return;
+    const g=this.meteor.geometry,p=g.attributes.position,s=g.attributes.strength,z=g.attributes.pointSize;
+    const depth=12,h=2*depth*Math.tan(this.camera.fov*Math.PI/360),w=h*this.camera.aspect;
+    const side=e.index%2?1:-1,progress=e.progress;
+    this.meteor.quaternion.copy(this.camera.quaternion);
+    this.meteor.position.set(0,0,-depth).applyQuaternion(this.camera.quaternion).add(this.camera.position);
+    for(let i=0;i<p.count;i++) {
+      const age=i/(p.count-1),q=progress-age*.10;
+      p.setXYZ(i,side*(-.48+q*.72)*w,(.42-q*.13)*h,0);
+      s.setX(i,Math.pow(1-age,1.8));z.setX(i,i===0?11:3*(1-age)+1);
+    }
+    p.needsUpdate=s.needsUpdate=z.needsUpdate=true;
+    this.meteor.material.uniforms.gain.value=.6*Math.sin(Math.PI*progress);
+    this.meteor.material.uniforms.pixelRatio.value=this.renderer.getPixelRatio();
+  }
+  reset() {
+    if (this.material?.uniforms?.uSongSurfaceGain) {
+      const u=this.material.uniforms;
+      u.uSongSurfaceGain.value=u.uSongDayGain.value=u.uSongNightGain.value=1;
+      u.uSongRim.value=u.uSongWarmth.value=0;
+    }
+    for(const [object,properties] of this.saved) Object.assign(object,properties);
+    this.saved.clear();this.group.visible=this.meteor.visible=false;
+    this.frame=null;this.opening=null;this.material=null;this.clock.reset();
+  }
+  dispose() {
+    this.reset();
+    for(const o of [this.halo,this.arc,this.meteor]) {o.geometry.dispose();o.material.dispose();}
+    this.scene.remove(this.group);this.scene.remove(this.meteor);
+  }
+}

@@ -23,6 +23,7 @@ export function createSceneUpdater(ctx) {
     tweener, highlight, page, flyMgr, starCtl, tzMgr,
     lighting, touch, globeGroup, camera, baseDist, clampZoom, updateCamDist,
     APP_CFG, LIGHT_CFG, setZenMode,
+    songVisual, isSongVisualEnabled,
     THREE, renderer, scene, width, height,
     isMoonVoyageActive // New dependency
   } = ctx;
@@ -60,6 +61,7 @@ export function createSceneUpdater(ctx) {
     const moonUiActive = !!page?.data?.moonVoyageActive;
     const moonActive = moonUiActive || (isMoonVoyageActive && isMoonVoyageActive());
     if (moonActive) {
+       songVisual?.reset();
        try { starCtl?.tick?.(now, dtSec); } catch(_){ }
        // Still render the scene
        let composer = refs.composer();
@@ -108,6 +110,10 @@ export function createSceneUpdater(ctx) {
     // Actually main.js passes zenActive via setZenMode closure, but we can read it from zenState
     const zenActive = zenState.active; 
     lighting.updateDirLight(zenActive);
+    const songFrame = songVisual?.prepare(page.__zenSongOpening,
+      !!isSongVisualEnabled?.(),!!page.__zenPoetryPaused,now);
+    const rotationConfig = songFrame ? {...LIGHT_CFG,zen:{...LIGHT_CFG.zen,
+      autoRotate:{...LIGHT_CFG.zen.autoRotate,degPerSec:songFrame.rotationSpeed}}} : LIGHT_CFG;
 
     // 6. Rotation & Inertia
     if (!touch.isDragging && !touch.pinch) {
@@ -115,7 +121,7 @@ export function createSceneUpdater(ctx) {
       const mockRender = { __lastInertiaLog: debugState.__lastInertiaLog };
       
       const rot = advanceRotationFrame({
-        touch, dtSec, now, LIGHT_CFG, zenActive, globeGroup, camera, 
+        touch, dtSec, now, LIGHT_CFG:rotationConfig, zenActive, globeGroup, camera,
         baseDist, clampZoom, updateCamDist, flyMgr, INTERACTION_DEBUG_LOG,
         render: mockRender, // Pass mock object
         setZenMode, 
@@ -161,6 +167,7 @@ export function createSceneUpdater(ctx) {
             __shaderSyncNext = now + 33; 
         } 
     } catch(_){}
+    songVisual?.apply(refs.themeState().get()?.dayNightMat,refs.cloudMesh());
     
     try { refs.poetry3d()?.update?.(now); } catch(_){}
     try { highlight.updatePerFrame(now); } catch(_){ }

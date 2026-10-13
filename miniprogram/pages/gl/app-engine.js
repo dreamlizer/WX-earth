@@ -1,4 +1,4 @@
-import { ZenOpeningArt } from './zen-opening-art.js';
+import { ZenOpeningArt, DarknessVisual } from './zen-opening-art.js';
 
 // app-engine.js —— 核心引擎 (AppEngine)
 // 职责：负责 3D 环境初始化、Manager 组装、状态管理及核心业务逻辑
@@ -97,6 +97,7 @@ export class AppEngine {
     this.poetry3d = null;
     this.themeController = null;
     this.starCtl = null;
+    this.zenSongVisual = null;
     this.loop = null;
     this.sceneCtx = null;
 
@@ -154,6 +155,7 @@ export class AppEngine {
     this.poetry3d = null;
     this.themeController = null;
     this.starCtl = null;
+    this.zenSongVisual = null;
     this.loop = null;
     this.sceneCtx = null;
     this.moonMgr = null;
@@ -465,12 +467,17 @@ export class AppEngine {
 
     // 13. 渲染循环
     this.loop = createRenderLoop(() => canvas);
+    this.zenSongVisual = new DarknessVisual({ THREE, scene, camera, globeGroup, starCtl:this.starCtl, renderer });
     
     const sceneUpdater = createSceneUpdater({
       perfMonitor, runtimeDiagnostics, textureHealthChecker,
       tweener, highlight, page, flyMgr, starCtl: this.starCtl, tzMgr,
       lighting, touch: this.touch, globeGroup, camera, baseDist, clampZoom, updateCamDist,
       APP_CFG, LIGHT_CFG, setZenMode,
+      songVisual:this.zenSongVisual,
+      isSongVisualEnabled: () => page.data.zenMode && zenState.active && page.__zenPreset === 103 &&
+        !page.data.specialVisible && !page.data.moonVoyageActive && !this.moonMgr?._entering &&
+        !this.moonMgr?._exiting && !this.isMoonVoyageActive() && !this.saturnPreview?.active,
       THREE, renderer, scene, width, height,
       refs: { ...sceneCtx.refs, ...sceneCtx.setters },
       getState: () => this.state,
@@ -492,7 +499,7 @@ export class AppEngine {
         saturn: this.saturnPreview?.active,
         flying: flyMgr?.isFlying?.(), transitioning: zenState.anim || zenState.brake || zenState.delayEnter
       }));
-      if (this.saturnPreview?.active) this.saturnPreview.render();
+      if (this.saturnPreview?.active) { this.zenSongVisual.reset(); this.saturnPreview.render(); }
       else sceneUpdater.update();
     };
     this.loop.start(render);
@@ -551,6 +558,7 @@ export class AppEngine {
     try { this.ambientEncounter?.dispose(); } catch(_){ }
     try { this.zenEncounter?.dispose(); } catch(_){ }
     try { this.zenOpeningArt?.dispose(); } catch(_){ }
+    try { this.zenSongVisual?.dispose(); } catch(_){ }
     try { this.saturnPreview?.dispose(); } catch(_){ }
     try { this.moonMgr?.dispose?.(); } catch(_){ }
     try { this.poetry3d?.stop?.(); this.poetry3d?.setEnabled?.(false); } catch(_){ }

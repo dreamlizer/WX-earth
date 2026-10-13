@@ -1,0 +1,1404 @@
+[
+  {
+    "target": 0.6,
+    "preset": 103,
+    "zen": true,
+    "audio": 0.730666666666667,
+    "paused": false,
+    "cues": [],
+    "expected": [
+      {
+        "i": 0,
+        "start": 6000,
+        "duration": 10000
+      },
+      {
+        "i": 1,
+        "start": 19000,
+        "duration": 10000
+      },
+      {
+        "i": 2,
+        "start": 34000,
+        "duration": 5000
+      },
+      {
+        "i": 3,
+        "start": 39000,
+        "duration": 3000
+      },
+      {
+        "i": 4,
+        "start": 42000,
+        "duration": 6000
+      },
+      {
+        "i": 5,
+        "start": 48000,
+        "duration": 6000
+      },
+      {
+        "i": 6,
+        "start": 54000,
+        "duration": 10000
+      },
+      {
+        "i": 7,
+        "start": 66000,
+        "duration": 5000
+      },
+      {
+        "i": 8,
+        "start": 71000,
+        "duration": 9000
+      },
+      {
+        "i": 9,
+        "start": 80000,
+        "duration": 7000
+      },
+      {
+        "i": 10,
+        "start": 87000,
+        "duration": 10000
+      },
+      {
+        "i": 11,
+        "start": 105000,
+        "duration": 7000
+      },
+      {
+        "i": 12,
+        "start": 112000,
+        "duration": 8000
+      },
+      {
+        "i": 13,
+        "start": 120000,
+        "duration": 6000
+      },
+      {
+        "i": 14,
+        "start": 126000,
+        "duration": 10000
+      },
+      {
+        "i": 15,
+        "start": 140000,
+        "duration": 5000
+      },
+      {
+        "i": 16,
+        "start": 145000,
+        "duration": 4000
+      },
+      {
+        "i": 17,
+        "start": 149000,
+        "duration": 5000
+      },
+      {
+        "i": 18,
+        "start": 154000,
+        "duration": 7000
+      },
+      {
+        "i": 19,
+        "start": 161000,
+        "duration": 10000
+      },
+      {
+        "i": 20,
+        "start": 172000,
+        "duration": 7000
+      },
+      {
+        "i": 21,
+        "start": 179000,
+        "duration": 5000
+      }
+    ],
+    "surface": 0,
+    "rim": 0,
+    "warmth": 0,
+    "stars": 0,
+    "fx": true,
+    "arc": 0,
+    "meteor": false,
+    "A": {
+      "visible": false,
+      "text": ""
+    },
+    "B": {
+      "visible": false,
+      "text": ""
+    }
+  },
+  {
+    "target": 9,
+    "preset": 103,
+    "zen": true,
+    "audio": 9.040000000000001,
+    "paused": false,
+    "cues": [],
+    "expected": [
+      {
+        "i": 0,
+        "start": 6000,
+        "duration": 10000
+      },
+      {
+        "i": 1,
+        "start": 19000,
+        "duration": 10000
+      },
+      {
+        "i": 2,
+        "start": 34000,
+        "duration": 5000
+      },
+      {
+        "i": 3,
+        "start": 39000,
+        "duration": 3000
+      },
+      {
+        "i": 4,
+        "start": 42000,
+        "duration": 6000
+      },
+      {
+        "i": 5,
+        "start": 48000,
+        "duration": 6000
+      },
+      {
+        "i": 6,
+        "start": 54000,
+        "duration": 10000
+      },
+      {
+        "i": 7,
+        "start": 66000,
+        "duration": 5000
+      },
+      {
+        "i": 8,
+        "start": 71000,
+        "duration": 9000
+      },
+      {
+        "i": 9,
+        "start": 80000,
+        "duration": 7000
+      },
+      {
+        "i": 10,
+        "start": 87000,
+        "duration": 10000
+      },
+      {
+        "i": 11,
+        "start": 105000,
+        "duration": 7000
+      },
+      {
+        "i": 12,
+        "start": 112000,
+        "duration": 8000
+      },
+      {
+        "i": 13,
+        "start": 120000,
+        "duration": 6000
+      },
+      {
+        "i": 14,
+        "start": 126000,
+        "duration": 10000
+      },
+      {
+        "i": 15,
+        "start": 140000,
+        "duration": 5000
+      },
+      {
+        "i": 16,
+        "start": 145000,
+        "duration": 4000
+      },
+      {
+        "i": 17,
+        "start": 149000,
+        "duration": 5000
+      },
+      {
+        "i": 18,
+        "start": 154000,
+        "duration": 7000
+      },
+      {
+        "i": 19,
+        "start": 161000,
+        "duration": 10000
+      },
+      {
+        "i": 20,
+        "start": 172000,
+        "duration": 7000
+      },
+      {
+        "i": 21,
+        "start": 179000,
+        "duration": 5000
+      }
+    ],
+    "surface": 0.075,
+    "rim": 0.016,
+    "warmth": 0,
+    "stars": 0.018,
+    "fx": true,
+    "arc": 0,
+    "meteor": false,
+    "A": {
+      "visible": false,
+      "text": ""
+    },
+    "B": {
+      "visible": false,
+      "text": ""
+    }
+  },
+  {
+    "target": 40.4,
+    "preset": 103,
+    "zen": true,
+    "audio": 40.44266666666667,
+    "paused": false,
+    "cues": [
+      [
+        2,
+        32.82666666666667
+      ],
+      [
+        3,
+        37.824
+      ]
+    ],
+    "expected": [
+      {
+        "i": 0,
+        "start": 6000,
+        "duration": 10000
+      },
+      {
+        "i": 1,
+        "start": 19000,
+        "duration": 10000
+      },
+      {
+        "i": 2,
+        "start": 34000,
+        "duration": 5000
+      },
+      {
+        "i": 3,
+        "start": 39000,
+        "duration": 3000
+      },
+      {
+        "i": 4,
+        "start": 42000,
+        "duration": 6000
+      },
+      {
+        "i": 5,
+        "start": 48000,
+        "duration": 6000
+      },
+      {
+        "i": 6,
+        "start": 54000,
+        "duration": 10000
+      },
+      {
+        "i": 7,
+        "start": 66000,
+        "duration": 5000
+      },
+      {
+        "i": 8,
+        "start": 71000,
+        "duration": 9000
+      },
+      {
+        "i": 9,
+        "start": 80000,
+        "duration": 7000
+      },
+      {
+        "i": 10,
+        "start": 87000,
+        "duration": 10000
+      },
+      {
+        "i": 11,
+        "start": 105000,
+        "duration": 7000
+      },
+      {
+        "i": 12,
+        "start": 112000,
+        "duration": 8000
+      },
+      {
+        "i": 13,
+        "start": 120000,
+        "duration": 6000
+      },
+      {
+        "i": 14,
+        "start": 126000,
+        "duration": 10000
+      },
+      {
+        "i": 15,
+        "start": 140000,
+        "duration": 5000
+      },
+      {
+        "i": 16,
+        "start": 145000,
+        "duration": 4000
+      },
+      {
+        "i": 17,
+        "start": 149000,
+        "duration": 5000
+      },
+      {
+        "i": 18,
+        "start": 154000,
+        "duration": 7000
+      },
+      {
+        "i": 19,
+        "start": 161000,
+        "duration": 10000
+      },
+      {
+        "i": 20,
+        "start": 172000,
+        "duration": 7000
+      },
+      {
+        "i": 21,
+        "start": 179000,
+        "duration": 5000
+      }
+    ],
+    "surface": 0.15,
+    "rim": 0.061,
+    "warmth": 0,
+    "stars": 0.073,
+    "fx": true,
+    "arc": 0,
+    "meteor": false,
+    "A": {
+      "visible": false,
+      "text": "Listen to my voice"
+    },
+    "B": {
+      "visible": true,
+      "text": "calling you"
+    }
+  },
+  {
+    "target": 41.4,
+    "preset": 103,
+    "zen": true,
+    "audio": 41.53066666666666,
+    "paused": false,
+    "cues": [
+      [
+        2,
+        32.82666666666667
+      ],
+      [
+        3,
+        37.824
+      ],
+      [
+        4,
+        40.82133333333333
+      ]
+    ],
+    "expected": [
+      {
+        "i": 0,
+        "start": 6000,
+        "duration": 10000
+      },
+      {
+        "i": 1,
+        "start": 19000,
+        "duration": 10000
+      },
+      {
+        "i": 2,
+        "start": 34000,
+        "duration": 5000
+      },
+      {
+        "i": 3,
+        "start": 39000,
+        "duration": 3000
+      },
+      {
+        "i": 4,
+        "start": 42000,
+        "duration": 6000
+      },
+      {
+        "i": 5,
+        "start": 48000,
+        "duration": 6000
+      },
+      {
+        "i": 6,
+        "start": 54000,
+        "duration": 10000
+      },
+      {
+        "i": 7,
+        "start": 66000,
+        "duration": 5000
+      },
+      {
+        "i": 8,
+        "start": 71000,
+        "duration": 9000
+      },
+      {
+        "i": 9,
+        "start": 80000,
+        "duration": 7000
+      },
+      {
+        "i": 10,
+        "start": 87000,
+        "duration": 10000
+      },
+      {
+        "i": 11,
+        "start": 105000,
+        "duration": 7000
+      },
+      {
+        "i": 12,
+        "start": 112000,
+        "duration": 8000
+      },
+      {
+        "i": 13,
+        "start": 120000,
+        "duration": 6000
+      },
+      {
+        "i": 14,
+        "start": 126000,
+        "duration": 10000
+      },
+      {
+        "i": 15,
+        "start": 140000,
+        "duration": 5000
+      },
+      {
+        "i": 16,
+        "start": 145000,
+        "duration": 4000
+      },
+      {
+        "i": 17,
+        "start": 149000,
+        "duration": 5000
+      },
+      {
+        "i": 18,
+        "start": 154000,
+        "duration": 7000
+      },
+      {
+        "i": 19,
+        "start": 161000,
+        "duration": 10000
+      },
+      {
+        "i": 20,
+        "start": 172000,
+        "duration": 7000
+      },
+      {
+        "i": 21,
+        "start": 179000,
+        "duration": 5000
+      }
+    ],
+    "surface": 0.15423002021604917,
+    "rim": 0.07870946967314335,
+    "warmth": 0,
+    "stars": 0.07486120889506163,
+    "fx": true,
+    "arc": 0.03316299735310291,
+    "meteor": false,
+    "A": {
+      "visible": true,
+      "text": "Pulling you\n out of darkness"
+    },
+    "B": {
+      "visible": false,
+      "text": "calling you"
+    }
+  },
+  {
+    "target": 46,
+    "preset": 103,
+    "zen": true,
+    "audio": 46.096000000000004,
+    "paused": false,
+    "cues": [
+      [
+        2,
+        32.82666666666667
+      ],
+      [
+        3,
+        37.824
+      ],
+      [
+        4,
+        40.82133333333333
+      ]
+    ],
+    "expected": [
+      {
+        "i": 0,
+        "start": 6000,
+        "duration": 10000
+      },
+      {
+        "i": 1,
+        "start": 19000,
+        "duration": 10000
+      },
+      {
+        "i": 2,
+        "start": 34000,
+        "duration": 5000
+      },
+      {
+        "i": 3,
+        "start": 39000,
+        "duration": 3000
+      },
+      {
+        "i": 4,
+        "start": 42000,
+        "duration": 6000
+      },
+      {
+        "i": 5,
+        "start": 48000,
+        "duration": 6000
+      },
+      {
+        "i": 6,
+        "start": 54000,
+        "duration": 10000
+      },
+      {
+        "i": 7,
+        "start": 66000,
+        "duration": 5000
+      },
+      {
+        "i": 8,
+        "start": 71000,
+        "duration": 9000
+      },
+      {
+        "i": 9,
+        "start": 80000,
+        "duration": 7000
+      },
+      {
+        "i": 10,
+        "start": 87000,
+        "duration": 10000
+      },
+      {
+        "i": 11,
+        "start": 105000,
+        "duration": 7000
+      },
+      {
+        "i": 12,
+        "start": 112000,
+        "duration": 8000
+      },
+      {
+        "i": 13,
+        "start": 120000,
+        "duration": 6000
+      },
+      {
+        "i": 14,
+        "start": 126000,
+        "duration": 10000
+      },
+      {
+        "i": 15,
+        "start": 140000,
+        "duration": 5000
+      },
+      {
+        "i": 16,
+        "start": 145000,
+        "duration": 4000
+      },
+      {
+        "i": 17,
+        "start": 149000,
+        "duration": 5000
+      },
+      {
+        "i": 18,
+        "start": 154000,
+        "duration": 7000
+      },
+      {
+        "i": 19,
+        "start": 161000,
+        "duration": 10000
+      },
+      {
+        "i": 20,
+        "start": 172000,
+        "duration": 7000
+      },
+      {
+        "i": 21,
+        "start": 179000,
+        "duration": 5000
+      }
+    ],
+    "surface": 0.3064573282539239,
+    "rim": 0.2348507525249941,
+    "warmth": 0,
+    "stars": 0.14184122443172653,
+    "fx": true,
+    "arc": 0.4182364537459543,
+    "meteor": false,
+    "A": {
+      "visible": true,
+      "text": "Pulling you\n out of darkness"
+    },
+    "B": {
+      "visible": false,
+      "text": "calling you"
+    }
+  },
+  {
+    "resumed": {
+      "preset": 103,
+      "zen": true,
+      "audio": 111.81866666666667,
+      "paused": false,
+      "cues": [
+        [
+          12,
+          110.82666666666665
+        ]
+      ],
+      "expected": [
+        {
+          "i": 0,
+          "start": 6000,
+          "duration": 10000
+        },
+        {
+          "i": 1,
+          "start": 19000,
+          "duration": 10000
+        },
+        {
+          "i": 2,
+          "start": 34000,
+          "duration": 5000
+        },
+        {
+          "i": 3,
+          "start": 39000,
+          "duration": 3000
+        },
+        {
+          "i": 4,
+          "start": 42000,
+          "duration": 6000
+        },
+        {
+          "i": 5,
+          "start": 48000,
+          "duration": 6000
+        },
+        {
+          "i": 6,
+          "start": 54000,
+          "duration": 10000
+        },
+        {
+          "i": 7,
+          "start": 66000,
+          "duration": 5000
+        },
+        {
+          "i": 8,
+          "start": 71000,
+          "duration": 9000
+        },
+        {
+          "i": 9,
+          "start": 80000,
+          "duration": 7000
+        },
+        {
+          "i": 10,
+          "start": 87000,
+          "duration": 10000
+        },
+        {
+          "i": 11,
+          "start": 105000,
+          "duration": 7000
+        },
+        {
+          "i": 12,
+          "start": 112000,
+          "duration": 8000
+        },
+        {
+          "i": 13,
+          "start": 120000,
+          "duration": 6000
+        },
+        {
+          "i": 14,
+          "start": 126000,
+          "duration": 10000
+        },
+        {
+          "i": 15,
+          "start": 140000,
+          "duration": 5000
+        },
+        {
+          "i": 16,
+          "start": 145000,
+          "duration": 4000
+        },
+        {
+          "i": 17,
+          "start": 149000,
+          "duration": 5000
+        },
+        {
+          "i": 18,
+          "start": 154000,
+          "duration": 7000
+        },
+        {
+          "i": 19,
+          "start": 161000,
+          "duration": 10000
+        },
+        {
+          "i": 20,
+          "start": 172000,
+          "duration": 7000
+        },
+        {
+          "i": 21,
+          "start": 179000,
+          "duration": 5000
+        }
+      ],
+      "surface": 0.8830196462933334,
+      "rim": 0.6058266717883162,
+      "warmth": 0.31329196676740745,
+      "stars": 0.352727679525926,
+      "fx": true,
+      "arc": 0.5836753050765489,
+      "meteor": false,
+      "A": {
+        "visible": true,
+        "text": "Fighting to ease\n the shadow side"
+      },
+      "B": {
+        "visible": false,
+        "text": "Hear the\n Devil's cry of sin"
+      }
+    }
+  },
+  {
+    "pause": {
+      "before": {
+        "preset": 103,
+        "zen": true,
+        "audio": 113.02933333333333,
+        "paused": true,
+        "cues": [
+          [
+            12,
+            110.82666666666665
+          ]
+        ],
+        "expected": [
+          {
+            "i": 0,
+            "start": 6000,
+            "duration": 10000
+          },
+          {
+            "i": 1,
+            "start": 19000,
+            "duration": 10000
+          },
+          {
+            "i": 2,
+            "start": 34000,
+            "duration": 5000
+          },
+          {
+            "i": 3,
+            "start": 39000,
+            "duration": 3000
+          },
+          {
+            "i": 4,
+            "start": 42000,
+            "duration": 6000
+          },
+          {
+            "i": 5,
+            "start": 48000,
+            "duration": 6000
+          },
+          {
+            "i": 6,
+            "start": 54000,
+            "duration": 10000
+          },
+          {
+            "i": 7,
+            "start": 66000,
+            "duration": 5000
+          },
+          {
+            "i": 8,
+            "start": 71000,
+            "duration": 9000
+          },
+          {
+            "i": 9,
+            "start": 80000,
+            "duration": 7000
+          },
+          {
+            "i": 10,
+            "start": 87000,
+            "duration": 10000
+          },
+          {
+            "i": 11,
+            "start": 105000,
+            "duration": 7000
+          },
+          {
+            "i": 12,
+            "start": 112000,
+            "duration": 8000
+          },
+          {
+            "i": 13,
+            "start": 120000,
+            "duration": 6000
+          },
+          {
+            "i": 14,
+            "start": 126000,
+            "duration": 10000
+          },
+          {
+            "i": 15,
+            "start": 140000,
+            "duration": 5000
+          },
+          {
+            "i": 16,
+            "start": 145000,
+            "duration": 4000
+          },
+          {
+            "i": 17,
+            "start": 149000,
+            "duration": 5000
+          },
+          {
+            "i": 18,
+            "start": 154000,
+            "duration": 7000
+          },
+          {
+            "i": 19,
+            "start": 161000,
+            "duration": 10000
+          },
+          {
+            "i": 20,
+            "start": 172000,
+            "duration": 7000
+          },
+          {
+            "i": 21,
+            "start": 179000,
+            "duration": 5000
+          }
+        ],
+        "surface": 0.9136720022561078,
+        "rim": 0.6150468464583216,
+        "warmth": 0.33542977940718893,
+        "stars": 0.3612422228489188,
+        "fx": true,
+        "arc": 0.5676954464003764,
+        "meteor": false,
+        "A": {
+          "visible": false,
+          "text": "Fighting to ease\n the shadow side"
+        },
+        "B": {
+          "visible": false,
+          "text": "Hear the\n Devil's cry of sin"
+        }
+      },
+      "after": {
+        "preset": 103,
+        "zen": true,
+        "audio": 113.02933333333333,
+        "paused": true,
+        "cues": [
+          [
+            12,
+            110.82666666666665
+          ]
+        ],
+        "expected": [
+          {
+            "i": 0,
+            "start": 6000,
+            "duration": 10000
+          },
+          {
+            "i": 1,
+            "start": 19000,
+            "duration": 10000
+          },
+          {
+            "i": 2,
+            "start": 34000,
+            "duration": 5000
+          },
+          {
+            "i": 3,
+            "start": 39000,
+            "duration": 3000
+          },
+          {
+            "i": 4,
+            "start": 42000,
+            "duration": 6000
+          },
+          {
+            "i": 5,
+            "start": 48000,
+            "duration": 6000
+          },
+          {
+            "i": 6,
+            "start": 54000,
+            "duration": 10000
+          },
+          {
+            "i": 7,
+            "start": 66000,
+            "duration": 5000
+          },
+          {
+            "i": 8,
+            "start": 71000,
+            "duration": 9000
+          },
+          {
+            "i": 9,
+            "start": 80000,
+            "duration": 7000
+          },
+          {
+            "i": 10,
+            "start": 87000,
+            "duration": 10000
+          },
+          {
+            "i": 11,
+            "start": 105000,
+            "duration": 7000
+          },
+          {
+            "i": 12,
+            "start": 112000,
+            "duration": 8000
+          },
+          {
+            "i": 13,
+            "start": 120000,
+            "duration": 6000
+          },
+          {
+            "i": 14,
+            "start": 126000,
+            "duration": 10000
+          },
+          {
+            "i": 15,
+            "start": 140000,
+            "duration": 5000
+          },
+          {
+            "i": 16,
+            "start": 145000,
+            "duration": 4000
+          },
+          {
+            "i": 17,
+            "start": 149000,
+            "duration": 5000
+          },
+          {
+            "i": 18,
+            "start": 154000,
+            "duration": 7000
+          },
+          {
+            "i": 19,
+            "start": 161000,
+            "duration": 10000
+          },
+          {
+            "i": 20,
+            "start": 172000,
+            "duration": 7000
+          },
+          {
+            "i": 21,
+            "start": 179000,
+            "duration": 5000
+          }
+        ],
+        "surface": 0.9136720022561078,
+        "rim": 0.6150468464583216,
+        "warmth": 0.33542977940718893,
+        "stars": 0.3612422228489188,
+        "fx": true,
+        "arc": 0.5676954464003764,
+        "meteor": false,
+        "A": {
+          "visible": false,
+          "text": "Fighting to ease\n the shadow side"
+        },
+        "B": {
+          "visible": false,
+          "text": "Hear the\n Devil's cry of sin"
+        }
+      }
+    }
+  },
+  {
+    "other": {
+      "preset": 102,
+      "zen": true,
+      "audio": 0,
+      "paused": true,
+      "cues": [],
+      "expected": [
+        {
+          "i": 0,
+          "start": 6000,
+          "duration": 10000
+        },
+        {
+          "i": 1,
+          "start": 19000,
+          "duration": 10000
+        },
+        {
+          "i": 2,
+          "start": 34000,
+          "duration": 5000
+        },
+        {
+          "i": 3,
+          "start": 39000,
+          "duration": 3000
+        },
+        {
+          "i": 4,
+          "start": 42000,
+          "duration": 6000
+        },
+        {
+          "i": 5,
+          "start": 48000,
+          "duration": 6000
+        },
+        {
+          "i": 6,
+          "start": 54000,
+          "duration": 10000
+        },
+        {
+          "i": 7,
+          "start": 66000,
+          "duration": 5000
+        },
+        {
+          "i": 8,
+          "start": 71000,
+          "duration": 9000
+        },
+        {
+          "i": 9,
+          "start": 80000,
+          "duration": 7000
+        },
+        {
+          "i": 10,
+          "start": 87000,
+          "duration": 10000
+        },
+        {
+          "i": 11,
+          "start": 105000,
+          "duration": 7000
+        },
+        {
+          "i": 12,
+          "start": 112000,
+          "duration": 8000
+        },
+        {
+          "i": 13,
+          "start": 120000,
+          "duration": 6000
+        },
+        {
+          "i": 14,
+          "start": 126000,
+          "duration": 10000
+        },
+        {
+          "i": 15,
+          "start": 140000,
+          "duration": 5000
+        },
+        {
+          "i": 16,
+          "start": 145000,
+          "duration": 4000
+        },
+        {
+          "i": 17,
+          "start": 149000,
+          "duration": 5000
+        },
+        {
+          "i": 18,
+          "start": 154000,
+          "duration": 7000
+        },
+        {
+          "i": 19,
+          "start": 161000,
+          "duration": 10000
+        },
+        {
+          "i": 20,
+          "start": 172000,
+          "duration": 7000
+        },
+        {
+          "i": 21,
+          "start": 179000,
+          "duration": 5000
+        }
+      ],
+      "surface": 1,
+      "rim": 0,
+      "warmth": 0,
+      "stars": 0.7798760826516309,
+      "fx": false,
+      "arc": 0.5458070178878127,
+      "meteor": false,
+      "A": {
+        "visible": false,
+        "text": ""
+      },
+      "B": {
+        "visible": false,
+        "text": ""
+      }
+    }
+  },
+  {
+    "normal": {
+      "preset": 102,
+      "zen": false,
+      "audio": 0.6773333333333298,
+      "paused": false,
+      "cues": [],
+      "expected": [
+        {
+          "i": 0,
+          "start": 6000,
+          "duration": 10000
+        },
+        {
+          "i": 1,
+          "start": 19000,
+          "duration": 10000
+        },
+        {
+          "i": 2,
+          "start": 34000,
+          "duration": 5000
+        },
+        {
+          "i": 3,
+          "start": 39000,
+          "duration": 3000
+        },
+        {
+          "i": 4,
+          "start": 42000,
+          "duration": 6000
+        },
+        {
+          "i": 5,
+          "start": 48000,
+          "duration": 6000
+        },
+        {
+          "i": 6,
+          "start": 54000,
+          "duration": 10000
+        },
+        {
+          "i": 7,
+          "start": 66000,
+          "duration": 5000
+        },
+        {
+          "i": 8,
+          "start": 71000,
+          "duration": 9000
+        },
+        {
+          "i": 9,
+          "start": 80000,
+          "duration": 7000
+        },
+        {
+          "i": 10,
+          "start": 87000,
+          "duration": 10000
+        },
+        {
+          "i": 11,
+          "start": 105000,
+          "duration": 7000
+        },
+        {
+          "i": 12,
+          "start": 112000,
+          "duration": 8000
+        },
+        {
+          "i": 13,
+          "start": 120000,
+          "duration": 6000
+        },
+        {
+          "i": 14,
+          "start": 126000,
+          "duration": 10000
+        },
+        {
+          "i": 15,
+          "start": 140000,
+          "duration": 5000
+        },
+        {
+          "i": 16,
+          "start": 145000,
+          "duration": 4000
+        },
+        {
+          "i": 17,
+          "start": 149000,
+          "duration": 5000
+        },
+        {
+          "i": 18,
+          "start": 154000,
+          "duration": 7000
+        },
+        {
+          "i": 19,
+          "start": 161000,
+          "duration": 10000
+        },
+        {
+          "i": 20,
+          "start": 172000,
+          "duration": 7000
+        },
+        {
+          "i": 21,
+          "start": 179000,
+          "duration": 5000
+        }
+      ],
+      "stars": 0.545924735016564,
+      "fx": false,
+      "arc": 0.5458070178878127,
+      "meteor": false,
+      "A": {
+        "visible": false,
+        "text": ""
+      },
+      "B": {
+        "visible": false,
+        "text": ""
+      }
+    }
+  }
+]

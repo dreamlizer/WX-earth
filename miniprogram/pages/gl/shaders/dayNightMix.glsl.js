@@ -37,6 +37,11 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uWaveNoiseSpeed: { value: 0.05 },
     uWaterNormalPerturb: { value: 0.06 },
     uOpacity: { value: 1.0 },
+    uSongSurfaceGain: { value: 1.0 },
+    uSongDayGain: { value: 1.0 },
+    uSongNightGain: { value: 1.0 },
+    uSongRim: { value: 0.0 },
+    uSongWarmth: { value: 0.0 },
     // uFlipY: { value: 0.0 }, // 移除 PC 端翻转修正，改为 Texture Matrix 修复
   };
 
@@ -72,6 +77,13 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uniform float uDaySideGain;
     uniform float uExposure;
 
+    uniform vec3 uCameraPosWorld;
+    uniform float uSongSurfaceGain;
+    uniform float uSongDayGain;
+    uniform float uSongNightGain;
+    uniform float uSongRim;
+    uniform float uSongWarmth;
+
     uniform float uOpacity;
     void main() {
       vec3 N = normalize(vWorldPos - uGlobeCenterWorld);
@@ -97,6 +109,10 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
       color.rgb *= uExposure;
       // color.rgb = pow(color.rgb, vec3(uGamma)); // 简化：移除 Gamma
       
+      color.rgb *= uSongSurfaceGain * mix(uSongNightGain, uSongDayGain, t);
+      vec3 V = normalize(uCameraPosWorld - vWorldPos);
+      float rim = pow(max(0.0,1.0-dot(N,V)),4.5) * smoothstep(-.55,.75,d);
+      color.rgb += mix(vec3(.10,.32,.65),vec3(.72,.58,.38),uSongWarmth)*rim*uSongRim;
       gl_FragColor = vec4(color.rgb, uOpacity);
     }
   `;
@@ -136,6 +152,12 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
     uniform float uWaveNoiseStrength;
     uniform float uWaveNoiseSpeed;
     uniform float uWaterNormalPerturb;
+
+    uniform float uSongSurfaceGain;
+    uniform float uSongDayGain;
+    uniform float uSongNightGain;
+    uniform float uSongRim;
+    uniform float uSongWarmth;
 
     uniform float uOpacity;
     void main() {
@@ -215,6 +237,9 @@ export function createDayNightMaterial(THREE, dayTex, nightTex, softness = 0.18,
 
       // 简易 gamma 调整，保持贴图观感
       color.rgb = pow(color.rgb, vec3(uGamma));
+      color.rgb *= uSongSurfaceGain * mix(uSongNightGain, uSongDayGain, t);
+      float rim = pow(max(0.0,1.0-dot(N,V)),4.5) * smoothstep(-.55,.75,d);
+      color.rgb += mix(vec3(.10,.32,.65),vec3(.72,.58,.38),uSongWarmth)*rim*uSongRim;
       gl_FragColor = vec4(color.rgb, uOpacity);
     }
   `;
