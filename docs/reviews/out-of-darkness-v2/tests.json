@@ -1,0 +1,187 @@
+[
+  {
+    "file": "tools/ambient-encounter.test.cjs",
+    "code": 0,
+    "output": "Ambient spacecraft: random quiet scheduling, mode/interaction gates, native geometry and async disposal PASS\n[Ambient] chandra unavailable Error: test failure\n    at /Users/a1234/Documents/Codex项目/wx-earth/tools/ambient-encounter.test.cjs:199:53\n"
+  },
+  {
+    "file": "tools/app-engine-lifecycle.test.cjs",
+    "code": 0,
+    "output": "app-engine lifecycle tests passed\n"
+  },
+  {
+    "file": "tools/city-markers-policy.test.cjs",
+    "code": 0,
+    "output": "city-markers policy tests passed\n"
+  },
+  {
+    "file": "tools/console-noise-policy.test.cjs",
+    "code": 0,
+    "output": "nvironment, brand, and platform markers\nok 9 - isDevtools recognizes environment, brand, and platform markers\n  ---\n  duration_ms: 1.325417\n  type: 'test'\n  ...\n# Subtest: optional cloud texture prefetch is skipped in DevTools and PC clients\nok 10 - optional cloud texture prefetch is skipped in DevTools and PC clients\n  ---\n  duration_ms: 1.425125\n  type: 'test'\n  ...\n# Subtest: moon manager avoids deprecated getSystemInfoSync\nok 11 - moon manager avoids deprecated getSystemInfoSync\n  ---\n  duration_ms: 0.627917\n  type: 'test'\n  ...\n# Subtest: texture refresh does not preload moon assets in DevTools and PC clients\nok 12 - texture refresh does not preload moon assets in DevTools and PC clients\n  ---\n  duration_ms: 0.350416\n  type: 'test'\n  ...\n# Subtest: normal startup success logs stay quiet by default\nok 13 - normal startup success logs stay quiet by default\n  ---\n  duration_ms: 1.941\n  type: 'test'\n  ...\n# Subtest: pipeline diagnostics are behind the perf debug flag\nok 14 - pipeline diagnostics are behind the perf debug flag\n  ---\n  duration_ms: 0.533666\n  type: 'test'\n  ...\n1..14\n# tests 14\n# suites 0\n# pass 14\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 48.445458\n"
+  },
+  {
+    "file": "tools/country-info-manager-timezone.test.cjs",
+    "code": 0,
+    "output": "country-info-manager timezone tests passed\n"
+  },
+  {
+    "file": "tools/country-selection-init-policy.test.cjs",
+    "code": 0,
+    "output": "TAP version 13\n# Subtest: makeBorder uses BufferGeometry attribute compatibility for threejs-miniprogram r108\nok 1 - makeBorder uses BufferGeometry attribute compatibility for threejs-miniprogram r108\n  ---\n  duration_ms: 1.420667\n  type: 'test'\n  ...\n# Subtest: country search index is initialized before border rendering can fail\nok 2 - country search index is initialized before border rendering can fail\n  ---\n  duration_ms: 0.266\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 19.272708\n"
+  },
+  {
+    "file": "tools/flag-sprite-policy.test.cjs",
+    "code": 0,
+    "output": "flag-sprite policy tests passed\n"
+  },
+  {
+    "file": "tools/highlight-manager-policy.test.cjs",
+    "code": 0,
+    "output": "highlight-manager policy tests passed\n"
+  },
+  {
+    "file": "tools/labels-layout-policy.test.cjs",
+    "code": 0,
+    "output": "labels-layout policy tests passed\n"
+  },
+  {
+    "file": "tools/labels-workset-policy.test.cjs",
+    "code": 0,
+    "output": "labels-workset policy tests passed\n"
+  },
+  {
+    "file": "tools/moon-encounters.test.cjs",
+    "code": 0,
+    "output": "Voyager geometry, three phases, Moon gate, camera preservation and cleanup PASS\nForward star flow, acceleration, trails and fade PASS\nPersistent stars and gradual direction/density transition PASS\nTHREE.GLTFLoader: Duplicating UVs to support aoMap.\nTHREE.GLTFLoader: Duplicating UVs to support aoMap.\nWeChat subpackage API and async asset loading PASS\n(node:16494) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "file": "tools/moon-gundam.test.cjs",
+    "code": 0,
+    "output": "Gundam accelerating full-body flight, flowing short-lived exhaust, package and async cleanup PASS\n(node:16559) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "file": "tools/moon-light-continuity.test.cjs",
+    "code": 0,
+    "output": "Moon approach-to-orbit brightness and light-direction continuity PASS\n"
+  },
+  {
+    "file": "tools/moon-original-earth.test.cjs",
+    "code": 0,
+    "output": "visible orbit samples [ 174.3, 231.4, 239.4 ]\noriginal Earth integration: exact original orbit and lighting restored, early visibility, fixed Earth, final framing, disposal PASS\n"
+  },
+  {
+    "file": "tools/moon-paper-plane.test.cjs",
+    "code": 0,
+    "output": "paper plane lifecycle and timing PASS\n"
+  },
+  {
+    "file": "tools/moon-robot.test.cjs",
+    "code": 0,
+    "output": "THREE.GLTFLoader: Duplicating UVs to support aoMap.\nTHREE.GLTFLoader: Duplicating UVs to support aoMap.\nRobot package loading, frozen body, native flames, fading and asynchronous cleanup PASS\n"
+  },
+  {
+    "file": "tools/moon-voyage-lifecycle.test.cjs",
+    "code": 0,
+    "output": "moon voyage lifecycle tests passed\n"
+  },
+  {
+    "file": "tools/page-lifecycle.test.cjs",
+    "code": 0,
+    "output": "page lifecycle tests passed\n"
+  },
+  {
+    "file": "tools/perf-monitor-policy.test.cjs",
+    "code": 0,
+    "output": "perf-monitor policy tests passed\n"
+  },
+  {
+    "file": "tools/planet-visual.test.cjs",
+    "code": 0,
+    "output": "Planet visual: retained Earth object, opaque depth, themes/clouds/brightness, Moon maps and r108 conversion PASS\n"
+  },
+  {
+    "file": "tools/poetry-cache.test.cjs",
+    "code": 0,
+    "output": "poetry cache tests passed\n"
+  },
+  {
+    "file": "tools/poetry-overlap.test.cjs",
+    "code": 0,
+    "output": "poetry overlap tests passed: vertical/horizontal, movement, unequal frames, no-space fallback, three tracks\n"
+  },
+  {
+    "file": "tools/poetry-timing.test.cjs",
+    "code": 0,
+    "output": "poetry timing tests passed\n"
+  },
+  {
+    "file": "tools/render-loop.test.cjs",
+    "code": 0,
+    "output": "render-loop tests passed\n"
+  },
+  {
+    "file": "tools/runtime-diagnostics.test.cjs",
+    "code": 0,
+    "output": "runtime-diagnostics tests passed\n"
+  },
+  {
+    "file": "tools/saturn-preview.test.cjs",
+    "code": 0,
+    "output": "Saturn preview: legacy Three geometry, subpackage loading, drag/pinch, re-entry, failure and disposal PASS\n[Saturn preview] test asset failure\n"
+  },
+  {
+    "file": "tools/scene-updater-policy.test.cjs",
+    "code": 0,
+    "output": "scene-updater policy tests passed\n"
+  },
+  {
+    "file": "tools/texture-health.test.cjs",
+    "code": 0,
+    "output": "texture-health tests passed\n"
+  },
+  {
+    "file": "tools/texture-source.test.cjs",
+    "code": 0,
+    "output": "texture-source tests passed\n[texture] Earth preview package unavailable; keeping small local preview\n[texture] Earth preview package unavailable; keeping small local preview\n[texture] Scene art package unavailable; keeping placeholder\n[texture] Scene art package unavailable; keeping placeholder\n"
+  },
+  {
+    "file": "tools/timezone-manager-policy.test.cjs",
+    "code": 0,
+    "output": "timezone-manager policy tests passed\n"
+  },
+  {
+    "file": "tools/update-country-meta-imf-weo.test.cjs",
+    "code": 0,
+    "output": "update-country-meta-imf-weo tests passed\n"
+  },
+  {
+    "file": "tools/update-country-meta-worldbank.test.cjs",
+    "code": 0,
+    "output": "update-country-meta-worldbank tests passed\n"
+  },
+  {
+    "file": "tools/zen-darkness-visual.test.cjs",
+    "code": 0,
+    "output": "Out of Darkness: cue-driven light, delayed visibility, repeats, pause/resume, other-mode restoration and disposal PASS\n"
+  },
+  {
+    "file": "tools/zen-english-tracks.test.cjs",
+    "code": 0,
+    "output": "zen English-only track tests passed\n"
+  },
+  {
+    "file": "tools/zen-lifecycle.test.cjs",
+    "code": 0,
+    "output": "zen lifecycle tests passed\n"
+  },
+  {
+    "file": "tools/zen-smooth-motion.test.cjs",
+    "code": 0,
+    "output": "GPU title: continuous subpixel scale, smooth clock, foreground/disposal; zen arcs: constant speed; EVE/astronaut source geometry PASS\n"
+  },
+  {
+    "file": "tools/zen-song-presentation.test.cjs",
+    "code": 0,
+    "output": "Zen songs: both openings, original lyric motion, Chinese cue matching and delay, home encounters retained, zen encounters disabled PASS\n"
+  }
+]

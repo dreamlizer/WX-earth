@@ -75,6 +75,12 @@ const opening=new ZenSongOpening({getAudio:()=>openingAudio,firstLyricMs:16800,t
 opening.update(true);const count=patches;opening.update(true);assert.equal(patches,count,'No per-frame setData');
 opening.update(false);assert.equal(openingState.zenOpeningTitleOpacity,0,'Moon/normal mode hides opening');
 opening.stop();openingState.zenOpeningEnabled=true;opening.stop();assert.equal(openingState.zenOpeningEnabled,true,'Repeated old cleanup cannot disable a new opening');
+let darknessOpeningState={};
+const darknessOpening=new ZenSongOpening({preset:103,getAudio:()=>({currentTime:4.1}),firstLyricMs:32800,topPx:170,
+  setData:patch=>Object.assign(darknessOpeningState,patch)});
+darknessOpening.update(true);assert.equal(darknessOpeningState.zenOpeningTitleOpacity,1);
+assert.equal(darknessOpeningState.zenOpeningFadeMs,3400,'Out of Darkness starts two seconds earlier with a longer fade');
+assert.equal(darknessOpeningState.zenOpeningArtistOpacity,0);
 const {ZenVisualClock}=load('zen-visual-clock.js',['ZenVisualClock']);
 const {makeZenEncounterPlan,ZenEncounterManager,applyZenSunlight}=load('zen-encounter-manager.js',['makeZenEncounterPlan','ZenEncounterManager','applyZenSunlight'],{AmbientEncounterManager:class {},AMBIENT_CRAFT:{},ZEN_CRAFT:{},ZenVisualClock});
 // Cached/repeated activation must preserve the model's texture shader hook,
