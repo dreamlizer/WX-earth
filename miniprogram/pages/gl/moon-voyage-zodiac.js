@@ -2,6 +2,11 @@
 import { SCORPIO_DATA, ZODIAC_ALL_DATA } from './moon-voyage-zodiac-data.js';
 import { makeTextSprite } from './text-sprite.js';
 
+const smooth = (a, b, t) => {
+  const q = Math.max(0, Math.min(1, (t - a) / (b - a)));
+  return q * q * (3 - 2 * q);
+};
+
 // [Config] Debug Switch: Set to true to show Red Dot on constellations
 export const SHOW_DEBUG_RED_DOT = false; 
 
@@ -12,6 +17,7 @@ export class ZodiacSystem {
     this.group = null;
     this._texture = null;
     this.active = false;
+    this._time = 0;
   }
 
   setContext({ THREE, scene, isDevtools }) {
@@ -103,6 +109,7 @@ export class ZodiacSystem {
   _createConstellation(data, position, scale) {
     const THREE = this.THREE;
     const conGroup = new THREE.Group();
+    conGroup.name = data.name;
     
     // Set position relative to Moon center
     conGroup.position.copy(position);
@@ -153,6 +160,8 @@ export class ZodiacSystem {
       });
       
       const lines = new THREE.LineSegments(lineGeo, lineMat);
+      lines.name = 'ZODIAC_LINKS';
+      lineMat.opacity = 0;
       conGroup.add(lines);
     }
     
@@ -190,6 +199,8 @@ export class ZodiacSystem {
        });
        
        if (textSprite) {
+         textSprite.name = 'ZODIAC_LABEL';
+         textSprite.visible = false;
          // Position below the red dot
          // The textSprite origin is center.
          // red dot at topY.
@@ -224,6 +235,7 @@ export class ZodiacSystem {
     });
     
     const mesh = new THREE.Mesh(geo, mat);
+    mesh.name = 'ZODIAC_STAR';
     // Base scale adjustment
     // Adjusted for Super Giant Mode (Parent Scale 40.0) -> 0.18 gives ~7.2 world size (visible from 400 dist)
     // User requested "larger" (20% more than 0.15)
@@ -240,8 +252,10 @@ export class ZodiacSystem {
   }
 
   reset() {
+    this._time = 0;
     if (this.group) {
       this.group.visible = false;
+      this.group.rotation.y = 0;
     }
   }
 
@@ -284,7 +298,7 @@ export class ZodiacSystem {
     this._texture = null;
   }
 
-  tick(dt, moonMesh, camera) {
+  tick(dt, moonMesh, camera, voyageTime) {
     if (!this.active || !this.group || !moonMesh) return;
     
     // Scheme: Parallel Plane but Sunk Below Equator
@@ -303,13 +317,24 @@ export class ZodiacSystem {
     
     // Slow rotation of the entire zodiac system around the moon
     // This makes the stars slowly drift across the sky
-    this.group.rotation.y += 0.05 * dt; 
+    this._time = Number.isFinite(voyageTime) ? Math.max(0, voyageTime) : this._time + dt;
+    this.group.rotation.y = 0.05 * this._time;
     
     // Note: We do NOT copy moon rotation anymore.
     // Also we do NOT copy moon rotation on X/Z, kept flat parallel to equator.
     
-    if (this.group.visible) {
-        // ...
+    // Sagittarius passes through the existing lower field of view at 129–137s.
+    // Reveal its links once, then leave the same stars in place. Arrival, solar
+    // passages, Earth reveals and the ending have no names or diagram overlay.
+    const reveal = smooth(129, 131, this._time) * (1 - smooth(134, 137, this._time));
+    const appear = smooth(78, 84, this._time);
+    for (const constellation of this.group.children) {
+      const focus = constellation.name === 'Sagittarius' ? reveal : 0;
+      for (const child of constellation.children) {
+        if (child.name === 'ZODIAC_LINKS') child.material.opacity = .055 * focus;
+        if (child.name === 'ZODIAC_STAR') child.material.opacity = appear * (.65 + .20 * focus);
+        if (child.name === 'ZODIAC_LABEL') child.visible = false;
+      }
     }
   }
 }

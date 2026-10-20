@@ -88,6 +88,17 @@ fx.reset();assert.equal(fx.moonStart,null);fx.dispose();fx.dispose();console.log
  const forwardQ=loaded.robot.model.quaternion.clone();
  loaded.update({t:68,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});
  assert(forwardQ.angleTo(loaded.robot.model.quaternion)>2.5,'Robot looks back at the viewer during hold');
+ loaded.update({t:63,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});
+ const acknowledged=loaded.robot.model.quaternion.clone();
+ loaded.update({t:66.9,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});
+ assert(acknowledged.angleTo(loaded.robot.model.quaternion)<1e-6,'Companion holds a recognizable response for nearly four seconds');
+ let lastGlance;
+ for(let t=59;t<74;t+=1/60){
+  loaded.update({t,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});
+  const q=loaded.robot.model.quaternion.clone();
+  if(lastGlance)assert(q.angleTo(lastGlance)<.025,'Glance and return have no abrupt turns');
+  lastGlance=q;
+ }
  loaded.update({t:77,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});
  assert(forwardQ.angleTo(loaded.robot.model.quaternion)<1e-6,'Faces forward before overtaking starts');
  const sunUniform=loaded.materials[0].userData.craftSun;

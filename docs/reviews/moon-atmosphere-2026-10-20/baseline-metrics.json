@@ -1,0 +1,57 @@
+{
+  "source": "WeChat DevTools wx-earth console, natural 1x playback before changes",
+  "audio": {
+    "size": 5241096,
+    "sha1": "b6907476df6166a35745ebfeebab0d20f550fe4f",
+    "durationSec": 271.7266666666667
+  },
+  "runtimeLyrics": [
+    {
+      "startMs": 82500,
+      "durationMs": 10050
+    },
+    {
+      "startMs": 180270,
+      "durationMs": 10930
+    },
+    {
+      "startMs": 253370,
+      "durationMs": 9470
+    }
+  ],
+  "timingSamples": [
+    {
+      "visual": 27.46,
+      "audio": 27.141
+    },
+    {
+      "visual": 67.456,
+      "audio": 67.141
+    },
+    {
+      "visual": 107.443,
+      "audio": 107.147
+    },
+    {
+      "visual": 147.33,
+      "audio": 147.147
+    },
+    {
+      "visual": 187.326,
+      "audio": 187.147
+    },
+    {
+      "visual": 214.319,
+      "audio": 214.144
+    }
+  ],
+  "baselineTests": "40/40 existing test files passed before edits",
+  "audioListening": "not performed by model; playback state and runtime timings verified",
+  "baselineCommit": "bd88c02",
+  "baselineCompleted": true,
+  "audioVisualLeadSecRange": [
+    0.172,
+    0.327
+  ],
+  "baselineEndState": "Ordinary Earth restored; console 0 errors"
+}

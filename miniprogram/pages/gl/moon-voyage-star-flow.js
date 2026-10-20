@@ -26,6 +26,8 @@ export function createStarFlow(T) {
 export function updateStarFlow(flow,elapsed,voyageTime=elapsed+47) {
   const {distance,speed,lateral}=flowMotion(elapsed);
   const opacity=smooth(voyageTime/6)*(1-smooth((elapsed-49.5)/5));
+  // Give the companion's glance room without stopping the observer's travel.
+  const glanceGain=1-.20*smooth((voyageTime-59.5)/2)*(1-smooth((voyageTime-73.5)/2));
   flow.group.visible=opacity>.001;
   if(!flow.group.visible)return;
   const p=flow.points.geometry.attributes,c=flow.trails.geometry.attributes;
@@ -36,7 +38,7 @@ export function updateStarFlow(flow,elapsed,voyageTime=elapsed+47) {
     const fade=smooth((-z-1.4)/2)*smooth((z+57.4)/9);
     // These same foreground stars are present during departure, before turning in depth.
     const density=i<280?1:smooth((elapsed+12-12*(i-280)/560)/12);
-    const brightness=opacity*fade*density*(.5+((i*31)%97)/194);
+    const brightness=opacity*glanceGain*fade*density*(.5+((i*31)%97)/194);
     const tail=speed*.07;
     const j=i*3,k=i*6,positions=p.position.array,colors=p.color.array;
     const trails=c.position.array,trailColors=c.color.array;

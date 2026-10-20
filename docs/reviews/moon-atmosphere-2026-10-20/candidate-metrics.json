@@ -1,0 +1,46 @@
+{
+  "source": "WeChat DevTools wx-earth; candidate natural 1x playback from entry to audio-ended exit",
+  "sampleCount": 228,
+  "sampleRangeSec": [
+    44.556,
+    271.482
+  ],
+  "visualLeadOverAudioSec": [
+    0.179,
+    0.3
+  ],
+  "cameraHoldFromSec": 255,
+  "cameraSamplesAfter255": 17,
+  "uniqueCameraPositionsAfter255": 1,
+  "lyricsAbsentInSampledIntervalsSec": [
+    [
+      94,
+      122
+    ],
+    [
+      193,
+      220
+    ]
+  ],
+  "onlyRevealedConstellation": "Sagittarius",
+  "observedLinkSamplesSec": [
+    129.565,
+    130.556,
+    131.578,
+    132.568,
+    133.558,
+    134.581,
+    135.572,
+    136.562
+  ],
+  "glarePeakStrength": [
+    0.4,
+    0.65
+  ],
+  "naturalAudioEnded": true,
+  "ordinaryEarthRestored": true,
+  "consoleErrors": 0,
+  "detailScreenshots": "Separate second entry; manually positioned visual frames, not synchronization evidence",
+  "phoneValidation": false,
+  "subjectiveAudioListening": false
+}

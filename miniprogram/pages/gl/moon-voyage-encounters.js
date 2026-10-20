@@ -162,7 +162,9 @@ export class VoyageEncounters {
       actor.quaternion.copy(cam.quaternion);
       if(actor!==this.model){
         // Arrive -> look back -> acknowledge -> face forward, before the extended overtaking phase.
-        const glance=smooth((companionTime-13)/3)*(1-smooth((companionTime-18)/2.7));
+        // Let the viewer recognize a response before the companion turns away.
+        // Use voyage seconds here, not the stretched flight/action clock.
+        const glance=smooth((t-59.5)/3.5)*(1-smooth((t-67)/6.5));
         actor.rotateY(-2.85*glance);actor.rotateX(-Math.PI/4+glance*.55);actor.rotateZ(.06*glance);
         this.robot.update(robotTime,alpha);
       }

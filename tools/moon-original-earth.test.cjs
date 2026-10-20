@@ -64,6 +64,11 @@ for(const aspect of [.45,.5625,1.78]){
  const north=new THREE.Vector3(-Math.sin(lat)*Math.cos(lon),Math.cos(lat),Math.sin(lat)*Math.sin(lon)).applyQuaternion(earth.quaternion);
  assert.ok(north.y>0,'north remains above China');
  const heldCamera=b.camera.position.clone(), heldEarth=earth.position.clone();
+ tick(b,255,true);
+ assert(b.camera.position.equals(heldCamera),'Push-in has settled during the final lyric, before the instrumental tail');
+ tick(b,254.99,true);const beforeHold=b.camera.position.distanceTo(heldCamera);
+ tick(b,254.98,true);assert(b.camera.position.distanceTo(heldCamera)>beforeHold,'Push-in decelerates into its held position');
+ assert(beforeHold<.0001,'End of push-in has no positional snap');
  tick(b,261,true);const rotationAt261=earth.quaternion.clone();
  tick(b,281,true);assert.ok(Math.abs(2*Math.acos(Math.min(1,Math.abs(earth.quaternion.dot(rotationAt261))))-.18)<1e-10, 'ending retains subtle continuous rotation');
  tick(b,261,true);assert.ok(1-Math.abs(earth.quaternion.dot(rotationAt261))<1e-10, 'rotation is deterministic on replay or seek');
@@ -92,8 +97,9 @@ for(const degrees of [180,540]){
  const p=degrees/630,u=p<.5?Math.cbrt(p/4):1-Math.cbrt((1-p)/4),center=113+u*130;
  for(const offset of [-5,-2.75,-.5,0,.5,2.75,5]){
   tick(fadeScene,center+offset,true);
-  const expected=Math.max(0,Math.min(1,(5-Math.abs(offset))/4.5));
-  assert.ok(Math.abs(fadeScene.seq._glare.children[0].material.uniforms.strength.value-expected)<1e-8,'both passages fade evenly over ten seconds');
+  const q=Math.max(0,Math.min(1,(5-Math.abs(offset))/4.5));
+  const expected=q*q*(3-2*q)*(degrees===180?.40:.65);
+  assert.ok(Math.abs(fadeScene.seq._glare.children[0].material.uniforms.strength.value-expected)<1e-8,'restrained passages fade smoothly, with the second stronger than the first');
  }
 }
 fadeScene.seq.dispose();

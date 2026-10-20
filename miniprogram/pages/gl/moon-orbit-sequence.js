@@ -124,7 +124,7 @@ export class MoonOrbitSequence {
       group.name = 'MOON_VOYAGE_SUN_GLARE';
       const material = new THREE.ShaderMaterial({
         uniforms: { strength: { value: 0 }, peak: { value: 0 }, aspect: { value: 1 },
-          root: { value: new THREE.Vector2() }, variation: { value: 0.9 + Math.random() * 0.2 } },
+          root: { value: new THREE.Vector2() }, variation: { value: 1.0 } },
         vertexShader: 'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
         fragmentShader: `varying vec2 vUv;
           uniform float strength,peak,aspect,variation; uniform vec2 root;
@@ -165,10 +165,11 @@ export class MoonOrbitSequence {
     const pass=clamp01((180+360*Math.round((orbitDeg-180)/360))/orbitEndDeg);
     const center=pass<0.5?Math.cbrt(pass/4):1-Math.cbrt((1-pass)/4);
     const elapsed=Math.abs(orbitT-center)*orbitDurationSec;
-    // 每次 10 秒：4.5 秒线性渐入，1 秒保持，4.5 秒线性渐出。
-    // 束形保持不变，只调强度，避免半秒内突然伸长再缩回。
-    const fade=clamp01((5-elapsed)/4.5);
-    const strength=fade*envelope*visible*(local.z<0&&local.y>0?1:0);
+    // Two restrained passages: first a hint of light, then a fuller reveal.
+    // Smooth intensity only; never stretch the beam or move the actual Sun.
+    const fade=smoothstep(0,1,clamp01((5-elapsed)/4.5));
+    const passageGain=pass<0.5?0.40:0.65;
+    const strength=fade*passageGain*envelope*visible*(local.z<0&&local.y>0?1:0);
     this._glare.children[0].material.uniforms.strength.value=strength;
     this._glare.visible=strength>0.0001;
     if(!this._glare.visible)return;
@@ -229,7 +230,7 @@ export class MoonOrbitSequence {
     farEarth = false,
     sunGlare = false,
     isPC = false,
-    finalApproachSec = 18,
+    finalApproachSec = 12,
   }) {
     if (!this.THREE || !this.scene || !camera || !moonWorld) return { active: false };
     if (!(t >= node3Time)) return { active: false };
@@ -680,11 +681,13 @@ export class MoonOrbitSequence {
       // 约每分钟转 31 度，仅转动地表；固定地球位置、太阳方向和相机均不变。
       // 按绝对旅程时间计算，暂停/跳时/帧率变化不会累计出不同朝向。
       this._farEarth.quaternion.copy(this._farEarthFacing);
-      // 以推近完成时刻为朝向基准，自转仍连续且可重复定位。
-      this._farEarth.rotateY((t - node3Time - orbitDurationSec - finalApproachSec) * 0.009);
+      // Preserve the reviewed 261s orientation anchor independently of camera timing.
+      // Shortening the push-in must not rotate the Earth earlier in the voyage.
+      const earthOrientationTime = node3Time + orbitDurationSec + 18;
+      this._farEarth.rotateY((t - earthOrientationTime) * 0.009);
       // 云层随地球转动，并带很轻的相对漂移；按绝对时间避免跳时积累误差。
       if (this._farEarthCloud) this._farEarthCloud.rotation.y =
-        (t - node3Time - orbitDurationSec - finalApproachSec) * 0.00035;
+        (t - earthOrientationTime) * 0.00035;
       // 原 630 度环绕完整结束后才推近，前面的位置/朝向逐帧保持原值。
       const approach = smoothstep(node3Time + orbitDurationSec, node3Time + orbitDurationSec + finalApproachSec, t);
       if (approach > 0) {

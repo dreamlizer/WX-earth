@@ -293,7 +293,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
       farEarth: true,
       sunGlare: true,
       isPC: !!mgr.page?.data?.isPC,
-      finalApproachSec: 18,
+      finalApproachSec: 12,
     });
     if (res?.active) {
       if (mgr.milkyWayMesh) {
@@ -519,7 +519,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
     const showZodiac = (t >= node2Time); // Only in Orbit phase (after corridor)
     try { 
       if (mgr._zodiacSys.setVisible) mgr._zodiacSys.setVisible(showZodiac);
-      mgr._zodiacSys.tick(dtSec, mgr.moonMesh, mgr.camera); 
+      mgr._zodiacSys.tick(dtSec, mgr.moonMesh, mgr.camera, t);
       
       // Dim Starfield when Zodiac is visible (Orbit Phase) to pop the constellations
        if (mgr._mainStarfieldMesh && mgr._mainStarfieldMesh.material && mgr._mainStarfieldMesh.material.uniforms) {
