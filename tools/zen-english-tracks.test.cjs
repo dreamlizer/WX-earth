@@ -50,16 +50,20 @@ function testTrackSequenceUsesEnglishLyricsForTracksTwoAndThree() {
   const poetry = loadZenPoetry();
   const page = {};
 
-  assert.deepEqual(Array.from(poetry.getPresetIdsForLang(false)), [1, 102, 103]);
-  assert.deepEqual(Array.from(poetry.getPresetIdsForLang(true)), [101, 102, 103]);
+  assert.deepEqual(Array.from(poetry.getPresetIdsForLang(false)), [1, 102, 103, 104]);
+  assert.deepEqual(Array.from(poetry.getPresetIdsForLang(true)), [101, 102, 103, 104]);
   assert.equal(poetry.resolvePresetForLang(page, 2, false), 102);
   assert.equal(poetry.resolvePresetForLang(page, 3, false), 103);
   assert.equal(poetry.resolveNextPreset(page, 1, false), 102);
   assert.equal(poetry.resolveNextPreset(page, 102, false), 103);
-  assert.equal(poetry.resolveNextPreset(page, 103, false), 1);
+  assert.equal(poetry.resolveNextPreset(page, 103, false), 104);
+  assert.equal(poetry.resolveNextPreset(page, 104, false), 1);
   assert.equal(poetry.resolveNextPreset(page, 101, true), 102);
   assert.equal(poetry.resolveNextPreset(page, 102, true), 103);
-  assert.equal(poetry.resolveNextPreset(page, 103, true), 101);
+  assert.equal(poetry.resolveNextPreset(page, 103, true), 104);
+  assert.equal(poetry.resolveNextPreset(page, 104, true), 101);
+  assert.equal(poetry.resolvePresetForLang(page, 4, false), 104);
+  assert.equal(poetry.resolvePresetLabel({}, 104, false), 'Go West');
 }
 
 function testCanonicalEnglishTrackNamesIgnoreInterfaceLanguage() {
@@ -79,6 +83,7 @@ function testEnglishLyricPresetStillUsesPhysicalAudioTracks() {
   assert.equal(resolveAudioPreset(103, false), 3);
   assert.equal(resolveAudioPreset(102, true), 2);
   assert.equal(resolveAudioPreset(103, true), 3);
+  assert.equal(resolveAudioPreset(104, false), 4);
 }
 
 async function testChineseLyricsRemainStoredButEnglishLyricsAreSelected() {

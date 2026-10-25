@@ -1,0 +1,22 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-127/eae9a5b20d324fe6855fd3c4b37f41b6.glb",
+  "uid": "eae9a5b20d324fe6855fd3c4b37f41b6",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-rover-toy-cameron-main/lunar_rover_toy.glb",
+  "bytes": 4436276,
+  "sha256": "d841be56414e5eb75e516b271a64b59e2367ec9e76dcedbd1f4769ec73fd9710",
+  "triangles_est": 12428,
+  "vertices_est": 12358,
+  "meshes": 1,
+  "materials": 1,
+  "images": 3,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [],
+  "generator": "Sketchfab-12.66.0",
+  "extras": {
+    "author": "Cameron-Main (https://sketchfab.com/Cameron-Main)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/lunar-rover-toymodel-eae9a5b20d324fe6855fd3c4b37f41b6",
+    "title": "Lunar Rover Toy/Model"
+  }
+}

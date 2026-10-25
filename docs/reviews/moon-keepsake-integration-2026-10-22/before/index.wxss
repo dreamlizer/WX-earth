@@ -1,0 +1,820 @@
+/* 整页纯黑 */
+page { background-color: #000; }
+
+.saturn-preview-entry {
+  position: fixed; left: 30rpx; bottom: calc(env(safe-area-inset-bottom) + 36rpx);
+  z-index: 1500; display: flex; align-items: center; gap: 14rpx;
+  padding: 18rpx 12rpx; color: rgba(218, 222, 232, 0.40); font-size: 21rpx; letter-spacing: 2rpx;
+}
+.saturn-entry-symbol { position: relative; width: 36rpx; height: 28rpx; transform: rotate(-28deg); }
+.saturn-entry-body { position: absolute; width: 19rpx; height: 19rpx; border-radius: 50%; background-color: rgba(221,216,200,0.45); left: 9rpx; top: 4rpx; }
+.saturn-entry-ring { position: absolute; width: 36rpx; height: 10rpx; border: 1rpx solid rgba(221,216,200,0.45); border-radius: 50%; top: 8rpx; }
+.saturn-preview-heading { position: fixed; z-index: 3000; left: 40rpx; top: calc(env(safe-area-inset-top) + 34rpx); display: flex; flex-direction: column; gap: 12rpx; background-color: rgba(0,0,0,.62); padding: 12rpx 16rpx; border-radius: 12rpx; }
+.saturn-preview-name { color: #c9c8c5; font-size: 36rpx; letter-spacing: 12rpx; font-weight: 300; }
+.saturn-preview-caption { color: #c9c8c5; font-size: 17rpx; letter-spacing: 3rpx; opacity: 0.42; }
+.saturn-preview-exit { color: #c9c8c5; position: fixed; z-index: 3000; top: calc(env(safe-area-inset-top) + 30rpx); right: 28rpx; padding: 16rpx; font-size: 23rpx; opacity: 0.85; pointer-events: auto; background-color: rgba(0,0,0,.62); border-radius: 12rpx; }
+.saturn-preview-status { color: #c9c8c5; position: fixed; z-index: 3000; top: 48%; width: 100%; text-align: center; font-size: 24rpx; opacity: 0.6; }
+.saturn-preview-retry { pointer-events: auto; padding: 24rpx 0; }
+.saturn-preview-bottom { position: fixed; z-index: 3000; bottom: calc(env(safe-area-inset-bottom) + 28rpx); width: 100%; display: flex; align-items: center; flex-direction: column; gap: 20rpx; background-color: rgba(0,0,0,.78); padding: 18rpx 0; }
+.saturn-preview-hint { color: #c9c8c5; font-size: 20rpx; letter-spacing: 3rpx; opacity: 0.35; }
+.saturn-preview-views { display: flex; gap: 34rpx; pointer-events: auto; }
+.saturn-view { color: #c9c8c5; padding: 12rpx 20rpx; font-size: 24rpx; opacity: 0.45; border-bottom: 1rpx solid transparent; }
+.saturn-view.selected { opacity: 0.88; border-bottom-color: rgba(211,196,170,0.4); }
+.saturn-preview-credit { color: #c9c8c5; font-size: 15rpx; opacity: 0.24; letter-spacing: 1rpx; }
+.saturn-preview-look-caption { color: #c9c8c5; font-size: 21rpx; letter-spacing: 2rpx; opacity: .6; }
+.saturn-preview-looks { display: flex; gap: 12rpx; pointer-events: auto; }
+.saturn-look { color: #c9c8c5; padding: 14rpx 26rpx; font-size: 25rpx; opacity: .42; border: 1rpx solid transparent; border-radius: 40rpx; }
+.saturn-look.selected { opacity: .9; border-color: rgba(211,196,170,.35); background-color: rgba(211,196,170,.06); }
+.saturn-voyage-start { color: #ddd5c4; font-size: 25rpx; padding: 16rpx 40rpx; border: 1rpx solid rgba(211,196,170,.36); border-radius: 40rpx; background-color: rgba(211,196,170,.06); }
+.saturn-voyage-stage { color: #ddd5c4; font-size: 27rpx; letter-spacing: 4rpx; padding: 8rpx 0; }
+.saturn-voyage-time { color: #9a9b9f; font-size: 20rpx; letter-spacing: 3rpx; padding: 4rpx 0 12rpx; }
+.saturn-voyage-controls { display: flex; padding-top: 16rpx; }
+.saturn-voyage-button { color: #aaa8a2; font-size: 23rpx; padding: 18rpx 22rpx; border: 1rpx solid transparent; border-radius: 36rpx; }
+.saturn-voyage-button.primary { color: #ddd5c4; border-color: rgba(211,196,170,.36); background-color: rgba(211,196,170,.06); }
+
+.wrap {
+  z-index: 0;
+  /* 改为固定填充视口，避免 Android 上 vw/vh 偶发计算偏差导致横向拉伸 */
+  position: fixed;
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+canvas {
+  width: 100%;
+  /* 预留非 canvas 区域给底部缩放条，避免被原生 canvas 盖住且事件穿透 */
+  /* 如需更薄/更厚，调整下方 48px 即可，例如 40px/56px */
+  /* 避免使用 vh：改为相对容器高度，并用 rpx 预留底部缩放条 */
+  height: calc(100% - 96rpx);
+  display: block;
+}
+
+/* 顶部工具栏：语言 | 时间 | 设置（统一风格） */
+.top-bar {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  /* 统一使用 rpx，避免在部分安卓 WebView 中 px 与 rpx 混用引起的列宽计算误差 */
+  grid-template-columns: 80rpx minmax(0, 1fr) 80rpx; /* 中列可收缩，防止内容把按钮挤出屏幕 */
+  column-gap: 20rpx; /* 改为 rpx，避免 px/rpx 混用导致宽度漂移 */
+  row-gap: 8px; /* 新增：上下行留间距，避免“禅”与“设定”重叠 */
+  align-items: center;
+  /* 改为百分比 + 最大宽度，确保在极窄设备上不溢出 */
+  width: 92%;
+  max-width: 690rpx; /* 约等于原 min(92vw, 420px) 的视觉效果 */
+  /* 提升层级：确保顶部时区提示位于国家面板和遮罩之上 */
+  z-index: 1200;
+}
+
+.moon-timer-container {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: 20rpx;
+  width: 320rpx;
+  height: 140rpx;
+  z-index: 1301;
+  /* background: rgba(255,0,0,0.3); */
+}
+
+.moon-timer {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: 20rpx;
+  z-index: 1300;
+  height: 64rpx;
+  line-height: 64rpx;
+  padding: 0 18rpx;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.78);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 24rpx;
+  box-sizing: border-box;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+  font-size: 30rpx;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+.moon-timer.visible { opacity: 1; }
+
+.moon-phase-timer {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px + 72rpx);
+  right: 20rpx;
+  z-index: 1300;
+  height: 52rpx;
+  line-height: 52rpx;
+  padding: 0 16rpx;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.68);
+  border: 2px solid rgba(120,170,220,0.42);
+  border-radius: 22rpx;
+  box-sizing: border-box;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+  font-size: 24rpx;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+.moon-phase-timer.visible { opacity: 1; }
+
+.moon-lyrics {
+  height: 150px;
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 1300;
+  pointer-events: none;
+  display: block;
+}
+
+/* 登月模式柔和 Toast */
+.moon-toast {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 22, 36, 0.85);
+  border: 1px solid rgba(120, 170, 220, 0.3);
+  color: #e8f6ff;
+  padding: 24rpx 48rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  letter-spacing: 2rpx;
+  opacity: 0;
+  transition: opacity 800ms ease-in-out;
+  pointer-events: none;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.4);
+}
+.moon-toast.visible {
+  /* opacity managed via inline style for precise control */
+}
+.moon-lyrics-text {
+  position: absolute;
+  /* 原生 cover-view 固定宽度居中，避免文字改长后百分比平移重新定位。 */
+  left: 3%;
+  width: 94%;
+  bottom: 0;
+  display: block;
+  padding: 12rpx 18rpx;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.38);
+  border: none;
+  border-radius: 18rpx;
+  box-sizing: border-box;
+  font-size: 30rpx;
+  font-weight: 700;
+  text-align: center;
+  line-height: 42rpx;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  opacity: 0;
+}
+.moon-lyrics-text.visible { opacity: 1; }
+.top-icon-btn {
+  width: 80rpx;  /* 与右侧齿轮统一尺寸（约 40px） */
+  height: 80rpx;
+  /* 统一与时间胶囊的竖向视觉：改为 flex 居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #e8f6ff;
+  background: rgba(24,40,58,0.92);
+  border: 2px solid rgba(120,170,220,0.55); /* 勾边粗细与时间胶囊一致 */
+  border-radius: 28rpx; /* 圆角风格与时间胶囊一致 */
+  font-weight: 700;
+  font-size: 36rpx; /* iPad 大屏按钮文字随容器等比增大 */
+  box-sizing: border-box;
+  /* 禅模式切换时的淡入淡出 */
+  transition: opacity var(--ui-fade-ms, 320ms) ease;
+}
+/* 禅定模式下显示：右下角登月按钮 */
+.moon-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 80rpx;
+  z-index: 1500;
+  background: transparent !important;
+  color: #e8f6ff !important;
+  border: none !important;
+  /* 保持与 top-icon-btn 一致的圆角和尺寸 */
+  border-radius: 28rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  font-weight: 700;
+  /* 移除白色光晕，保持低调 */
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1000ms ease, transform 200ms ease;
+  padding: 0;
+  overflow: hidden;
+}
+.moon-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 2000ms;
+}
+.moon-btn:active {
+  transform: scale(0.92);
+}
+
+.moon-btn-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.moon-debug-hotspot {
+  position: fixed;
+  bottom: 80rpx;
+  left: 40rpx;
+  width: 100rpx;
+  height: 100rpx;
+  background: transparent;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1000ms ease;
+}
+.moon-debug-hotspot.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 放大齿轮按钮尺寸与字号 */
+.settings-btn { font-size: 36rpx; }
+
+.time-pill {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 14px;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.85);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 28rpx;
+  box-sizing: border-box;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+  font-size: 36rpx; /* 约 18px */
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(200,235,255,0.95), 0 0 18px rgba(120,170,220,0.6);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 0 12px rgba(120,170,220,0.15);
+  text-align: center;
+  /* 禅模式切换时的淡入淡出 */
+  transition: opacity var(--ui-fade-ms, 320ms) ease;
+  /* 关键：允许在 Grid 的 auto 列中“收缩”，避免把两侧按钮挤出屏幕 */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.top-tip {
+  /* 改为固定定位：占据“搜索输入框”的位置与宽度 */
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
+  /* 替换 vw/vh：两侧按钮 40px→80rpx，列间距 10px*2→20px→40rpx */
+  width: calc(690rpx - 80rpx - 80rpx - 40rpx);
+  z-index: 1200; /* 始终在面板/遮罩之上 */
+
+  background: rgba(10,22,36,0.9);
+  color: #fff;
+  font-size: 14px; /* +2px */
+  padding: 0 10px; /* 仅左右内边距，便于垂直居中 */
+  border-radius: 8px;
+  border: 2px solid rgba(120,170,220,0.55);
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.top-tip.visible { opacity: 1; }
+
+/* 搜索按钮：置于第二行第三列（在设置按钮下方） */
+.search-btn {
+  grid-column: 3 / span 1;
+  grid-row: 2;
+  /* 去掉边框，背景透明，仅用白色放大镜图标 */
+  border: none !important;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.5' y2='16.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 60% 60%;
+  color: transparent; /* 隐藏文本字符 */
+  box-shadow: none;
+}
+
+/* “切”按钮：禅定模式下显示，移动到搜索放大镜位置（右列） */
+.cut-btn {
+  grid-column: 3 / span 1;
+  grid-row: 2;
+  position: relative; /* 为内部 Toast 定位 */
+  overflow: visible !important; /* 允许 Toast 超出按钮显示 */
+}
+/* 切歌时显示的歌名（尾部锚定在按钮左侧，长歌名向左延伸） */
+.cut-btn-toast {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10rpx);
+  transform: translateY(-50%) translateX(12rpx);
+  background: rgba(10, 22, 36, 0.85);
+  color: #e8f6ff;
+  font-size: 26rpx;
+  font-style: italic; /* 斜体 */
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  white-space: nowrap;
+  max-width: calc(100vw - 180rpx);
+  overflow: hidden;
+  text-align: right;
+  pointer-events: none;
+  z-index: 10;
+  border: 1px solid rgba(120, 170, 220, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.3);
+
+  /* 优雅的淡入淡出 */
+  opacity: 0;
+  transform-origin: right center;
+  transition: opacity 600ms ease, transform 600ms cubic-bezier(0.21, 0.61, 0.35, 1);
+}
+.cut-btn-toast.visible {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.cut-btn-label {
+  display: none; /* 废弃旧样式 */
+}
+
+/* “禅”按钮：置于第二行第一列（语言按钮下方） */
+.zen-btn {
+  grid-column: 1 / span 1;
+  grid-row: 2;
+}
+
+.preset-list {
+  position: fixed;
+  right: 8px;
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px + 80rpx + 6px);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity 300ms ease;
+}
+.preset-item { color: #ffffff; padding: 0; text-align: right; }
+.preset-item { transition: transform 1000ms ease, opacity 1000ms ease; }
+.preset-item.active { font-weight: 700; }
+.preset-text { white-space: nowrap; font-style: italic; font-size: 26rpx; }
+.preset-item.active .preset-text { font-size: 32rpx; color: #e6f0ff; }
+.preset-item.faded { opacity: 0.28; }
+.preset-item.fadeout { opacity: 0; pointer-events: none; }
+.preset-item.breathing .preset-text { animation: preset-breath 5.2s ease-in-out infinite; }
+@keyframes preset-breath {
+  0%, 100% { opacity: 0.78; }
+  50% { opacity: 1; }
+}
+
+/* 禅定诗句盒：右上角显示，跟随顶部安全区与工具栏布局 */
+.poetry-box {
+  /* 旧右上角诗句盒不再使用，改为独立层 */
+  display: none;
+}
+
+.poetry-box.visible { opacity: 1; }
+
+/* 新：诗句独立层与条目样式 */
+.poetry-layer {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 1200;
+  pointer-events: none; /* 不拦截触控 */
+}
+.poetry-item {
+  position: fixed; /* 相对视口定位以便全屏移动 */
+  z-index: 1200;
+  color: #e8f6ff;
+  background: transparent; /* 移除背景框 */
+  border: none;
+  border-radius: 0; /* 去掉圆角，彻底无框 */
+  padding: 0; /* 纯文字呈现 */
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+  word-break: keep-all;
+  display: inline-block;
+  opacity: 0; /* 通过 .visible 切换 */
+  will-change: transform, opacity; /* 降低移动时的闪烁 */
+  backface-visibility: hidden;
+}
+.poetry-item.horizontal { writing-mode: horizontal-tb; text-orientation: mixed; font-style: italic; }
+.poetry-item.horizontal .poetry-text { white-space: pre; display: block; text-align: center; }
+.poetry-text { display: inline-block; writing-mode: inherit; text-orientation: inherit; color: inherit; letter-spacing: 0.5rpx; }
+.poetry-text.first-line { font-weight: 700; }
+.poetry-item.visible { opacity: 1; }
+
+/* 已移除 PC 预览缩放控件 */
+
+/* 已移除：PC 端滚轮触发占位样式 */
+
+/* 旧顶栏样式已移除 */
+
+/* 设置面板：固定定位，完整显示且避开时间条 */
+.settings-panel {
+  position: fixed;
+  /* 由 JS 动态设置 left 与 width；此处去除居中 transform，避免覆盖 */
+  left: auto;
+  transform: none;
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
+  width: auto;
+  max-width: none;
+  box-sizing: border-box; /* 关键：宽度包含 padding+border，确保右侧与时间胶囊严格对齐 */
+  background: rgba(10,22,36,0.88);
+  border: 1px solid rgba(120,170,220,0.45);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.55);
+  z-index: 90;
+}
+
+.global-black-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  background: #000;
+  opacity: 0;
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+/* 禅模式下保留网格占位但隐藏视觉与交互 */
+.inert {
+  opacity: 0;
+  pointer-events: none;
+}
+/* 面板外点击关闭的透明遮罩：位于画布之上、面板之下 */
+.settings-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 80;
+  background: rgba(0,0,0,0); /* 透明但可接收点击 */
+}
+.settings-title { color: #e8f6ff; font-weight: 700; margin-bottom: 4px; }
+.settings-row { display: flex; justify-content: space-between; align-items: center; color: #cfe7ff; padding: 4px 0; gap: 8px; }
+.settings-row text:first-child { white-space: nowrap; flex: 0 0 72px; }
+.settings-row .qty-group { flex: 1 1 auto; justify-content: flex-start; overflow: hidden; }
+
+/* 惯性滑条：更小的滑块，明确的滑轨颜色与间距 */
+.inertia-row .qty-group { padding: 0; }
+.inertia-slider { margin: 0; width: 100%; }
+.settings-row .toggle-group { flex: 1 1 auto; overflow: hidden; }
+.toggle-group { display: flex; flex-wrap: nowrap; gap: 4px; }
+.toggle-btn { flex: 1 1 0; min-width: 0; padding: 0 6px; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; white-space: nowrap; word-break: keep-all; }
+.toggle-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
+.qty-group { display: flex; flex-wrap: nowrap; gap: 4px; }
+.qty-btn { flex: 1 1 0; min-width: 0; height: 24px; line-height: 24px; text-align: center; color: #cfe7ff; background: rgba(24,40,58,0.9); border: 1px solid rgba(120,170,220,0.35); border-radius: 6px; padding: 0 4px; white-space: nowrap; word-break: keep-all; }
+.qty-btn.active { color: #0b1c2f; background: rgba(160,200,250,0.95); border-color: rgba(180,220,255,0.9); font-weight: 700; }
+
+/* 底部缩放条：统一胶囊风格（原样式恢复） */
+.zoom-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 1px); /* 紧贴底部 */
+  transform: translateX(-50%);
+  /* 统一 rpx 宽度 */
+  width: 690rpx;
+  padding: 0px 8px; /* 厚度由 padding 与 block-size 决定 */
+  background: rgba(10,22,36,0.88);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 999px; /* 两端半圆 */
+  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  z-index: 1000; /* 始终最前 */
+  /* 禅模式切换时的淡入淡出 */
+  transition: opacity var(--ui-fade-ms, 320ms) ease;
+}
+.zoom-slider {
+  width: 100%;
+}
+
+/* 国家信息面板遮罩 */
+.country-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0); /* 改为透明：不再暗化地球 */
+  z-index: 980;
+}
+
+/* —— 彩蛋：时间胶囊感应区（透明点击覆盖） —— */
+.egg-sensor {
+  position: fixed;
+  z-index: 1300; /* 高于顶栏与诗句层 */
+  background: rgba(255,255,255,0); /* 完全透明，仅用于接收点击 */
+  pointer-events: auto;
+}
+.brightness-sensor {
+  position: fixed;
+  z-index: 1400; /* 始终最前 */
+  background: rgba(255,255,255,0); /* 透明占位，拦截触控 */
+  pointer-events: auto;
+}
+
+/* —— Special 文本层：大字号、发光、水平（与诗句层独立） —— */
+.special-layer {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 1300;
+  pointer-events: none; /* 不拦截触控，旋转仍可 */
+}
+.special-item {
+  position: fixed;
+  color: #eaf7ff;
+  font-weight: 700; /* Special 文本更粗，提升存在感 */
+  background: transparent;
+  border: none;
+  opacity: 0; /* 初始透明，配合 .visible 切换 */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  /* 宇宙风格发光 */
+  text-shadow: 0 0 24px rgba(160,200,255,0.85), 0 0 48px rgba(100,160,240,0.45);
+}
+.special-item .special-text {
+  display: inline-block;
+  writing-mode: horizontal-tb; /* 特殊文本水平排布 */
+  letter-spacing: 4px;        /* 字间距加大，适配大字号 */
+  white-space: nowrap;        /* 不换行，四字短句保持一行 */
+  word-break: keep-all;       /* 避免把中文拆分到下一行 */
+}
+.special-item.visible { opacity: 1; }
+
+/* 国家信息面板 */
+.country-panel {
+  position: fixed;
+  left: 50%;
+  /* 由 top: auto 改为固定位置，与“禅”按钮行对齐 */
+  /* 计算逻辑：安全区 + 顶部工具栏高度 + 间距 */
+  /* 工具栏第一行 80rpx + 间距 8px + 第二行 80rpx = 约 160rpx + 8px */
+  /* 直接对齐到第二行按钮（禅）的上沿，或者略微下移 */
+  /* 这里设定为：安全区 + 8px + 第一行80rpx + 间距8px = 第二行起始位置 */
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 8px);
+  transform: translateX(-50%);
+  /* 与顶部时间胶囊一致：690rpx - 左(40px→80rpx) - 右(44px→88rpx) - 2个列间距(10px*2→20px→40rpx) */
+  width: calc(690rpx - 80rpx - 88rpx - 40rpx);
+  background: rgba(16,28,44,0.96);
+  border: 2px solid rgba(120,170,220,0.55);
+  border-radius: 14px;
+  padding: 5px 14px; /* 上下边距减少约60%：12px -> 5px */
+  padding-right: 54px;
+  color: #e8f6ff;
+  font-size: 15px; /* 整体字体略小 +2px */
+  box-sizing: border-box;
+  z-index: 990;
+}
+.country-flag {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 32px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid rgba(210,232,255,0.38);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.24);
+}
+.country-flag-sprite {
+  position: absolute;
+  display: block;
+  max-width: none;
+  max-height: none;
+}
+.country-title {
+  font-weight: 700;
+  font-size: 18px; /* +2px */
+  margin-bottom: 2px; /* 标题更紧凑，距离缩小约 33% */
+  white-space: nowrap;
+  word-break: keep-all;
+}
+.country-row {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 4px; /* 标签与值间距缩小约 50% */
+  margin: 2px 0;   /* 行距缩小约 60% → 更紧凑 */
+}
+/* 英文模式下调整标签列宽，防止 Population 重叠 */
+.country-panel.lang-en .country-row {
+  grid-template-columns: 88px minmax(0, 1fr);
+  column-gap: 8px;
+}
+.country-row .k { color: #9cc3e9; white-space: nowrap; word-break: keep-all; }
+.country-row .v { color: #e8f6ff; white-space: nowrap; word-break: keep-all; }
+.country-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  margin-top: 4px; /* 上边距缩小约60% */
+}
+.close-btn, .clear-btn {
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.close-btn { background: rgba(24,40,58,0.92); border: 1px solid rgba(120,170,220,0.45); }
+.clear-btn { background: rgba(120,170,220,0.20); border: 1px solid rgba(120,170,220,0.45); }
+
+/* 搜索面板：与国家面板同宽风格 */
+.search-panel {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  /* 与时间胶囊的正下方对齐（时间胶囊高度 40px，向下留 6px 间距） */
+  top: calc(env(safe-area-inset-top) + 8px + 80rpx + 6px);
+  /* 与时间胶囊同宽：690rpx - 两侧按钮(40px→80rpx) - 两个列间距(10px*2→20px→40rpx) */
+  width: calc(690rpx - 80rpx - 80rpx - 40rpx);
+  background: transparent; /* 外框完全隐身 */
+  border: none;            /* 去掉边框勾线 */
+  border-radius: 0;        /* 取消圆角轮廓 */
+  padding: 0;              /* 不再承载视觉外框 */
+  color: #e8f6ff;
+  z-index: 995;
+}
+
+/* 搜索遮罩：点击空白关闭并透传触摸到画布 */
+.search-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 990;
+  background: rgba(0,0,0,0);
+}
+.search-input {
+  height: 40px;             /* 与时间胶囊统一高度 */
+  line-height: 40px;
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  color: #e8f6ff;
+  background: rgba(10,22,36,0.88);
+  border: 2px solid rgba(120,170,220,0.55); /* 勾边与时间胶囊一致 */
+  border-radius: 14px;
+}
+.search-list { margin-top: 8px; max-height: 220px; overflow-y: auto; }
+.search-item { padding: 8px 10px; border-radius: 8px; margin: 4px 0; background: rgba(24,40,58,0.86); border: 1px solid rgba(120,170,220,0.35); }
+.search-item-text { color: #e8f6ff; font-size: 16px; /* +2px */ }
+.search-item:active { background: rgba(160,200,250,0.18); }
+.search-empty { color: #9cc3e9; font-size: 13px; padding: 6px; text-align: center; }
+
+/* —— 额外规则：强制不换行（时间胶囊 & 国家面板内容） —— */
+.time-pill { white-space: nowrap; word-break: keep-all; }
+/* 面板淡出统一样式：用于禅定模式下 0.5s 退场 */
+.fading-out {
+  opacity: 0;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}
+
+/* 地球加载提示：居中显示，简约风格 */
+.loading-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1000;
+}
+.loading-text {
+  color: rgba(232, 246, 255, 0.7);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(100, 181, 255, 0.5);
+  animation: pulse-text 2s infinite ease-in-out;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* 全局黑屏遮罩：用于场景切换过渡 */
+.global-black-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  width: 100%; height: 100%;
+  background: #000;
+  z-index: 99999; /* 极高层级，覆盖所有 UI */
+}
+
+/* A quiet identification line below the globe, clear of the left Saturn entry. */
+.ambient-caption { position: fixed; z-index: 1200; left: 24%; right: 24%; bottom: calc(env(safe-area-inset-bottom) + 48rpx); text-align: center; color: #d3d8de; background: transparent; }
+.ambient-caption-name { font-size: 27rpx; line-height: 38rpx; letter-spacing: 2rpx; }
+.ambient-caption-description { font-size: 20rpx; line-height: 30rpx; color: #8e98a4; }
+
+/* The floating poetry above retains its original transform transitions. */
+.zen-chinese-line { height: 44px; display: flex; flex-direction: column; justify-content: flex-end; position: fixed; z-index: 1500; left: 13%; width: 74%; opacity: 0; color: #d0dce6; font-size: 15px; line-height: 22px; white-space: pre-wrap; word-break: break-word; text-align: center; background: transparent; pointer-events: none; }
+.zen-chinese-line.visible { opacity: 1; }
+
+.zen-chinese-text { width: 100%; line-height: 22px; white-space: pre-wrap; word-break: break-word; background: transparent; }
+
+/* Go West: restrained coloured light, with real centre-out curtain motion. */
+.go-west-lyrics { position: fixed; inset: 0; z-index: 1490; pointer-events: none; color: #88cfe2; font-family: Arial, sans-serif; }
+.go-west-group { position: absolute; top: 24%; left: 5%; width: 90%; text-align: center; }
+.go-west-left { top: 24%; }
+.go-west-right { top: 28%; }
+.go-west-center { top: 26%; }
+.go-west-chorus { top: 23%; }
+.go-west-call-slot { height: 58px; }
+.go-west-call, .go-west-response, .go-west-chinese-call, .go-west-chinese-response { white-space: nowrap; word-break: keep-all; overflow-wrap: normal; letter-spacing: .15px; transform-origin: center center; }
+.go-west-call { line-height: 1.18; font-weight: 600; color: #8ed6e6; text-shadow: 0 1px 2px #102535, 0 0 12px rgba(49,165,206,.38); animation: go-west-impact 320ms cubic-bezier(.16,.8,.25,1) both; }
+.go-west-anthem { color: #eac993; text-shadow: 0 1px 3px #35264a, 0 0 16px rgba(204,153,73,.4); }
+.go-west-intro .go-west-call { color: #a3c8e2; font-weight: 500; text-shadow: 0 1px 3px #162539, 0 0 12px rgba(85,151,203,.3); }
+.go-west-response { line-height: 1.6; font-weight: 500; color: #c4b3e0; text-shadow: 0 1px 2px #251d39, 0 0 10px rgba(153,122,205,.35); animation: go-west-unfold 800ms cubic-bezier(.3,.05,.4,1) both; }
+.go-west-reveal-box { margin: 0 auto; }
+.go-west-curtain { position: relative; left: 50%; transform: translateX(-50%); overflow: hidden; height: 46px; animation: go-west-curtain 800ms cubic-bezier(.3,.05,.4,1) both; }
+.go-west-curtain-content { position: relative; left: 50%; transform: translateX(-50%); }
+.go-west-fade { animation-name: go-west-fade; animation-timing-function: ease-in; animation-fill-mode: both; }
+.go-west-grow { transform-origin: center center; animation-name: go-west-approach; animation-timing-function: linear; animation-fill-mode: both; }
+.go-west-chinese { position: fixed; left: 12%; width: 76%; height: 58px; z-index: 1500; text-align: center; pointer-events: none; }
+.go-west-chinese-pair { width: 100%; height: 58px; }
+.go-west-chinese-call-slot { height: 25px; }
+.go-west-chinese-call { line-height: 23px; font-weight: 600; color: #8ed6e6; text-shadow: 0 0 6px rgba(49,165,206,.35); animation: go-west-impact 320ms cubic-bezier(.16,.8,.25,1) both; }
+.go-west-chinese-response { line-height: 28px; font-weight: 500; color: #c4b3e0; text-shadow: 0 0 6px rgba(153,122,205,.35); animation: go-west-unfold 800ms cubic-bezier(.3,.05,.4,1) both; }
+@keyframes go-west-impact { 0% { opacity: 0; transform: scale(.12); } 58% { opacity: 1; transform: scale(1.07); } 82% { opacity: 1; transform: scale(.98); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes go-west-curtain { 0% { width: 0%; } 18% { width: 8%; } 100% { width: 100%; } }
+@keyframes go-west-unfold { 0% { transform: scaleX(.52); opacity: .65; } 100% { transform: scaleX(1); opacity: 1; } }
+@keyframes go-west-approach { from { transform: scale(1); } to { transform: scale(1.22); } }
+@keyframes go-west-fade { from { opacity: 1; } to { opacity: 0; } }
+
+/* Quiet backing phrases keep a fixed size and drift through the space. */
+.go-west-group.go-west-drift { top: 27%; }
+.go-west-drift .go-west-call-slot { height: 36px; }
+.go-west-drift .go-west-grow { animation-name: go-west-drift; }
+.go-west-drift .go-west-call, .go-west-drift .go-west-chinese-call { color: rgba(164,189,208,.78); font-weight: 400; text-shadow: 0 0 7px rgba(91,147,184,.18); animation: go-west-soft-in 650ms ease-out both; }
+.go-west-drift .go-west-response, .go-west-drift .go-west-chinese-response { color: rgba(185,176,207,.8); font-weight: 400; text-shadow: 0 0 7px rgba(128,114,166,.18); animation: go-west-soft-in 700ms ease-out both; }
+.go-west-drift .go-west-curtain, .go-west-choir .go-west-curtain { width: 100%; animation: none; }
+.go-west-drift .go-west-curtain { overflow: visible; }
+/* A small lead, then a broad choir rising into place without continued zoom. */
+.go-west-choir .go-west-call-slot { height: 38px; }
+.go-west-choir .go-west-grow { animation: none; }
+.go-west-choir .go-west-call, .go-west-choir .go-west-chinese-call { font-weight: 400; color: #9dbbcc; text-shadow: 0 0 7px rgba(89,156,186,.25); animation: go-west-soft-in 350ms ease-out both; }
+.go-west-choir .go-west-response, .go-west-choir .go-west-chinese-response { font-weight: 600; color: #e0c8a4; animation: go-west-choir-rise 650ms cubic-bezier(.16,.8,.25,1) both; }
+.go-west-chinese-pair.go-west-choir { height: 65px; transform: translateY(-7px); }
+@keyframes go-west-soft-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes go-west-drift { from { transform: translate3d(-4px,3px,0); } to { transform: translate3d(5px,-5px,0); } }
+@keyframes go-west-choir-rise { 0% { opacity: 0; transform: translateY(22px) scaleX(.96); text-shadow: 0 0 2px rgba(159,195,215,.1); } 65% { opacity: 1; text-shadow: 0 0 14px rgba(159,195,215,.5); } 100% { opacity: 1; transform: translateY(0) scaleX(1); text-shadow: 0 1px 2px #251d39,0 0 8px rgba(159,195,215,.25); } }
+/* Two transition rows, retained until the normal verse at number 15. */
+.go-west-group.go-west-tableau { top: 21%; text-align: left; }
+.go-west-group.go-west-tableau.go-west-row-1 { top: 31%; text-align: center; }
+.go-west-tableau .go-west-call-slot { height: 34px; }
+.go-west-tableau .go-west-call, .go-west-tableau .go-west-response { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 400; line-height: 1.4; color: rgba(163,197,212,.85); text-shadow: 0 0 9px rgba(98,161,190,.22); animation: go-west-wisp-in 1100ms cubic-bezier(.2,.65,.3,1) both; }
+.go-west-tableau .go-west-response { color: rgba(185,177,208,.86); }
+.go-west-tableau.go-west-row-1 .go-west-call { color: rgba(164,187,204,.73); animation-name: go-west-wisp-right; }
+.go-west-tableau .go-west-grow { animation-name: go-west-tableau-flow; }
+.go-west-tableau .go-west-curtain { width: 100%; overflow: visible; height: 38px; animation: none; }
+.go-west-group.go-west-tableau.go-west-row-0 .go-west-reveal-box { margin-left: 0; }
+@keyframes go-west-wisp-in { from { opacity: 0; transform: translate3d(-18px,7px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
+@keyframes go-west-wisp-right { from { opacity: 0; transform: translate3d(18px,7px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
+@keyframes go-west-tableau-flow { from { transform: translate3d(0,0,0); } to { transform: translate3d(5px,-4px,0); } }
+
+/* A / B / A chorus: the upper English voice is drawn by the star/light geometry. */
+.go-west-stars .go-west-response, .go-west-stars .go-west-chinese-response { color: #b4bfe8; font-weight: 400; text-shadow: 0 0 10px rgba(106,158,226,.38); animation: go-west-stellar-arrive 900ms cubic-bezier(.16,.7,.3,1) both; }
+.go-west-stars .go-west-call, .go-west-stars .go-west-chinese-call { color: #a8cce9; font-weight: 400; animation: go-west-stellar-arrive 650ms ease-out both; }
+.go-west-stars .go-west-grow { animation-name: go-west-stellar-approach; }
+.go-west-stars .go-west-curtain, .go-west-bands .go-west-curtain { width: 100%; overflow: visible; animation: none; }
+.go-west-bands .go-west-response, .go-west-bands .go-west-chinese-response { color: #e6cda5; font-weight: 500; text-shadow: 0 0 10px rgba(186,142,77,.32); animation: go-west-light-rise 850ms cubic-bezier(.15,.7,.3,1) both; }
+.go-west-bands .go-west-call, .go-west-bands .go-west-chinese-call { color: #99c8ed; font-weight: 400; animation: go-west-light-rise 650ms ease-out both; }
+.go-west-bands .go-west-grow { animation-name: go-west-band-approach; }
+.go-west-choir.go-west-look-stars .go-west-response { color: #d7cce6; text-shadow: 0 0 12px rgba(134,159,214,.3); }
+@keyframes go-west-stellar-arrive { from { opacity: 0; transform: translate3d(0,6px,0) scale(.89); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
+@keyframes go-west-light-rise { from { opacity: 0; transform: translate3d(0,23px,0) scale(.94); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
+@keyframes go-west-stellar-approach { from { transform: scale(1); } to { transform: scale(1.10); } }
+@keyframes go-west-band-approach { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+/* Number 32: the short promise enters independently before its answer. */
+.go-west-promise .go-west-call, .go-west-promise .go-west-chinese-call { font-weight: 500; color: #e4c2ae; text-shadow: 0 0 10px rgba(194,142,133,.3); animation: go-west-promise-in 600ms cubic-bezier(.16,.8,.25,1) both; }
+@keyframes go-west-promise-in { from { opacity: 0; transform: translate3d(-14px,6px,0) rotate(-5deg) scale(.9); } to { opacity: 1; transform: translate3d(0,0,0) rotate(0) scale(1); } }

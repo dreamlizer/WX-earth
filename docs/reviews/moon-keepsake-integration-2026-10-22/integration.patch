@@ -1,0 +1,235 @@
+--- before/miniprogram/pages/gl/app-engine.js
++++ miniprogram/pages/gl/app-engine.js
+@@ -697,6 +697,7 @@
+   
+   setPaused(on) {
+     const p = !!on;
++    this.moonMgr?._terrain?.keepsake?.setSuspended(p);
+     if (p) this.ambientEncounter?.pause();
+     this.saturnPreview?.pause();
+     if (p) this.loop?.stop(); else this.loop?.start(); 
+@@ -716,6 +717,9 @@
+   exitMoonVoyage() {
+     if (this.moonMgr) this.moonMgr.exit();
+   }
++
++  toggleMoonKeepsakeControls() { this.moonMgr?._terrain?.keepsake?.toggleControls(); }
++  saveMoonKeepsake() { return this.moonMgr?._terrain?.keepsake?.save(); }
+   
+   setMoonVoyageSpeed(mult) {
+     if (this.moonMgr) this.moonMgr.setSpeed(mult);
+--- before/miniprogram/app.json
++++ miniprogram/app.json
+@@ -13,6 +13,11 @@
+   "style": "v2",
+   "lazyCodeLoading": "requiredComponents",
+   "subpackages": [
++    {
++      "root": "moon-photo-assets",
++      "name": "moon-photo-assets",
++      "pages": ["index"]
++    },
+     {
+       "root": "saturn-assets",
+       "name": "saturn-assets",
+--- before/miniprogram/pages/gl/index.js
++++ miniprogram/pages/gl/index.js
+@@ -26,6 +26,7 @@
+ import { getSystemInfo } from './sys-info.js';
+ import { enterSaturnPreview, exitSaturnPreview, retrySaturnPreview, setSaturnPreviewView, setSaturnPreviewLook, startSaturnVoyage, toggleSaturnVoyagePause, stopSaturnVoyage, resetSaturnVoyageGaze } from './main.js';
+ import { SATURN_LOOKS, DEFAULT_SATURN_LOOK } from './saturn-preview-looks.js';
++import { toggleMoonKeepsakeControls, saveMoonKeepsake } from './main.js';
+ 
+ Page({
+   data: {
+@@ -34,6 +35,9 @@
+     moonToastVisible: false,
+     moonToastText: '',
+     moonToastOpacity: 0,
++    moonKeepsakeVisible: false,
++    moonKeepsakeControls: false,
++    moonKeepsakeSaving: false,
+     saturnPreviewActive: false,
+     saturnPreviewLoading: false,
+     saturnPreviewError: '',
+@@ -107,6 +111,10 @@
+     try { if (this.__isMoonLocked()) return; } catch(_){ }
+     enterMoonVoyage();
+   },
++
++  onMoonKeepsakeTap() { toggleMoonKeepsakeControls(); },
++  onMoonKeepsakeSave() { saveMoonKeepsake(); },
++  onMoonKeepsakeReturn() { exitMoonVoyage(); },
+ 
+   onEnterSaturnPreview() {
+     if (this.data.zenMode || this.__isMoonLocked() || this.data.saturnPreviewActive) return;
+--- before/miniprogram/pages/gl/index.wxml
++++ miniprogram/pages/gl/index.wxml
+@@ -20,19 +20,19 @@
+ </view>
+ 
+ <!-- 登月模式时间显示：右上角长按4秒切换显隐 -->
+-<view wx:if="{{moonVoyageActive}}" class="moon-timer-container" bindtouchstart="onMoonTimerTouchStart" bindtouchend="onMoonTimerTouchEnd" bindtouchcancel="onMoonTimerTouchEnd">
++<view wx:if="{{moonVoyageActive && !moonKeepsakeVisible}}" class="moon-timer-container" bindtouchstart="onMoonTimerTouchStart" bindtouchend="onMoonTimerTouchEnd" bindtouchcancel="onMoonTimerTouchEnd">
+   <text class="moon-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonTimerText}}</text>
+   <text class="moon-phase-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonPhaseText}}</text>
+ </view>
+ 
+ 
+ <!-- 登月模式入口：右下角按钮（禅定模式下淡入显示，避免 wx:if 造成“闪现”） -->
+-<view class="top-icon-btn moon-btn {{zenBtnVisible ? 'visible' : ''}}" bindtap="onEnterMoonVoyage" role="button">
++<view class="top-icon-btn moon-btn {{zenBtnVisible && !moonKeepsakeVisible ? 'visible' : ''}}" bindtap="onEnterMoonVoyage" role="button">
+   <image wx:if="{{moonBtnUrl}}" class="moon-btn-img" src="{{moonBtnUrl}}" mode="aspectFill"></image>
+   <text wx:else>🌖</text>
+ </view>
+ <!-- 调试热区只在原版登月播放时接收触摸。 -->
+-<view class="moon-debug-hotspot {{moonVoyageActive ? 'visible' : ''}}" bindtouchstart="onSpeedTouchStart" bindtouchend="onSpeedTouchEnd" bindtouchcancel="onSpeedTouchEnd"></view>
++<view class="moon-debug-hotspot {{moonVoyageActive && !moonKeepsakeVisible ? 'visible' : ''}}" bindtouchstart="onSpeedTouchStart" bindtouchend="onSpeedTouchEnd" bindtouchcancel="onSpeedTouchEnd"></view>
+ 
+ <!-- 预设列表（禅定模式下，“定”按钮下方展开） -->
+ <view wx:if="{{false}}" class="preset-list" style="right: {{presetListRight}}px; top: {{presetListTop}}px; opacity: {{presetListOpacity}};">
+@@ -153,6 +153,7 @@
+     type="webgl"
+     id="gl"
+     disable-scroll="true"
++    bindtap="onMoonKeepsakeTap"
+     bindtouchstart="onTouchStart"
+     bindtouchmove="onTouchMove"
+     bindtouchend="onTouchEnd"
+@@ -209,6 +210,10 @@
+   <!-- 已移除：PC 端滚轮触发空间 -->
+   
+ </scroll-view>
++<view wx:if="{{moonKeepsakeVisible && moonKeepsakeControls}}" class="moon-keepsake-controls">
++  <view class="moon-keepsake-action" catchtap="onMoonKeepsakeSave" role="button">{{moonKeepsakeSaving ? '保存中…' : '保存照片'}}</view>
++  <view class="moon-keepsake-action" catchtap="onMoonKeepsakeReturn" role="button">返回地球</view>
++</view>
+ 
+ <!-- 底部缩放条：统一胶囊风格（受 showZoomBar 控制，可见才渲染） -->
+ <view wx:if="{{showZoomBar && !saturnPreviewActive}}" class="zoom-bar {{zenMode ? 'inert' : ''}}" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">
+--- before/miniprogram/pages/gl/index.wxss
++++ miniprogram/pages/gl/index.wxss
+@@ -239,6 +239,10 @@
+   height: 100%;
+   display: block;
+ }
++
++/* Keep native controls above the canvas's 96rpx footer. */
++.moon-keepsake-controls {position:fixed;left:0;bottom:144rpx;width:100%;height:80rpx;display:flex;justify-content:center;z-index:1801;background:transparent;}
++.moon-keepsake-action {margin:0 10rpx;width:190rpx;height:76rpx;border:1rpx solid rgba(224,231,240,.32);border-radius:40rpx;background:rgba(15,21,29,.84);color:#e6e9ef;font-size:25rpx;line-height:76rpx;text-align:center;}
+ 
+ .moon-debug-hotspot {
+   position: fixed;
+--- before/miniprogram/pages/gl/main.js
++++ miniprogram/pages/gl/main.js
+@@ -43,6 +43,8 @@
+ 
+ export function enterMoonVoyage() { engine.enterMoonVoyage(); }
+ export function exitMoonVoyage() { engine.exitMoonVoyage(); }
++export function toggleMoonKeepsakeControls() { engine.toggleMoonKeepsakeControls(); }
++export function saveMoonKeepsake() { return engine.saveMoonKeepsake(); }
+ export function setMoonVoyageSpeed(mult) { engine.setMoonVoyageSpeed(mult); }
+ export function isMoonVoyageActive() { return engine.isMoonVoyageActive(); }
+ export function enterSaturnPreview() { return engine.enterSaturnPreview(); }
+--- before/miniprogram/pages/gl/moon-playback-clock.js
++++ miniprogram/pages/gl/moon-playback-clock.js
+@@ -1,6 +1,7 @@
+ // Fast-forward is a visual review gesture. On release, seek the same player to
+ // the reviewed position before giving its native samples ownership again.
+ export function setMoonPlaybackSpeed(mgr, value) {
++  if(mgr._moonPhotoHold)return;
+   const speed = Math.max(.1, Math.min(20, Number(value)));
+   if (!Number.isFinite(speed) || speed === mgr._speedMult) return;
+   if (speed === 1 && mgr._speedMult !== 1 && mgr.audioContext) {
+@@ -17,6 +18,8 @@
+ 
+ // Smooth native audio samples for per-frame camera motion, including waiting and resume.
+ export function moonPlaybackTime(mgr,now=Date.now()) {
++  const hold=mgr._moonPhotoHold;
++  if(hold)return hold.time+(hold.paused?0:Math.max(0,now-hold.at)/1000);
+   if(!mgr.audioContext||mgr._speedMult!==1)return null;
+   const raw=Number(mgr.audioContext.currentTime);
+   if(!Number.isFinite(raw)||raw<0)return null;
+--- before/miniprogram/pages/gl/moon-terrain-sequence.js
++++ miniprogram/pages/gl/moon-terrain-sequence.js
+@@ -3,6 +3,7 @@
+ import {ensureSceneArtPackage} from './scene-art-loader.js';
+ import {TERRAIN_CONFIG} from './moon-terrain-config.js';
+ import {moonPlaybackTime} from './moon-playback-clock.js';
++import {MoonKeepsake} from './moon-keepsake.js';
+ 
+ const smooth=(a,b,t)=>{const u=Math.max(0,Math.min(1,(t-a)/(b-a)));return u*u*(3-2*u);};
+ // Match the accepted r160 ACES fit locally; r108 uses a different scalar approximation.
+@@ -26,6 +27,7 @@
+     const gl=renderer.getContext();this.capabilities={samplers:gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS),maxTextureSize:gl.getParameter(gl.MAX_TEXTURE_SIZE)};
+     if(this.capabilities.samplers<12||this.capabilities.maxTextureSize<2048){this.status='unsupported';return;}
+     this.status='loading';this.startedAt=Date.now();this.assets=new MoonTerrainAssets();
++    this.keepsake=new MoonKeepsake(mgr,renderer);this.keepsake.prepare();
+     const build={textures:new Set(),scene:null};this.build=build;
+     const current=()=>generation===this.generation&&mgr.active;
+     this.pending=Promise.all([this.assets.load(),ensureSceneArtPackage()]).then(async([paths])=>{
+@@ -102,7 +104,10 @@
+   render(time) {
+     if(!this.active||!this.view)return false;
+     time=moonPlaybackTime(this.mgr)??time;
+-    this.pose(time);this.withRenderer(()=>this.renderer.render(this.view.scene,this.view.camera));return true;
++    this.pose(time);this.withRenderer(()=>{
++      const world=()=>this.renderer.render(this.view.scene,this.view.camera);
++      if(!this.keepsake?.render(time,world))world();
++    });return true;
+   }
+   releaseScene(build=this.build) {
+     if(!build)return;const geometries=new Set(),materials=new Set();build.scene?.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of [].concat(o.material))materials.add(m);if(o.shadow?.map)o.shadow.map.dispose();});
+@@ -110,6 +115,7 @@
+     if(this.build===build){this.build=null;this.view=null;}
+   }
+   dispose() {
++    this.keepsake?.dispose();this.keepsake=null;
+     ++this.generation;this.assets?.cancel();this.active=false;this.selected=undefined;this.status='idle';
+     // A still-building generation owns its scene until its promise settles.
+     if(!this.pending)this.releaseScene();this.pending=null;
+--- before/miniprogram/pages/gl/moon-voyage-audio.js
++++ miniprogram/pages/gl/moon-voyage-audio.js
+@@ -15,6 +15,7 @@
+   const ctx = wx.createInnerAudioContext();
+   mgrState._moonPlaybackClock=null;
+   mgrState._moonPlaybackSeek=null;
++  mgrState._moonPhotoHold=null;
+   mgrState._moonAudioWaiting=true;
+   ctx.src = mgrState.audioPath || ASSETS.AUDIO;
+   ctx.autoplay = true;
+@@ -51,6 +52,11 @@
+   ctx.onEnded(() => {
+      if (!isCurrent()) return;
+      traceMoon(mgrState,'audio-ended');
++     if(mgrState._terrain?.keepsake?.holdAtEnd()){
++       stopMoonLyrics(mgrState);
++       console.log('[Moon] Audio ended, keeping the floating photo');
++       return;
++     }
+      console.log('[Moon] Audio ended, triggering exit');
+      if (typeof mgrState.exit === 'function') mgrState.exit();
+   });
+--- before/miniprogram/pages/gl/moon-voyage-lifecycle.js
++++ miniprogram/pages/gl/moon-voyage-lifecycle.js
+@@ -451,6 +451,8 @@
+   if (!shouldRestore) return;
+   if (mgr._exiting) return;
+   mgr._exiting = true;
++  mgr._terrain?.keepsake?.hideControls();
++  mgr.page?.setData?.({moonKeepsakeVisible:false,moonKeepsakeControls:false});
+   const token = ++mgr._exitFadeToken;
+ 
+   console.log('[Moon] Aborting mission');
+--- before/miniprogram/pages/gl/moon-voyage-trace.js
++++ miniprogram/pages/gl/moon-voyage-trace.js
+@@ -8,7 +8,8 @@
+     const row = {event, wall: Date.now(), elapsed: (Date.now() - (mgr._moonTraceStarted || Date.now())) / 1000,
+       time: mgr._accumTime, audio: Number(mgr.audioContext?.currentTime), duration: Number(mgr.audioContext?.duration),
+       waiting: mgr._moonAudioWaiting, phase: mgr.phase, terrain: mgr._terrain?.status,
+-      selected: mgr._terrain?.selected, terrainActive: !!mgr._terrain?.active, ...extra};
++      selected: mgr._terrain?.selected, terrainActive: !!mgr._terrain?.active,
++      photo: mgr._terrain?.keepsake?.status, photoHold: !!mgr._moonPhotoHold, photoShown: !!mgr._terrain?.keepsake?.shown, ...extra};
+     const rows = wx.getStorageSync(key) || [];
+     rows.push(row);
+     wx.setStorageSync(key, rows.slice(-300));

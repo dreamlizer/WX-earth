@@ -1,0 +1,50 @@
+{
+  "originalAudioSHA1": "b6907476df6166a35745ebfeebab0d20f550fe4f",
+  "audioExact": {
+    "sourceStartSeconds": 193,
+    "sampleRate": 48000,
+    "channels": 2,
+    "sampleWidth": 2,
+    "frames": 3778880,
+    "duration": 78.72666666666667,
+    "end": 271.7266666666667
+  },
+  "previewDuration": 78.72666666666667,
+  "completedPlayback": {
+    "completed": 1,
+    "frames": 4736,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 0,
+    "stalls": 0,
+    "muted": false,
+    "nativeEnded": true
+  },
+  "fixedEarth": true,
+  "earthEntrySec": 223.81666666666666,
+  "cameraHeldFrom255": true,
+  "oldBFilesPreserved": true,
+  "projectTestFiles": 41,
+  "syntaxChecks": "PASS",
+  "gitDiffCheck": "PASS",
+  "maxHeadingStepDegrees60Hz": 0.4726946603477186,
+  "lastEarthBBox255.00": [
+    225,
+    388,
+    312,
+    478
+  ],
+  "lastEarthBBox271.73": [
+    225,
+    388,
+    314,
+    478
+  ],
+  "controlsVerified": [
+    "play with source audio",
+    "pause",
+    "seek to source time 216s and resume",
+    "replay from 193s",
+    "B frame at 232s"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "unit": "unit01",
+  "sourceSHA256": "b0dc5a4b4dd80b92365b1d663bd312b80ab3f0b5420ed1e96c0999cbf9b00156",
+  "triangles": 60522,
+  "vertices": 35755,
+  "drawCalls": 1,
+  "geometryBytes": 827952,
+  "textureBytes": 94938,
+  "staticPose": true
+}

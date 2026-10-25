@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "cases": 744,
+  "widths": [
+    320,
+    390,
+    430
+  ],
+  "excludedTargetStarts": [
+    51.44,
+    55.42,
+    59.37,
+    63.39
+  ]
+}

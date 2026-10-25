@@ -27,6 +27,8 @@ export class ZenAudio {
   start(preset, localUrl) {
     if (this._disposed) return;
     this.stop(); // Stop previous
+    const cloudId = this.fileIds[preset];
+    if (!localUrl && !cloudId) return;
     
     // Create new context
     // Using InnerAudioContext for now to match project consistency
@@ -35,7 +37,6 @@ export class ZenAudio {
     const ctx = this.ctx;
     
     // Determine source
-    const cloudId = this.fileIds[preset] || this.fileIds[1];
     this.ctx.src = localUrl || cloudId;
     
     // Settings

@@ -43,3 +43,9 @@ for f in tools/*.test.cjs; do node "$f"; done
 - 微信开发者工具和 PC 客户端默认不要预取云贴图或月球资源，避免假超时；诗句云函数和数据库读取仍可在 DevTools 使用，不要一刀切禁云。
 - 禅定预设名来自 `poetry_sets` 文档 `_id`，歌词来自 `lines`；`poetrySetsV2` 是停用占位，运行链路不要再调用。
 - 登月进入/退出有异步窗口，保留 `_entering` / `_exiting` 这类重入保护，避免普通地球状态被错误备份。
+- 土星预览按钮被 `miniprogram/pages/gl/index.wxml` 的 `wx:if="{{false}}"` 隐藏。`saturn-assets` 和预览代码还在，不要当成已删除。
+- 登月结尾没有保存照片，也不要加回相册写入，除非用户明确要求恢复。
+- Go West 只属于禅定预设 104。改它时不要顺手改登月或其他歌曲。
+- 193 秒新月面未就绪、加载失败或当前 GPU 不支持时，继续旧尾段，不要停音乐等待。
+- `project.config.json` 的 `packOptions.ignore` 相对小程序源码目录，不要再加 `miniprogram/` 前缀。
+- 上传体验版会覆盖当前体验版，必须另有明确授权。截至 2026-10-25，上述本地改动还没有上传。

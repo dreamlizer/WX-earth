@@ -1,0 +1,115 @@
+{
+  "pages": [
+    "pages/gl/index"
+  ],
+  "window": {
+    "backgroundColor": "#F6F6F6",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#F6F6F6",
+    "navigationBarTitleText": "行星物语",
+    "navigationBarTextStyle": "black"
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "subpackages": [
+    {
+      "root": "saturn-assets",
+      "name": "saturn-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "voyager-assets",
+      "name": "voyager-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "robot-assets",
+      "name": "robot-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "starship-assets",
+      "name": "starship-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "gundam-assets",
+      "name": "gundam-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "earth-look-assets",
+      "name": "earth-look-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "moon-look-assets",
+      "name": "moon-look-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "moon-color-assets",
+      "name": "moon-color-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "chandra-assets",
+      "name": "chandra-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "juno-assets",
+      "name": "juno-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "magellan-assets",
+      "name": "magellan-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "eve-assets",
+      "name": "eve-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "astronaut-assets",
+      "name": "astronaut-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "scene-art-assets",
+      "name": "scene-art-assets",
+      "pages": [
+        "index"
+      ]
+    }
+  ]
+}

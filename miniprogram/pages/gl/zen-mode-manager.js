@@ -182,7 +182,7 @@ export class ZenModeManager {
       try {
         const map = this.page?.__poetryPresets || {};
         const labels = this.page?.__presetLabels || {};
-        if (!Array.isArray(map[nextPreset]) || !map[nextPreset].length || !labels[nextPreset]) {
+        if (nextPreset !== 104 && (!Array.isArray(map[nextPreset]) || !map[nextPreset].length || !labels[nextPreset])) {
           await this.preloadPoetryCloud();
         }
       } catch(_){ }
@@ -209,6 +209,9 @@ export class ZenModeManager {
 
   switchToPreset(nextPreset){
     try {
+      if (this.page?.data?.moonVoyageActive || this.page?.__zenPoetryPaused) return;
+      this.page?.__goWestSong?.stop();
+      this.page.__goWestSong = null;
       const isEn = (this.page?.data?.lang === 'en');
       const p = Number(nextPreset) || (isEn ? 101 : 1);
       this.page.__zenPreset = p;
@@ -222,7 +225,8 @@ export class ZenModeManager {
       try {
         const mgr = this.page?.__getZenMgr?.();
         const localUrl = this.page?._getLocalAudio?.(audioPreset) || '';
-        if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(audioPreset, localUrl, 1000, 1000); }
+        if (audioPreset === 4 && !localUrl && !mgr?.fileIds?.[4]) { this._playAudio(4); }
+        else if (mgr && typeof mgr.startWithDelayFadeIn === 'function') { mgr.startWithDelayFadeIn(audioPreset, localUrl, 1000, 1000); }
         else { this._playAudio(audioPreset); }
       } catch(_){ }
     } catch(_){ }
@@ -241,6 +245,7 @@ export class ZenModeManager {
     if (this._disposed || !this.page?.data?.zenMode || this.page.__zenPoetryPaused) return;
     const preset = ZenPoetry.resolvePresetForLang(this.page, this.page.__zenPreset, this.page.data.lang === 'en');
     this.page.__zenPreset = preset;
+    if (preset === 104 && this.page.__goWestSong) { this.page.__goWestSong.update(true); return; }
     this.page.__getPoetryMgr?.()?.resetImmediate?.();
     ZenPoetry.playPoetry(this.page, preset, 0);
   }
@@ -248,10 +253,15 @@ export class ZenModeManager {
   suspend(){
     if (!this.page?.data?.zenMode || this.page.__zenPoetryPaused) return;
     this.page.__poetryMgr?.stop();
+    this.page.__goWestSong?.pause();
     this.page.__zenAudioMgr?.suspend();
   }
 
   resume(){
+    if (!this._disposed && this.page?.data?.zenMode && !this.page.__zenPoetryPaused && this.page.__goWestSong?.preview) {
+      this.page.__goWestSong.resume();
+      return;
+    }
     if (!this.page?.data?.zenMode || this.page.__zenPoetryPaused || !this.page.__zenAudioMgr?._suspended) return;
     const preset = Number(this.page.__zenPreset || 1);
     this._queuePoetryForAudio(preset, ZenAudio.resolveAudioPresetForLang(preset, this.page.data.lang === 'en'));
@@ -346,6 +356,13 @@ export class ZenModeManager {
       if (!mgr) return;
       try { mgr.ensureOffline?.(); } catch(_){}
       const url = this.page?._getLocalAudio?.(preset || 1);
+      if (Number(preset) === 4 && !url && !mgr.fileIds?.[4]) {
+        mgr.stop();
+        this._cancelPendingPoetry();
+        ZenPoetry.playPoetry(this.page,104,0);
+        wx.showToast({title:'Go West · 无声预览',icon:'none',duration:1800});
+        return;
+      }
       try { mgr.start?.(preset || 1, url); } catch(_){}
     } catch(_){ }
   }

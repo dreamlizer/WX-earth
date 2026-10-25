@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 23,
+  "meshes": 22,
+  "materials": 13,
+  "images": 8,
+  "animations": 23,
+  "skins": 0,
+  "triangles_est": 34814,
+  "vertices_est": 22416,
+  "extensions_used": [
+    "KHR_materials_specular",
+    "EXT_texture_webp"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Saturn%20V/Saturn%20V.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Saturn%20V/Saturn%20V.glb",
+  "nasa_folder": "Saturn V",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/saturn-v-nasa/Saturn V.glb",
+  "bytes": 927212,
+  "sha256": "6c44497bce54ee0b09d0edb8e33a6f484762a320dab1c54b383e434f5bba06b5"
+}

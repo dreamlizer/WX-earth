@@ -1,0 +1,29 @@
+[
+  {
+    "kind": "rei",
+    "name": "Rei Ayanami",
+    "triangles": 29792,
+    "drawCalls": 6,
+    "bytes": 779080,
+    "hasSkeleton": false,
+    "hasImagePlanes": false
+  },
+  {
+    "kind": "shinji",
+    "name": "Shinji Ikari",
+    "triangles": 33248,
+    "drawCalls": 6,
+    "bytes": 869200,
+    "hasSkeleton": false,
+    "hasImagePlanes": false
+  },
+  {
+    "kind": "asuka",
+    "name": "Asuka Langley",
+    "triangles": 39200,
+    "drawCalls": 10,
+    "bytes": 1028480,
+    "hasSkeleton": false,
+    "hasImagePlanes": false
+  }
+]

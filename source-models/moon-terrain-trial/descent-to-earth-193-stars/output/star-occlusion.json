@@ -1,0 +1,37 @@
+{
+  "193.00": {
+    "opaqueBrightPixels": 11118,
+    "fractionUnchanged": 1.0,
+    "changedMoreThan5": 0
+  },
+  "200.00": {
+    "opaqueBrightPixels": 109430,
+    "fractionUnchanged": 0.9999725852142922,
+    "changedMoreThan5": 2
+  },
+  "205.00": {
+    "opaqueBrightPixels": 280459,
+    "fractionUnchanged": 1.0,
+    "changedMoreThan5": 0
+  },
+  "210.00": {
+    "opaqueBrightPixels": 275911,
+    "fractionUnchanged": 0.9999855025714813,
+    "changedMoreThan5": 0
+  },
+  "216.00": {
+    "opaqueBrightPixels": 253274,
+    "fractionUnchanged": 0.9999921034136943,
+    "changedMoreThan5": 2
+  },
+  "229.00": {
+    "opaqueBrightPixels": 224272,
+    "fractionUnchanged": 0.9999464935435542,
+    "changedMoreThan5": 8
+  },
+  "255.00": {
+    "opaqueBrightPixels": 3605,
+    "fractionUnchanged": 0.9994452149791956,
+    "changedMoreThan5": 1
+  }
+}

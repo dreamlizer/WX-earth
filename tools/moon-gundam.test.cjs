@@ -62,8 +62,9 @@ vm.runInNewContext(fs.readFileSync('miniprogram/pages/gl/moon-voyage-craft-light
  const chest=new T.Vector3(0,0,-1).applyQuaternion(g.raw.quaternion).applyQuaternion(g.model.quaternion);
  assert(chest.dot(camera.position.clone().sub(g.model.position).normalize())>.6,'Distant bank still presents the chest');
  const distant=frame(89);assert(distant.maxX-distant.minX<.15&&g.model.position.z<-70,'Departs as a small distant craft');
- const away=frame(90);assert.equal(away.inside,0);assert(away.maxX< -1&&g.model.position.z<-80,'Leaves in the far front-left, not beside the observer');
- g.update(91.7,camera);assert(g.model.visible);g.update(91.8,camera);assert(!g.model.visible,'Departure ends before the next starship');
+ const away=frame(90);assert.equal(away.inside,away.total);assert(g.model.position.x<0&&g.model.position.z<-110,'Leader remains in view far ahead of the pursuers');
+ assert(away.maxX-away.minX<.1,'Leader only fades when reduced to a distant silhouette');
+ g.update(90.49,camera);assert(g.model.visible);g.update(90.51,camera);assert(!g.model.visible,'Leader retires before the two pursuers and the next starship');
  const wake=g.wake,plume=wake.plume,wisps=wake.wisps,attrs=wisps.mesh.geometry.attributes;
  assert.equal(wake.group.parent,scene,'Exhaust is attached to the actual scene');
  assert.equal(wake.group.children.length,2,'Short attached plume and detached wisps use two bounded draws');
@@ -97,13 +98,13 @@ vm.runInNewContext(fs.readFileSync('miniprogram/pages/gl/moon-voyage-craft-light
  assert(attrs.strength.array[96]<1e-6,'Oldest wisps have completely faded');
  function glow(t) {
    g.update(t,camera);assert(wake.group.visible);
-   assert.equal(frame(t).inside,0,'Retirement begins after the body leaves the view');
+   assert(g.materials[0].opacity<1||t>=90.5,'Retirement follows the distant silhouette fading');
    return Array.from(attrs.strength.array).reduce((sum,v)=>sum+v,0);
  }
- const remaining=[89.75,90,90.3,90.5].map(glow);
+ const remaining=[90.15,90.4,90.65,90.9].map(glow);
  assert(remaining.every((v,i)=>v>0&&(!i||v<remaining[i-1])),'Old light dies progressively after emission stops');
- for(let t=79.5;t<90.55;t+=.3){g.update(t,camera);for(const sheet of [plume,wisps])assert(Array.from(sheet.mesh.geometry.attributes.position.array).every(Number.isFinite),'Exhaust geometry stays finite');}
- g.update(90.56,camera);assert(!wake.group.visible,'No exhaust remains beyond its 0.85-second lifetime');
+ for(let t=79.5;t<90.95;t+=.3){g.update(t,camera);for(const sheet of [plume,wisps])assert(Array.from(sheet.mesh.geometry.attributes.position.array).every(Number.isFinite),'Exhaust geometry stays finite');}
+ g.update(90.96,camera);assert(!wake.group.visible,'No exhaust remains beyond its 0.85-second lifetime');
  let wakeGeometryDisposals=0,wakeMaterialDisposals=0;
  for(const sheet of [plume,wisps]){sheet.mesh.geometry.addEventListener('dispose',()=>wakeGeometryDisposals++);sheet.mesh.material.addEventListener('dispose',()=>wakeMaterialDisposals++);}
  g.update(85,camera);assert(g.model.visible&&wake.group.visible);g.reset();assert(!g.model.visible&&!wake.group.visible);

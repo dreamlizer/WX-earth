@@ -1,0 +1,752 @@
+{
+  "states": [
+    {
+      "refined": false,
+      "resolution": [
+        540,
+        960
+      ],
+      "time": 271.7266666666667,
+      "camera": [
+        61.27,
+        8.190969856661875,
+        -1.25
+      ],
+      "quaternion": [
+        -0.013089562860920374,
+        0.000999912828047522,
+        0.000013089549771365434,
+        0.9999138279607449
+      ],
+      "fov": 44,
+      "crew": [
+        {
+          "kind": "rei",
+          "x": 61.18,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.57171285700305,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.18,
+            7.57211285700305,
+            -3.85
+          ],
+          "groundNormal": [
+            -0.5805237864885944,
+            0.713472096481218,
+            0.39236424513918233
+          ]
+        },
+        {
+          "kind": "shinji",
+          "x": 61.25,
+          "z": -3.85,
+          "scale": 0.05125,
+          "groundY": 7.5709698566618755,
+          "seatedHeightMeters": 2.9596875,
+          "position": [
+            61.25,
+            7.5713698566618755,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ]
+        },
+        {
+          "kind": "asuka",
+          "x": 61.32,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.556280758966295,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.32,
+            7.556680758966295,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ]
+        }
+      ],
+      "webglError": 0
+    },
+    {
+      "refined": true,
+      "resolution": [
+        540,
+        960
+      ],
+      "time": 271.7266666666667,
+      "camera": [
+        61.27,
+        8.190969856661875,
+        -1.25
+      ],
+      "quaternion": [
+        -0.013089562860920374,
+        0.000999912828047522,
+        0.000013089549771365434,
+        0.9999138279607449
+      ],
+      "fov": 44,
+      "crew": [
+        {
+          "kind": "rei",
+          "x": 61.18,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.57171285700305,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.18,
+            7.57211285700305,
+            -3.85
+          ],
+          "groundNormal": [
+            -0.5805237864885944,
+            0.713472096481218,
+            0.39236424513918233
+          ],
+          "profile": {
+            "roll": 2.3,
+            "lean": 0.025,
+            "head": 2.6,
+            "yaw": -0.8
+          }
+        },
+        {
+          "kind": "shinji",
+          "x": 61.25,
+          "z": -3.85,
+          "scale": 0.05125,
+          "groundY": 7.5709698566618755,
+          "seatedHeightMeters": 2.9596875,
+          "position": [
+            61.25,
+            7.5713698566618755,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ],
+          "profile": {
+            "roll": 1.1,
+            "lean": -0.035,
+            "head": 3.4,
+            "yaw": 0.6
+          }
+        },
+        {
+          "kind": "asuka",
+          "x": 61.32,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.556280758966295,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.32,
+            7.556680758966295,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ],
+          "profile": {
+            "roll": -1.9,
+            "lean": 0.04,
+            "head": 2.2,
+            "yaw": -0.5
+          }
+        }
+      ],
+      "webglError": 0
+    },
+    {
+      "refined": false,
+      "resolution": [
+        1080,
+        1920
+      ],
+      "time": 271.7266666666667,
+      "camera": [
+        61.27,
+        8.190969856661875,
+        -1.25
+      ],
+      "quaternion": [
+        -0.013089562860920374,
+        0.000999912828047522,
+        0.000013089549771365434,
+        0.9999138279607449
+      ],
+      "fov": 44,
+      "crew": [
+        {
+          "kind": "rei",
+          "x": 61.18,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.57171285700305,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.18,
+            7.57211285700305,
+            -3.85
+          ],
+          "groundNormal": [
+            -0.5805237864885944,
+            0.713472096481218,
+            0.39236424513918233
+          ]
+        },
+        {
+          "kind": "shinji",
+          "x": 61.25,
+          "z": -3.85,
+          "scale": 0.05125,
+          "groundY": 7.5709698566618755,
+          "seatedHeightMeters": 2.9596875,
+          "position": [
+            61.25,
+            7.5713698566618755,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ]
+        },
+        {
+          "kind": "asuka",
+          "x": 61.32,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.556280758966295,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.32,
+            7.556680758966295,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ]
+        }
+      ],
+      "webglError": 0
+    },
+    {
+      "refined": true,
+      "resolution": [
+        1080,
+        1920
+      ],
+      "time": 271.7266666666667,
+      "camera": [
+        61.27,
+        8.190969856661875,
+        -1.25
+      ],
+      "quaternion": [
+        -0.013089562860920374,
+        0.000999912828047522,
+        0.000013089549771365434,
+        0.9999138279607449
+      ],
+      "fov": 44,
+      "crew": [
+        {
+          "kind": "rei",
+          "x": 61.18,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.57171285700305,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.18,
+            7.57211285700305,
+            -3.85
+          ],
+          "groundNormal": [
+            -0.5805237864885944,
+            0.713472096481218,
+            0.39236424513918233
+          ],
+          "profile": {
+            "roll": 2.3,
+            "lean": 0.025,
+            "head": 2.6,
+            "yaw": -0.8
+          }
+        },
+        {
+          "kind": "shinji",
+          "x": 61.25,
+          "z": -3.85,
+          "scale": 0.05125,
+          "groundY": 7.5709698566618755,
+          "seatedHeightMeters": 2.9596875,
+          "position": [
+            61.25,
+            7.5713698566618755,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ],
+          "profile": {
+            "roll": 1.1,
+            "lean": -0.035,
+            "head": 3.4,
+            "yaw": 0.6
+          }
+        },
+        {
+          "kind": "asuka",
+          "x": 61.32,
+          "z": -3.85,
+          "scale": 0.05,
+          "groundY": 7.556280758966295,
+          "seatedHeightMeters": 2.8875,
+          "position": [
+            61.32,
+            7.556680758966295,
+            -3.85
+          ],
+          "groundNormal": [
+            0.19285347493507435,
+            0.9190314834325133,
+            -0.34378579037723545
+          ],
+          "profile": {
+            "roll": -1.9,
+            "lean": 0.04,
+            "head": 2.2,
+            "yaw": -0.5
+          }
+        }
+      ],
+      "webglError": 0
+    }
+  ],
+  "errors": [],
+  "contacts": [
+    {
+      "kind": "rei",
+      "part": "palm",
+      "side": -1,
+      "position": [
+        61.16995828998194,
+        7.571224991191869,
+        -3.863970113095936
+      ],
+      "beforeGap": 0.0036378658111804185,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.006,
+        0.008
+      ],
+      "wristLocal": [
+        -0.2,
+        0.03884268377638779,
+        -0.28
+      ],
+      "elbowLocal": [
+        -0.4403617486452718,
+        0.5658727989764768,
+        -0.16790411488208765
+      ],
+      "upperArmLength": 0.7500000000000001,
+      "forearmLength": 0.5900000000000001
+    },
+    {
+      "kind": "rei",
+      "part": "sole",
+      "side": -1,
+      "position": [
+        61.162353937104584,
+        7.571051858464784,
+        -3.8989475889527867
+      ],
+      "beforeGap": 0.0008109985382649398,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.008,
+        0.013
+      ],
+      "thighLength": 0.6999999999999998,
+      "shinLength": 0.68
+    },
+    {
+      "kind": "rei",
+      "part": "sole",
+      "side": 1,
+      "position": [
+        61.19735378144015,
+        7.563668294105341,
+        -3.89905197518681
+      ],
+      "beforeGap": 0.00819456289770848,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.008,
+        0.013
+      ],
+      "thighLength": 0.7,
+      "shinLength": 0.6799999999999999
+    },
+    {
+      "kind": "rei",
+      "part": "hip",
+      "position": [
+        61.180004473695746,
+        7.57089159620503,
+        -3.848500006671333
+      ],
+      "beforeGap": 0.001721260798019486,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.016,
+        0.014
+      ]
+    },
+    {
+      "kind": "shinji",
+      "part": "sole",
+      "side": -1,
+      "position": [
+        61.231912614327086,
+        7.555997642386643,
+        -3.9001712169552363
+      ],
+      "beforeGap": 0.015115964275232763,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.008,
+        0.013
+      ],
+      "thighLength": 0.7,
+      "shinLength": 0.68
+    },
+    {
+      "kind": "shinji",
+      "part": "sole",
+      "side": 1,
+      "position": [
+        61.26778745440573,
+        7.548429443200803,
+        -3.9002783352649457
+      ],
+      "beforeGap": 0.022684163461073048,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.008,
+        0.013
+      ],
+      "thighLength": 0.7,
+      "shinLength": 0.6800000000000002
+    },
+    {
+      "kind": "shinji",
+      "part": "hip",
+      "position": [
+        61.250004590784705,
+        7.571544029535389,
+        -3.848462506853773
+      ],
+      "beforeGap": 0.0003383271264869592,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.016,
+        0.014
+      ]
+    },
+    {
+      "kind": "asuka",
+      "part": "palm",
+      "side": 1,
+      "position": [
+        61.34602977672002,
+        7.5545302096908955,
+        -3.840077766183669
+      ],
+      "beforeGap": 0.004900549275399513,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.006,
+        0.008
+      ],
+      "wristLocal": [
+        0.52,
+        0.013589014492005908,
+        0.2
+      ],
+      "elbowLocal": [
+        0.5894646121301345,
+        0.5922076494201521,
+        0.10793946026935058
+      ],
+      "upperArmLength": 0.7499999999999999,
+      "forearmLength": 0.59
+    },
+    {
+      "kind": "asuka",
+      "part": "sole",
+      "side": -1,
+      "position": [
+        61.30235360304604,
+        7.541673778224549,
+        -3.8989474685202756
+      ],
+      "beforeGap": 0.014756980741745807,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.008,
+        0.013
+      ],
+      "thighLength": 0.7,
+      "shinLength": 0.6800000000000002
+    },
+    {
+      "kind": "asuka",
+      "part": "sole",
+      "side": 1,
+      "position": [
+        61.33735344666838,
+        7.534290124660487,
+        -3.8990520936222675
+      ],
+      "beforeGap": 0.02214063430580815,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.008,
+        0.013
+      ],
+      "thighLength": 0.7,
+      "shinLength": 0.6799999999999999
+    },
+    {
+      "kind": "asuka",
+      "part": "hip",
+      "position": [
+        61.32000448393294,
+        7.556840926543558,
+        -3.8485000067019
+      ],
+      "beforeGap": 0.000339832422737274,
+      "afterGap": 0.00007999999999963592,
+      "radii": [
+        0.016,
+        0.014
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "kind": "rei",
+      "part": "seated hips",
+      "side": 0,
+      "samples": 22,
+      "minTerrainClearance": 0.00007999965356297878,
+      "maxTerrainClearance": 0.027095755840156777
+    },
+    {
+      "kind": "rei",
+      "part": "boot",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.00008000038159927669,
+      "maxTerrainClearance": 0.010580000053773908
+    },
+    {
+      "kind": "rei",
+      "part": "boot",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.00008000050071998999,
+      "maxTerrainClearance": 0.010580000359158959
+    },
+    {
+      "kind": "rei",
+      "part": "gloved hand",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.00007999972531358424,
+      "maxTerrainClearance": 0.005580000161172549
+    },
+    {
+      "kind": "rei",
+      "part": "gloved hand finger",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008300003426269242,
+      "maxTerrainClearance": 0.004030000401486156
+    },
+    {
+      "kind": "rei",
+      "part": "gloved hand finger",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008299997710574658,
+      "maxTerrainClearance": 0.004029999736784973
+    },
+    {
+      "kind": "rei",
+      "part": "gloved hand finger",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008299997221179467,
+      "maxTerrainClearance": 0.004029999874109791
+    },
+    {
+      "kind": "rei",
+      "part": "gloved hand finger",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008299996648597485,
+      "maxTerrainClearance": 0.004030000189380267
+    },
+    {
+      "kind": "shinji",
+      "part": "seated hips",
+      "side": 0,
+      "samples": 22,
+      "minTerrainClearance": 0.0000799999097846893,
+      "maxTerrainClearance": 0.02275904292705455
+    },
+    {
+      "kind": "shinji",
+      "part": "boot",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.00008000054951562419,
+      "maxTerrainClearance": 0.010842500213494866
+    },
+    {
+      "kind": "shinji",
+      "part": "boot",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.00008000056797197175,
+      "maxTerrainClearance": 0.010842500231951213
+    },
+    {
+      "kind": "asuka",
+      "part": "seated hips",
+      "side": 0,
+      "samples": 22,
+      "minTerrainClearance": 0.00007999987777029816,
+      "maxTerrainClearance": 0.022205896200538255
+    },
+    {
+      "kind": "asuka",
+      "part": "boot",
+      "side": -1,
+      "samples": 22,
+      "minTerrainClearance": 0.00008000072491931576,
+      "maxTerrainClearance": 0.010580000397093947
+    },
+    {
+      "kind": "asuka",
+      "part": "boot",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.00008000064169166876,
+      "maxTerrainClearance": 0.0105800003138663
+    },
+    {
+      "kind": "asuka",
+      "part": "gloved hand",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.00007999970186300942,
+      "maxTerrainClearance": 0.005580000230853699
+    },
+    {
+      "kind": "asuka",
+      "part": "gloved hand finger",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008300001286878356,
+      "maxTerrainClearance": 0.00403000019918931
+    },
+    {
+      "kind": "asuka",
+      "part": "gloved hand finger",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008299997950711457,
+      "maxTerrainClearance": 0.004029999888855329
+    },
+    {
+      "kind": "asuka",
+      "part": "gloved hand finger",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.000829999892139277,
+      "maxTerrainClearance": 0.00402999990443309
+    },
+    {
+      "kind": "asuka",
+      "part": "gloved hand finger",
+      "side": 1,
+      "samples": 22,
+      "minTerrainClearance": 0.0008299998728809044,
+      "maxTerrainClearance": 0.004029999931741024
+    }
+  ],
+  "fragmentCount": 9,
+  "light": {
+    "referenceTime": 255,
+    "reference": "WeChat DevTools actual framebuffer and scene pose",
+    "earthQuaternionAtReference": [
+      -0.010125575860941094,
+      0.9572881619673171,
+      0.27887299751085554,
+      -0.0756749557649667
+    ],
+    "sunDirection": [
+      0.9248998598178239,
+      0.3052196536199543,
+      0.22671835468943383
+    ],
+    "sunInEarthView": [
+      0.9243389912987644,
+      0.3155345414827806,
+      0.21455857544277623
+    ],
+    "earthInEarthView": [
+      -0.00857036114036712,
+      0.963825124140023,
+      0.25579008821874993,
+      -0.07442519570304693
+    ],
+    "cloudOpacity": 0.58,
+    "earthAngularSpeed": 0.009,
+    "cloudAngularSpeed": 0.00035
+  },
+  "layout": {
+    "viewport": [
+      476,
+      991
+    ],
+    "frameVisible": true,
+    "controlsVisible": true
+  }
+}

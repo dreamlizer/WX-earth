@@ -72,12 +72,36 @@ const mgr={texPath:'color',normPath:'normal',_lifecycleToken:1,_isLifecycleCurre
 moonBox.module.exports.createMoon(TT,scene,mgr);
 callbacks[0].ok(callbacks[0].t);assert.equal(mgr._moonTexReady,false);
 callbacks[1].ok(callbacks[1].t);assert.equal(mgr._moonTexReady,true);
-const shader={fragmentShader:'#include <encodings_fragment>'};mgr.moonMesh.material.onBeforeCompile(shader);
-const conversion=shader.fragmentShader.match(/= (\w+)\(/)[1];
-assert(T.ShaderChunk.encodings_pars_fragment.includes('vec4 '+conversion+'('),'Color conversion must exist in the actual r108 shader library');
+const moonMaterial=mgr.moonMesh.material;
+assert.equal(moonMaterial.normalMap,callbacks[1].t,'Only add the terrain normal map to the original Moon');
+assert.equal(moonMaterial.normalScale.x,1,'Preserve crater relief strength');
+assert.equal(moonMaterial.map.encoding,T.sRGBEncoding,'Keep the original color texture decoding');
+assert.equal(moonMaterial.normalMap.encoding,T.LinearEncoding,'Keep normals as linear data');
+assert.equal(moonMaterial.roughness,.9,'Restore the pre-integration Moon roughness');
+assert.equal(moonMaterial.color.getHex(),0xdddddd,'Restore the pre-integration Moon color');
+const shader={uniforms:{},fragmentShader:T.ShaderChunk.meshphysical_frag};
+moonMaterial.onBeforeCompile(shader);
+assert(shader.fragmentShader.includes('dot(geometryNormal, directionalLights[0].direction)'),
+  'Use the sphere normal saved before terrain normal perturbation for the terminator');
+assert(shader.fragmentShader.includes('reflectedLight.directDiffuse *= moonDaylight'),
+  'Crater normals must not illuminate the geometric night side');
+assert(shader.fragmentShader.includes('#include <encodings_fragment>'),
+  'Keep native output encoding');
+assert(!shader.fragmentShader.includes('LinearTosRGB( gl_FragColor )'),
+  'Do not reintroduce the old Moon-only output brightening');
+assert.deepEqual(shader.uniforms,{});
+const preloadSource=fs.readFileSync(root+'moon-voyage-assets.js','utf8');
+assert(preloadSource.includes("'/moon-color-assets/2k_moon.jpg'"),'Use the original color map, not the NASA replacement');
+assert(fs.readFileSync('miniprogram/moon-color-assets/2k_moon.jpg').equals(fs.readFileSync('2k_moon.jpg')),'Packaged original color map must match the preserved source exactly');
+const appConfig=JSON.parse(fs.readFileSync('miniprogram/app.json','utf8'));
+const packageBytes=dir=>fs.readdirSync(dir,{withFileTypes:true}).reduce((sum,entry)=>sum+(entry.isDirectory()?packageBytes(dir+'/'+entry.name):fs.statSync(dir+'/'+entry.name).size),0);
+for(const name of ['moon-look-assets','moon-color-assets']){
+  assert(appConfig.subpackages.some(p=>p.root===name&&p.name===name),'Register each Moon texture package');
+  assert(packageBytes('miniprogram/'+name)<2048*1024,name+' must remain below the upload limit');
+}
 callbacks=[];
 const late={texPath:'color',normPath:'normal',_lifecycleToken:1,_isLifecycleCurrent:t=>t===late._lifecycleToken};
 moonBox.module.exports.createMoon(TT,scene,late);late._lifecycleToken++;
 let disposed=0;callbacks.forEach(c=>{c.t.addEventListener('dispose',()=>disposed++);c.ok(c.t);});
 assert.equal(disposed,2);assert.equal(late._moonTexReady,false);
-console.log('Planet visual: retained Earth object, opaque depth, themes/clouds/brightness, Moon maps and r108 conversion PASS');
+console.log('Planet visual: retained Earth object, opaque depth, themes/clouds/brightness, original Moon appearance with terrain normals only PASS');

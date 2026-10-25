@@ -101,7 +101,6 @@ export const createMoon = (THREE, scene, mgrState) => {
   };
   const map = loader.load(mgrState.texPath, loaded, null, failed);
   map.encoding = THREE.sRGBEncoding;
-  map.minFilter = THREE.LinearFilter; map.generateMipmaps = false;
   fixTexture(map, !!mgrState._isPCClient);
   const normalMap = mgrState.normPath ? loader.load(mgrState.normPath, loaded, null, failed) : null;
   if (normalMap) {
@@ -112,13 +111,22 @@ export const createMoon = (THREE, scene, mgrState) => {
   const material = new THREE.MeshStandardMaterial({
     map, normalMap,
     normalScale: new THREE.Vector2(PLANET_PARAMS.moonNormalScale, PLANET_PARAMS.moonNormalScale),
-    roughness: PLANET_PARAMS.moonRoughness, metalness: 0, color: 0xeeeeee
+    roughness: PLANET_PARAMS.moonRoughness, metalness: 0, color: 0xdddddd
   });
-  // r108 renderer currently uses LinearEncoding. Keep this correction local to
-  // the Moon so existing spacecraft, stars and Saturn retain their appearance.
+  // 坑洼法线决定局部细节；昼夜边界仍由法线贴图之前的球面法线决定。
+  // 只收束月球暗侧补光，不改变太阳、其他对象或原生颜色输出。
   material.onBeforeCompile = shader => {
-    shader.fragmentShader = shader.fragmentShader.replace('#include <encodings_fragment>',
-      'gl_FragColor = LinearTosRGB( gl_FragColor );');
+    shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', `
+      #include <lights_fragment_end>
+      float moonDaylight = 1.0;
+      #if NUM_DIR_LIGHTS > 0
+        moonDaylight = smoothstep(-0.015, 0.06, dot(geometryNormal, directionalLights[0].direction));
+      #endif
+      reflectedLight.directDiffuse *= moonDaylight;
+      reflectedLight.directSpecular *= moonDaylight;
+      reflectedLight.indirectDiffuse *= mix(0.03, 0.65, moonDaylight);
+      reflectedLight.indirectSpecular *= moonDaylight;
+    `);
   };
   material.transparent = true;
   material.opacity = 0.0;

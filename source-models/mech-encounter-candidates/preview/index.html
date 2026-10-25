@@ -16,7 +16,7 @@
     h1 { margin:0; font-size:clamp(29px,3vw,38px); font-weight:540; letter-spacing:.03em; line-height:1.18; }
     .lede { margin:13px 0 0; color:var(--muted); font-size:13px; line-height:1.8; }
     .section-label { margin:0 0 10px; color:#a7b9ca; font-size:11px; letter-spacing:.14em; }
-    .model-list { display:grid; gap:7px; max-height:min(58vh,590px); overflow-y:auto; padding-right:4px; scrollbar-color:rgba(143,181,207,.3) transparent; scrollbar-width:thin; }
+    .model-list { display:grid; gap:7px; max-height:min(72vh,760px); overflow-y:auto; padding-right:4px; scrollbar-color:rgba(143,181,207,.3) transparent; scrollbar-width:thin; }
     .model-choice { width:100%; display:grid; grid-template-columns:31px 1fr auto; align-items:center; gap:11px; padding:12px 11px; color:#c5d1df; text-align:left; border:1px solid transparent; border-radius:9px; background:transparent; transition:background .18s,border-color .18s; }
     .model-choice:hover { background:rgba(159,190,218,.07); }
     .model-choice[aria-pressed="true"] { color:#f0f8ff; border-color:rgba(154,207,231,.33); background:rgba(110,169,197,.13); }
@@ -61,13 +61,13 @@
       <header>
         <p class="eyebrow">MOON ENCOUNTER / MODEL STUDY</p>
         <h1>相遇之前，<br>先看清它们。</h1>
-        <p class="lede">汇集 18 款可飞行、可航行或可绕地运行的科幻、机器人与真实航天物体。拖拽旋转，检查轮廓、材质与细节。</p>
+        <p class="lede">汇集科幻机体、EVA、月面设备和真实航天器。拖拽旋转，检查轮廓、材质与细节。新加入的 EVA 与环形山摆件也在左侧列表里。</p>
       </header>
       <section aria-label="模型列表">
-        <p class="section-label">当前预览 · 18 款</p>
+        <p class="section-label">当前预览</p>
         <div class="model-list" id="model-list"></div>
       </section>
-      <div class="sidebar-foot">本页直接读取本地源素材，不影响小程序。含 5 款科幻/概念对象、6 款高精细机器人/机甲与 7 款 NASA 航天器。<br><a href="../README.md" target="_blank" rel="noopener">查看完整来源清单 ↗</a></div>
+      <div class="sidebar-foot">本页直接读取本地源素材，不影响小程序。含原有机甲/航天器，以及新加入的 EVA 机体和月面环形山摆件。<br><a href="../README.md" target="_blank" rel="noopener">查看完整来源清单 ↗</a></div>
     </aside>
     <section class="viewer" aria-label="3D 模型预览">
       <div class="topbar"><small>THREE-DIMENSIONAL OBJECT VIEWER</small><span class="status" id="status" role="status">准备加载</span></div>

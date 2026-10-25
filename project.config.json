@@ -42,7 +42,7 @@
   "packOptions": {
     "ignore": [
       {
-        "value": "miniprogram/node_modules/**",
+        "value": "node_modules/**",
         "type": "glob"
       },
       {
@@ -54,32 +54,40 @@
         "type": "glob"
       },
       {
-        "value": "miniprogram/assets/data/*.geojson",
+        "value": "assets/data/*.geojson",
         "type": "glob"
       },
       {
-        "value": "miniprogram/libs/troika-three-text.min.js.txt",
+        "value": "libs/troika-three-text.min.js.txt",
         "type": "glob"
       },
       {
-        "value": "miniprogram/miniprogram_npm/miniprogram_npm/**",
+        "value": "miniprogram_npm/miniprogram_npm/**",
         "type": "glob"
       },
       {
-        "value": "miniprogram/pages/gl/country_data.json",
+        "value": "pages/gl/country_data.json",
         "type": "glob"
       },
       {
-        "value": "miniprogram/assets/data/country_data.json",
+        "value": "assets/data/country_data.json",
         "type": "glob"
       },
       {
-        "value": "miniprogram/assets/data/County_meta.json",
+        "value": "assets/data/County_meta.json",
         "type": "glob"
       },
       {
         "value": "WinReference/**",
         "type": "glob"
+      },
+      {
+        "type": "file",
+        "value": "pages/gl/tz-lookup.js"
+      },
+      {
+        "type": "file",
+        "value": "assets/models/paper-airplane.json"
       }
     ],
     "include": []

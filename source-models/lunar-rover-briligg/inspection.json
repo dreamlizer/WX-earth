@@ -1,0 +1,22 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/1c4641c9a7f74a02b5522a99dac8c92e.glb",
+  "uid": "1c4641c9a7f74a02b5522a99dac8c92e",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-rover-briligg/lunar_rover.glb",
+  "bytes": 2442520,
+  "sha256": "d0685b579fa2de8951a2f4e44927a6578d4c8dcd75bcfceb96ef3ff18fb18204",
+  "triangles_est": 50076,
+  "vertices_est": 75230,
+  "meshes": 42,
+  "materials": 3,
+  "images": 0,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [],
+  "generator": "Sketchfab-12.67.0",
+  "extras": {
+    "author": "briligg (https://sketchfab.com/briligg)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/lunar-rover-1c4641c9a7f74a02b5522a99dac8c92e",
+    "title": "Lunar Rover"
+  }
+}

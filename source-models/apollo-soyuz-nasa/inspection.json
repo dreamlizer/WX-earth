@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 2,
+  "meshes": 1,
+  "materials": 18,
+  "images": 10,
+  "animations": 2,
+  "skins": 0,
+  "triangles_est": 32996,
+  "vertices_est": 17349,
+  "extensions_used": [
+    "KHR_materials_specular",
+    "EXT_texture_webp"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Apollo%20Soyuz/Apollo%20Soyuz.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Apollo%20Soyuz/Apollo%20Soyuz.glb",
+  "nasa_folder": "Apollo Soyuz",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/apollo-soyuz-nasa/Apollo Soyuz.glb",
+  "bytes": 952608,
+  "sha256": "4d7d37c8ee02c6649b578900fa3533d92b89e125380a2efaa75f5a66e81d43db"
+}

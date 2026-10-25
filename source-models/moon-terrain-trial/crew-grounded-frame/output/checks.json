@@ -1,0 +1,38 @@
+{
+  "preservedFiles": 99,
+  "cameraAndFigureAnchorsAndScaleUnchanged": true,
+  "rightSunCalibrationUnchanged": true,
+  "baselineMatchesApprovedTerrainPixels": true,
+  "skyEarthFarTerrainIdenticalBetweenModes": true,
+  "changeBounds540": [
+    214,
+    677,
+    312,
+    739
+  ],
+  "contactPoints": 11,
+  "contactVertexProbeSamples": 418,
+  "minSampledContactClearance": 7.999965356297878e-05,
+  "supportArmLengths": [
+    0.75,
+    0.59
+  ],
+  "seatedLegLengths": [
+    0.7,
+    0.68
+  ],
+  "nativeCaptureSizes": [
+    [
+      540,
+      960
+    ],
+    [
+      1080,
+      1920
+    ]
+  ],
+  "newTextureAssets": 0,
+  "webglErrors": 0,
+  "pageErrors": [],
+  "scope": "single still frame; no mini-program/device or new motion acceptance"
+}

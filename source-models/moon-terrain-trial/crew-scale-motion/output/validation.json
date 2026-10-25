@@ -1,0 +1,3862 @@
+{
+  "crew": {
+    "seats": [
+      {
+        "kind": "rei",
+        "x": 32.9,
+        "z": -19,
+        "scale": 0.6,
+        "position": [
+          32.9,
+          5.951396290910901,
+          -19
+        ],
+        "groundNormal": [
+          0.06384929739726951,
+          0.8880868245021543,
+          -0.45521979237238236
+        ]
+      },
+      {
+        "kind": "shinji",
+        "x": 34,
+        "z": -19.15,
+        "scale": 0.62,
+        "position": [
+          34,
+          5.866962275101934,
+          -19.15
+        ],
+        "groundNormal": [
+          0.2748334393627394,
+          0.8437249636119417,
+          -0.4610799999848994
+        ]
+      },
+      {
+        "kind": "asuka",
+        "x": 35.1,
+        "z": -19,
+        "scale": 0.6,
+        "position": [
+          35.1,
+          5.745779988112951,
+          -19
+        ],
+        "groundNormal": [
+          0.15960304951802795,
+          0.8651111589512315,
+          -0.475509778282848
+        ]
+      }
+    ],
+    "events": [
+      {
+        "time": 223,
+        "readable": true,
+        "figures": [
+          {
+            "name": "Rei Ayanami",
+            "pixelHeight": 28.13860250540973,
+            "blocked": false,
+            "inFrame": true
+          },
+          {
+            "name": "Shinji Ikari",
+            "pixelHeight": 28.801734675379418,
+            "blocked": false,
+            "inFrame": true
+          },
+          {
+            "name": "Asuka Langley",
+            "pixelHeight": 28.337374842312634,
+            "blocked": false,
+            "inFrame": true
+          }
+        ]
+      }
+    ],
+    "modelType": "actual static 3D meshes; no sprites"
+  },
+  "starfield": {
+    "count": 16000,
+    "opacity": 0.54,
+    "followsCameraTranslation": true,
+    "worldRotation": [
+      0.1452897368598418,
+      0.27836521847727563,
+      0.13478854750635788,
+      0.9398062273503102
+    ],
+    "depthTest": true,
+    "depthWrite": false
+  },
+  "earthPoseErrorDegrees": 0.0000029575586669421963,
+  "calibration": {
+    "referenceTime": 255,
+    "reference": "WeChat DevTools actual framebuffer and scene pose",
+    "earthQuaternionAtReference": [
+      -0.008975811442246958,
+      0.9574316898108903,
+      0.2786863099281043,
+      -0.07468557299420525
+    ],
+    "sunDirection": [
+      0.9254386809795844,
+      0.30283037718639455,
+      0.22772134375133235
+    ],
+    "sunInEarthView": [
+      0.9243389912987644,
+      0.3155345414827806,
+      0.21455857544277623
+    ],
+    "earthInEarthView": [
+      -0.00857036114036712,
+      0.963825124140023,
+      0.25579008821874993,
+      -0.07442519570304693
+    ],
+    "cloudOpacity": 0.58,
+    "earthAngularSpeed": 0.009,
+    "cloudAngularSpeed": 0.00035
+  },
+  "finalSunInEarthView": [
+    0.9235436759356114,
+    0.31793166966732317,
+    0.2144447063041798
+  ],
+  "minRadiusClearance": 19.917666582991387,
+  "minNearHeightAboveOriginalPeak": 0.29591625116417575,
+  "minTerrainClearance": 16.497859394311885,
+  "minLateSpeed": 0.174443713743004,
+  "maxPositionStep60Hz": 21.408763301153325,
+  "maxHeadingStepDegrees": 0.5309169931357941,
+  "maxTurnTime": 200.66666666666666,
+  "cameraTravel255ToEnd": 2.981610303175116,
+  "holdError": 3.005289299859282,
+  "startPositionError": 4.855373050318718e-12,
+  "startQuaternionError": 0,
+  "earthFixedPosition": [
+    -1.282924384011292e-12,
+    994.8718780409795,
+    -20517.016499029927
+  ],
+  "earthPositionUnchanged": true,
+  "earthVisibilityEvents": [
+    {
+      "time": 228.48333333333335,
+      "visible": true,
+      "blocked": false,
+      "earthNDC": [
+        0.3818089151582216,
+        1.1056216410784905,
+        0.9999927324097861
+      ]
+    }
+  ],
+  "webglError": 0,
+  "pathNodes": [
+    {
+      "t": 193,
+      "p": [
+        -3451.824604064362,
+        4169.571418745434,
+        -3263.9779139318666
+      ],
+      "look": [
+        0,
+        -650,
+        0
+      ],
+      "up": [
+        0.14865820062830704,
+        0.6252972299562876,
+        0.7660966737918574
+      ]
+    },
+    {
+      "t": 196,
+      "p": [
+        -1728.9375476553525,
+        3631.123900754521,
+        -1044.549063741527
+      ],
+      "look": [
+        0,
+        -588.92578125,
+        0
+      ],
+      "up": [
+        0.33452526674491684,
+        0.3533009896691002,
+        0.8736539684612418
+      ]
+    },
+    {
+      "t": 199,
+      "p": [
+        -576.9631773920976,
+        2602.6051606338797,
+        228.07858792607095
+      ],
+      "look": [
+        0,
+        -355,
+        0
+      ],
+      "up": [
+        0.7724517656893931,
+        0.1023541555429872,
+        0.6267710080455388
+      ]
+    },
+    {
+      "t": 202,
+      "p": [
+        89.801472641641,
+        1518.0969168822608,
+        810.0137674907064
+      ],
+      "look": [
+        0,
+        -121.07421875,
+        0
+      ],
+      "up": [
+        0.7109324564526288,
+        0.27987058781518154,
+        -0.6451724548043076
+      ]
+    },
+    {
+      "t": 205,
+      "p": [
+        400.00000000000034,
+        600.0000000000007,
+        950.0000000000008
+      ],
+      "look": [
+        -80,
+        -60,
+        0
+      ],
+      "up": [
+        -0.043613627876863695,
+        0.8289872437625362,
+        -0.5575643470868721
+      ]
+    },
+    {
+      "t": 208,
+      "p": [
+        110,
+        145,
+        240
+      ],
+      "look": [
+        -80,
+        8,
+        -30
+      ]
+    },
+    {
+      "t": 212,
+      "p": [
+        95,
+        90,
+        170
+      ],
+      "look": [
+        -80,
+        8,
+        -30
+      ]
+    },
+    {
+      "t": 216,
+      "p": [
+        82,
+        58,
+        125
+      ],
+      "look": [
+        25,
+        -36,
+        -30
+      ]
+    },
+    {
+      "t": 222,
+      "p": [
+        52,
+        38,
+        64
+      ],
+      "look": [
+        34,
+        -20,
+        -22
+      ]
+    },
+    {
+      "t": 226,
+      "p": [
+        38,
+        22,
+        15
+      ],
+      "look": [
+        34,
+        5,
+        -19
+      ]
+    },
+    {
+      "t": 230,
+      "p": [
+        37,
+        21.5,
+        13.5
+      ],
+      "look": [
+        34,
+        6,
+        -38
+      ]
+    },
+    {
+      "t": 234,
+      "p": [
+        35.8,
+        21,
+        12
+      ],
+      "look": [
+        34,
+        5,
+        -76
+      ]
+    },
+    {
+      "t": 242,
+      "p": [
+        34.4,
+        20.5,
+        10.5
+      ],
+      "look": [
+        34,
+        5,
+        -87
+      ]
+    },
+    {
+      "t": 255,
+      "p": [
+        32.5,
+        19.8,
+        8.8
+      ],
+      "look": [
+        34,
+        5,
+        -94
+      ]
+    },
+    {
+      "t": 271.7266666666667,
+      "p": [
+        30.2,
+        19.2,
+        7
+      ],
+      "look": [
+        34,
+        5,
+        -100
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "time": 193,
+      "position": [
+        -3451.824604064362,
+        4169.571418745434,
+        -3263.9779139318666
+      ],
+      "quaternion": [
+        -0.049566710113250326,
+        0.859476420915731,
+        0.42999363515103944,
+        -0.27193546452794476
+      ],
+      "fov": 45,
+      "earthNDC": [
+        9.22405128707253,
+        8.247852611622205,
+        1.0000498479481705
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.3378098892531911,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.34278056297028847,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.3396633046580888,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 6117.341692292993
+    },
+    {
+      "time": 194,
+      "position": [
+        -3107.427407095746,
+        4082.3330138486144,
+        -2808.3982236905495
+      ],
+      "quaternion": [
+        -0.0402125258573969,
+        0.8477360644160777,
+        0.4583046231967173,
+        -0.2639761167397975
+      ],
+      "fov": 45.02674567901234,
+      "earthNDC": [
+        9.719606630883584,
+        9.362050768061993,
+        1.0000538050012093
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.3650716566586798,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.36981894549343863,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.36716099428191207,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 5669.66624333592
+    },
+    {
+      "time": 195,
+      "position": [
+        -2380.166419814017,
+        3875.4396049538145,
+        -1859.612122295824
+      ],
+      "quaternion": [
+        -0.013642210509874799,
+        0.8178897408122523,
+        0.516910611900421,
+        -0.2523364445957094
+      ],
+      "fov": 45.19215802469136,
+      "earthNDC": [
+        12.90533809867578,
+        13.917369172060729,
+        1.0000727975706676
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.4283159437040984,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.4317536514682718,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.43100342086083376,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 4790.859587370766
+    },
+    {
+      "time": 196,
+      "position": [
+        -1728.9375476553525,
+        3631.123900754521,
+        -1044.549063741527
+      ],
+      "quaternion": [
+        0.02762327123403859,
+        0.7815803902855457,
+        0.5679669533095911,
+        -0.25648116569379037
+      ],
+      "fov": 45.5792,
+      "earthNDC": [
+        29.4535771482163,
+        31.060655203832,
+        1.0001536347868079
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.48836656341941787,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.48883097581298607,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.49166186738567097,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 4083.7437239321916
+    },
+    {
+      "time": 197,
+      "position": [
+        -1288.2894841468003,
+        3337.958006127661,
+        -534.1133201355517
+      ],
+      "quaternion": [
+        0.08110334206605815,
+        0.7464087785633882,
+        0.6021091404326891,
+        -0.2715893337313446
+      ],
+      "fov": 46.218686419753084,
+      "earthNDC": [
+        -742.1205757166869,
+        -670.8030362264564,
+        0.9966587145853902
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.5383499968218719,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.5350230820326929,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.5420631744723003,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 3574.781165024664
+    },
+    {
+      "time": 198,
+      "position": [
+        -898.4787913253509,
+        2973.3096907764657,
+        -100.35480002753434
+      ],
+      "quaternion": [
+        0.14863158768401058,
+        0.703013424556047,
+        0.6267135238323404,
+        -0.3015144027773138
+      ],
+      "fov": 47.098765432098766,
+      "earthNDC": [
+        -35.626442552377185,
+        -24.964045481457656,
+        0.9998670768689367
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.585020524923876,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.5760389466396498,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.5890546451273981,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 3084.395311107901
+    },
+    {
+      "time": 199,
+      "position": [
+        -576.9631773920976,
+        2602.6051606338797,
+        228.07858792607095
+      ],
+      "quaternion": [
+        0.23263552439157734,
+        0.6388615182868224,
+        0.6282544349382425,
+        -0.37819708912647865
+      ],
+      "fov": 48.1744,
+      "earthNDC": [
+        -19.767339710702014,
+        -8.757424625068044,
+        0.9999417823602818
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.6086689064318707,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.5915126054180142,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.6124767858897617,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 2661.245487927297
+    },
+    {
+      "time": 200,
+      "position": [
+        -310.32937054702984,
+        2238.684133794223,
+        480.5540425601403
+      ],
+      "quaternion": [
+        0.3461260416482278,
+        0.5257359564978107,
+        0.5785825129647603,
+        -0.5186913755111459
+      ],
+      "fov": 49.37684938271605,
+      "earthNDC": [
+        -13.54322609656463,
+        -1.9585294385382983,
+        0.9999676654023281
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.5525948662114628,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.5258788923550735,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.5547400493809327,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 2294.780557338609
+    },
+    {
+      "time": 201,
+      "position": [
+        -83.22486708699194,
+        1868.3772098279626,
+        684.8674133257414
+      ],
+      "quaternion": [
+        0.4523782977474656,
+        0.3581431529887107,
+        0.46797423757605905,
+        -0.6693933601848141
+      ],
+      "fov": 50.62315061728395,
+      "earthNDC": [
+        -8.957439815086696,
+        1.5178498687949527,
+        0.9999780540574338
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.6752395250365006,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.647165291869029,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 0.6776051877491979,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 1961.167080697444
+    },
+    {
+      "time": 202,
+      "position": [
+        89.801472641641,
+        1518.0969168822608,
+        810.0137674907064
+      ],
+      "quaternion": [
+        -0.4947700076030614,
+        -0.1842797477390968,
+        -0.33951045001424734,
+        0.7784447754855862
+      ],
+      "fov": 51.8256,
+      "earthNDC": [
+        -4.861275051900205,
+        2.8141573899876278,
+        0.9999831513778509
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 0.9967188863172116,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 0.9796288401041808,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 1.002244715593139,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 1666.2104500687024
+    },
+    {
+      "time": 203,
+      "position": [
+        232.95115206675868,
+        1177.8257579098388,
+        879.7411025652307
+      ],
+      "quaternion": [
+        -0.4567645933316261,
+        -0.035169848461825304,
+        -0.22656458546855746,
+        0.8595334063602341
+      ],
+      "fov": 52.901234567901234,
+      "earthNDC": [
+        -1.663882603577604,
+        2.596858904032434,
+        0.9999874556984489
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 1.225016975979567,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 1.2243078466646617,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 1.2323393974693664,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 1391.851524492071
+    },
+    {
+      "time": 204,
+      "position": [
+        350.9420790731972,
+        854.508262776716,
+        930.4245771169817
+      ],
+      "quaternion": [
+        -0.37047159352384945,
+        0.09514326578972411,
+        -0.12138481956440136,
+        0.9159499347377471
+      ],
+      "fov": 53.78131358024691,
+      "earthNDC": [
+        0.33128206148757466,
+        1.961882797004117,
+        0.9999901516345358
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 1.3522746428427956,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 1.3711901497683798,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 1.3598671227739545,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 1153.4398657374036
+    },
+    {
+      "time": 205,
+      "position": [
+        400.00000000000034,
+        600.0000000000007,
+        950.0000000000008
+      ],
+      "quaternion": [
+        -0.288814149687185,
+        0.19316804185462175,
+        -0.036838521624279925,
+        0.9369714071790328
+      ],
+      "fov": 54.4208,
+      "earthNDC": [
+        1.4644447436550605,
+        1.4703377046712696,
+        0.999991009632199
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 1.393384166751317,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 1.4258139960185523,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 1.400136931181506,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 970.1851746019661
+    },
+    {
+      "time": 206,
+      "position": [
+        326.49319431047445,
+        397.7302911250812,
+        773.4782975746837
+      ],
+      "quaternion": [
+        -0.2402053429019979,
+        0.24943869835779256,
+        0.015841366379350658,
+        0.9379929531260558
+      ],
+      "fov": 54.80784197530864,
+      "earthNDC": [
+        2.089237471876023,
+        1.2012816641302724,
+        0.9999908805976807
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 1.8217728492893115,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 1.8585580536391944,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 1.8298090690213442,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 692.6113531812309
+    },
+    {
+      "time": 207,
+      "position": [
+        188.541944176504,
+        229.56177586758957,
+        439.1788173715887
+      ],
+      "quaternion": [
+        -0.2095313734961766,
+        0.27633692698424167,
+        0.043020135025457304,
+        0.9369545209283655
+      ],
+      "fov": 54.97325432098766,
+      "earthNDC": [
+        2.404938319739565,
+        1.0365920211118185,
+        0.9999905872590356
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 3.2580330361796377,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 3.315046607835235,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 3.2757952937746513,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 351.026980609969
+    },
+    {
+      "time": 208,
+      "position": [
+        110,
+        145,
+        240
+      ],
+      "quaternion": [
+        -0.1862903146017135,
+        0.2960042207927715,
+        0.0589770431819249,
+        0.9349861647831886
+      ],
+      "fov": 55,
+      "earthNDC": [
+        2.627084221977502,
+        0.9118231496913493,
+        0.9999903561216863
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 5.998053184566436,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 6.087153942315431,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 6.046616799708389,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 187.69027689236077
+    },
+    {
+      "time": 209,
+      "position": [
+        104.06075368732652,
+        123.53348808436776,
+        212.51349404669205
+      ],
+      "quaternion": [
+        -0.1641851330287044,
+        0.31991669160100256,
+        0.066762189930996,
+        0.9307198088162911
+      ],
+      "fov": 55,
+      "earthNDC": [
+        2.875214876337354,
+        0.7989224428429937,
+        0.9999901100874726
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 6.854975921627489,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 6.954826394885436,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 6.918334300732907,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 158.91574517861648
+    },
+    {
+      "time": 210,
+      "position": [
+        100.46471756333786,
+        109.429192473461,
+        194.85498987725285
+      ],
+      "quaternion": [
+        -0.14687330214688937,
+        0.3409934399114633,
+        0.0640814285558482,
+        0.9263073342946484
+      ],
+      "fov": 55,
+      "earthNDC": [
+        3.098764116366089,
+        0.7266868241971121,
+        0.9999898048390282
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 7.5624159076202435,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 7.676445124298441,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 7.640906633279023,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 140.43932400661754
+    },
+    {
+      "time": 211,
+      "position": [
+        97.88632265768027,
+        99.36030062582374,
+        182.2689907691872
+      ],
+      "quaternion": [
+        -0.1375869864557683,
+        0.35250752230506666,
+        0.057211663116800496,
+        0.9238696301317482
+      ],
+      "fov": 55,
+      "earthNDC": [
+        3.221301002198211,
+        0.6991783127728867,
+        0.9999896062793522
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 8.103969338924548,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 8.234360056298948,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 8.19491556975672,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 127.3960234741919
+    },
+    {
+      "time": 212,
+      "position": [
+        95,
+        90,
+        170
+      ],
+      "quaternion": [
+        -0.1395599916123465,
+        0.3477958479310008,
+        0.052437589652071286,
+        0.9256410514311685
+      ],
+      "fov": 55,
+      "earthNDC": [
+        3.1546964947255876,
+        0.7167377724368409,
+        0.9999896995636169
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 8.522772994677554,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 8.671206366955136,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 8.621234022405417,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 115.1960533092157
+    },
+    {
+      "time": 213,
+      "position": [
+        91.73838129624359,
+        80.21760289210233,
+        157.2743971097481
+      ],
+      "quaternion": [
+        -0.15918099170001063,
+        0.3172827900613419,
+        0.05084360551913607,
+        0.933492351757692
+      ],
+      "fov": 55,
+      "earthNDC": [
+        2.8062361175999855,
+        0.8027886337009729,
+        0.9999901889165104
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 8.78491755137222,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 8.953511332049908,
+          "blocked": false,
+          "inFrame": false
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 8.881218412956041,
+          "blocked": false,
+          "inFrame": false
+        }
+      ],
+      "radiusClearance": 102.57485618546798
+    },
+    {
+      "time": 214,
+      "position": [
+        88.70115964712578,
+        71.36188357434186,
+        146.0107111332413
+      ],
+      "quaternion": [
+        -0.1924258054623812,
+        0.26626950063978855,
+        0.04913641196513824,
+        0.9432170881829823
+      ],
+      "fov": 55,
+      "earthNDC": [
+        2.296965725240926,
+        0.9465584970918072,
+        0.9999907438566322
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 9.03038053524444,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 9.22067056713341,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 9.117139166045662,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 91.31639032352575
+    },
+    {
+      "time": 215,
+      "position": [
+        85.56335817444509,
+        63.825222469410456,
+        135.49166959011384
+      ],
+      "quaternion": [
+        -0.2270960756849803,
+        0.21110174208613852,
+        0.04712264375389283,
+        0.9495487788114536
+      ],
+      "fov": 55,
+      "earthNDC": [
+        1.810483541556852,
+        1.1014721953160622,
+        0.9999910588568174
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 9.529627074857983,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 9.743494874155854,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 9.606981264410868,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 81.59109413927968
+    },
+    {
+      "time": 216,
+      "position": [
+        82,
+        58,
+        125
+      ],
+      "quaternion": [
+        -0.25188854986402504,
+        0.16945177776197706,
+        0.04484684768266144,
+        0.9517494490219747
+      ],
+      "fov": 55,
+      "earthNDC": [
+        1.46769533849933,
+        1.2196764429205125,
+        0.9999911369796961
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 10.308868619094609,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 10.547386336609454,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 10.381533615671046,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 73.61108338664906
+    },
+    {
+      "time": 217,
+      "position": [
+        77.64548009512338,
+        53.66643354605589,
+        114.591957287455
+      ],
+      "quaternion": [
+        -0.2663222901315184,
+        0.14570332696544241,
+        0.04253981395330518,
+        0.9518578373471129
+      ],
+      "fov": 54.88872,
+      "earthNDC": [
+        1.2804336142803499,
+        1.297179581851289,
+        0.999991108253021
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 11.268910532304686,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 11.533066854254388,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 11.342596025616372,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 67.15171822536831
+    },
+    {
+      "time": 218,
+      "position": [
+        72.57815250625406,
+        50.13975580616021,
+        104.62814035149462
+      ],
+      "quaternion": [
+        -0.2770887542883455,
+        0.13033298310014915,
+        0.04025906496120939,
+        0.951112161341447
+      ],
+      "fov": 54.24704,
+      "earthNDC": [
+        1.1751868702693997,
+        1.375691358805277,
+        0.9999910354488181
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 12.492234453359536,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 12.787059026849219,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 12.570661277737276,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 61.62512155975969
+    },
+    {
+      "time": 219,
+      "position": [
+        67.13897896784952,
+        47.114870180959876,
+        94.84779267344393
+      ],
+      "quaternion": [
+        -0.28436339765481,
+        0.12066899167755188,
+        0.037923457635654884,
+        0.9503358689866925
+      ],
+      "fov": 52.87996,
+      "earthNDC": [
+        1.1297409295797947,
+        1.4615265359555614,
+        0.999990965637734
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 14.09711700771485,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 14.430930680847904,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 14.184954176796172,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 56.733958784553124
+    },
+    {
+      "time": 220,
+      "position": [
+        61.668921214367344,
+        44.286680071101785,
+        84.9901577346279
+      ],
+      "quaternion": [
+        -0.2882510396328176,
+        0.11399290741714918,
+        0.03543908449431682,
+        0.9500847470091234
+      ],
+      "fov": 50.87328,
+      "earthNDC": [
+        1.1183407035609492,
+        1.5535773670764472,
+        0.9999909315688189
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 16.209637551606235,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 16.593971616113716,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 16.3124926915747,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 52.182580871708296
+    },
+    {
+      "time": 221,
+      "position": [
+        56.50894098026499,
+        41.350088877232864,
+        74.79447901637158
+      ],
+      "quaternion": [
+        -0.2888129612359152,
+        0.10756405341052738,
+        0.032705345446821195,
+        0.9507614886054458
+      ],
+      "fov": 48.5,
+      "earthNDC": [
+        1.1101266774508027,
+        1.6433869103241812,
+        0.9999909572271736
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 18.975395688768,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 19.42523815252775,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 19.099598241459486,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 47.676443555749756
+    },
+    {
+      "time": 222,
+      "position": [
+        52,
+        38,
+        64
+      ],
+      "quaternion": [
+        -0.28607707622249545,
+        0.09862807121321925,
+        0.02961740944656448,
+        0.9526569262260278
+      ],
+      "fov": 46.12672,
+      "earthNDC": [
+        1.06740562157196,
+        1.7156317511139891,
+        0.9999910585976842
+      ],
+      "earthVisible": false,
+      "crewReadable": false,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 22.586013490423422,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 23.1206643008157,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 22.737760753581764,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 42.92423828294534
+    },
+    {
+      "time": 223,
+      "position": [
+        47.61075581395349,
+        33.48752771618625,
+        50.19099914199649
+      ],
+      "quaternion": [
+        -0.27785140563634547,
+        0.08751175214399244,
+        0.02581827429225822,
+        0.9562811858105152
+      ],
+      "fov": 44.12004,
+      "earthNDC": [
+        0.9773702874049025,
+        1.735532285804861,
+        0.9999912622977946
+      ],
+      "earthVisible": false,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 28.13860250540973,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 28.801734675379418,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 28.337374842312634,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 36.97970931289683
+    },
+    {
+      "time": 224,
+      "position": [
+        43.1984496124031,
+        28.291943828529195,
+        34.27346238364485
+      ],
+      "quaternion": [
+        -0.2636787736411669,
+        0.07662088314667637,
+        0.02143202207328915,
+        0.9613237815776554
+      ],
+      "fov": 42.75296,
+      "earthNDC": [
+        0.8614963563957955,
+        1.6845259006279991,
+        0.9999915443075988
+      ],
+      "earthVisible": false,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 37.16562912186822,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 38.03028443164603,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 37.4588140839277,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 30.52974757563902
+    },
+    {
+      "time": 225,
+      "position": [
+        39.68691860465117,
+        23.950388026607538,
+        20.96919443347078
+      ],
+      "quaternion": [
+        -0.24618031504919088,
+        0.06631635962286381,
+        0.017074806012847967,
+        0.9668018638419539
+      ],
+      "fov": 42.11128,
+      "earthNDC": [
+        0.7340686368892942,
+        1.5794421804117222,
+        0.9999918445627636
+      ],
+      "earthVisible": false,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 49.45696906194777,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 50.57755775184073,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 49.90439300751635,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 25.443472205288117
+    },
+    {
+      "time": 226,
+      "position": [
+        38,
+        22,
+        15
+      ],
+      "quaternion": [
+        -0.22802617963335053,
+        0.05697381439841177,
+        0.013367210309447994,
+        0.9718947286425917
+      ],
+      "fov": 42,
+      "earthNDC": [
+        0.6131576048745434,
+        1.452283906503679,
+        0.9999921193163264
+      ],
+      "earthVisible": false,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 57.66190442337437,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 58.93502288184597,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 58.21255105799939,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 23.240670191574168
+    },
+    {
+      "time": 227,
+      "position": [
+        37.632386363636364,
+        21.808948863636363,
+        14.42659344059406
+      ],
+      "quaternion": [
+        -0.20848738936753586,
+        0.04875872206263548,
+        0.010446509893410044,
+        0.9767530219705364
+      ],
+      "fov": 42,
+      "earthNDC": [
+        0.5093471316906081,
+        1.3173032082687846,
+        0.9999923774531992
+      ],
+      "earthVisible": false,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 58.42971014144949,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 59.70743954183336,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 58.966418617081835,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 23.0167805300149
+    },
+    {
+      "time": 228,
+      "position": [
+        37.4030303030303,
+        21.69128787878788,
+        14.073638613861387
+      ],
+      "quaternion": [
+        -0.18659821115801553,
+        0.04144705102176789,
+        0.007991639775989864,
+        0.9815291046361889
+      ],
+      "fov": 42,
+      "earthNDC": [
+        0.4202244276740191,
+        1.173541909984304,
+        0.9999926247449281
+      ],
+      "earthVisible": false,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 59.0685179311961,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 60.348618917127766,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 59.59434113659734,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.879068029276482
+    },
+    {
+      "time": 229,
+      "position": [
+        37.222159090909095,
+        21.602982954545453,
+        13.80886448019802
+      ],
+      "quaternion": [
+        -0.16474750179154618,
+        0.034848375248017115,
+        0.00593998254458418,
+        0.9857020685802519
+      ],
+      "fov": 42,
+      "earthNDC": [
+        0.34365372703034097,
+        1.0365432552099165,
+        0.9999928359862097
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 59.81802190586758,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 61.10281039608206,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 60.33486965452064,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.77540128862097
+    },
+    {
+      "time": 230,
+      "position": [
+        37,
+        21.5,
+        13.5
+      ],
+      "quaternion": [
+        -0.1453610374365246,
+        0.028780002215533437,
+        0.0042302310050039045,
+        0.9889509519756253
+      ],
+      "fov": 42,
+      "earthNDC": [
+        0.2769043043742531,
+        0.919555289723118,
+        0.9999929978653451
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 60.841332585088026,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 62.13534613803935,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 61.348789061327565,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.654071570224005
+    },
+    {
+      "time": 231,
+      "position": [
+        36.701786692223436,
+        21.36778846153846,
+        13.103365384615385
+      ],
+      "quaternion": [
+        -0.1283607770397471,
+        0.02310842955209958,
+        0.002922259775365036,
+        0.991453968573021
+      ],
+      "fov": 42.0012044288,
+      "earthNDC": [
+        0.21738393220935023,
+        0.8199315437889952,
+        0.9999931216357575
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 62.172557106563175,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 63.4795334629142,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 62.670285973995085,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.49790089972862
+    },
+    {
+      "time": 232,
+      "position": [
+        36.377491785323116,
+        21.23076923076923,
+        12.692307692307692
+      ],
+      "quaternion": [
+        -0.11273344304706641,
+        0.017968955063590263,
+        0.0020254284244834884,
+        0.9934607114085457
+      ],
+      "fov": 42.0090505216,
+      "earthNDC": [
+        0.16527375823658816,
+        0.7303607257870472,
+        0.9999932209520035
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 63.66713847349242,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 64.98845279622702,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 64.15625219592174,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.33560231872127
+    },
+    {
+      "time": 233,
+      "position": [
+        36.064450985761226,
+        21.103365384615383,
+        12.310096153846153
+      ],
+      "quaternion": [
+        -0.09952487368721194,
+        0.013586161449055917,
+        0.0014030039058820117,
+        0.9949413285790598
+      ],
+      "fov": 42.0286377984,
+      "earthNDC": [
+        0.12189649413339917,
+        0.6558546179053835,
+        0.9999932947406684
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 65.12987824138789,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 66.46480371176922,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 65.61048628905205,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.184431627792037
+    },
+    {
+      "time": 234,
+      "position": [
+        35.8,
+        21,
+        12
+      ],
+      "quaternion": [
+        -0.08978257182985595,
+        0.010184366728349417,
+        0.00091813482405575,
+        0.9959088941757696
+      ],
+      "fov": 42.0635174912,
+      "earthNDC": [
+        0.08869033450050548,
+        0.6013559712582139,
+        0.9999933434803464
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 66.32238910294801,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 67.66780264066854,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 66.79385983349904,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 22.061485282410786
+    },
+    {
+      "time": 235,
+      "position": [
+        35.5830491246289,
+        20.918624668828798,
+        11.75387301265837
+      ],
+      "quaternion": [
+        -0.08354787070241868,
+        0.007757427673382508,
+        0.0005401337685909409,
+        0.9964734235655741
+      ],
+      "fov": 42.11584,
+      "earthNDC": [
+        0.0651815642195389,
+        0.5663817134011656,
+        0.9999933722090254
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 67.17743448357785,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 68.52958053430932,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 67.6399835522343,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.964365010017673
+    },
+    {
+      "time": 236,
+      "position": [
+        35.385234692359326,
+        20.84634227114928,
+        11.532166263180345
+      ],
+      "quaternion": [
+        -0.07980013818386031,
+        0.006046038253052483,
+        0.0003080025058277613,
+        0.9967925002234596
+      ],
+      "fov": 42.1865023488,
+      "earthNDC": [
+        0.048749158440289465,
+        0.5449510636765319,
+        0.9999933885450233
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 67.80689909076582,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 69.16307743970995,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 68.26201085540814,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.877906045090185
+    },
+    {
+      "time": 237,
+      "position": [
+        35.20298146383639,
+        20.781302816097202,
+        11.33104491654007
+      ],
+      "quaternion": [
+        -0.0779908658182031,
+        0.00489392923818578,
+        0.00018930665521767824,
+        0.9969420436858547
+      ],
+      "fov": 42.2752956416,
+      "earthNDC": [
+        0.03777527489844496,
+        0.533903371140304,
+        0.9999933961741614
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 68.23504164241639,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 69.59285776934442,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 68.68411471418368,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.799969254617167
+    },
+    {
+      "time": 238,
+      "position": [
+        35.0327141997052,
+        20.721656312808335,
+        11.14667413771169
+      ],
+      "quaternion": [
+        -0.07756981696191434,
+        0.004144637706489468,
+        0.00015159625362549733,
+        0.9969782958988389
+      ],
+      "fov": 42.3810525184,
+      "earthNDC": [
+        0.03070040847577504,
+        0.5301757627312754,
+        0.9999933979191814
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 68.50113517543062,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 69.8586667061488,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 68.94526227073725,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.728427011636654
+    },
+    {
+      "time": 239,
+      "position": [
+        34.87085766061085,
+        20.66555277041842,
+        10.975219091669347
+      ],
+      "quaternion": [
+        -0.07798596593252982,
+        0.0036416339086115935,
+        0.000162417550217268,
+        0.9969477926353946
+      ],
+      "fov": 42.5017946112,
+      "earthNDC": [
+        0.025998836151875707,
+        0.5307663232217299,
+        0.9999933961839821
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 68.65318813773351,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.00905928524956,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.09299910392528,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.661161465323744
+    },
+    {
+      "time": 240,
+      "position": [
+        34.713836607198466,
+        20.61114219806322,
+        10.812844943387189
+      ],
+      "quaternion": [
+        -0.07868804881364252,
+        0.0032283723861557456,
+        0.0001893161267153184,
+        0.9968940428877293
+      ],
+      "fov": 42.63488,
+      "earthNDC": [
+        0.022166934533090536,
+        0.5327174430319049,
+        0.9999933932434705
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 68.74318900133497,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.09658388161272,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.17875206855321,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.596063201648008
+    },
+    {
+      "time": 241,
+      "position": [
+        34.55807580011315,
+        20.556574604878495,
+        10.655716857839359
+      ],
+      "quaternion": [
+        -0.07912482918939746,
+        0.0027483085542276044,
+        0.0001998376143078911,
+        0.9968609071835285
+      ],
+      "fov": 42.7771506688,
+      "earthNDC": [
+        0.01772000878561049,
+        0.5331116386188723,
+        0.9999933913889106
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 68.82429407651492,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.17493680236197,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.2550524775985,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.5310302961351
+    },
+    {
+      "time": 242,
+      "position": [
+        34.4,
+        20.5,
+        10.5
+      ],
+      "quaternion": [
+        -0.07874510437641953,
+        0.0020448994421041118,
+        0.00016152773956677676,
+        0.9968926726743496
+      ],
+      "fov": 42.9250799616,
+      "earthNDC": [
+        0.011195593056454662,
+        0.5290766141307675,
+        0.9999933929311986
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 68.95012817673154,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.2982550161613,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.37483964322239,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.46396775999824
+    },
+    {
+      "time": 243,
+      "position": [
+        34.24138249398481,
+        20.44170828856743,
+        10.3466178470079
+      ],
+      "quaternion": [
+        -0.07782555791728102,
+        0.0011965486575715213,
+        0.00009060784650084865,
+        0.9969662695379381
+      ],
+      "fov": 43.0749200384,
+      "earthNDC": [
+        0.0033609499558290607,
+        0.5221845917160639,
+        0.9999933966750822
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 69.10582377684449,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.45161151661736,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.52359250660741,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.39527030569991
+    },
+    {
+      "time": 244,
+      "position": [
+        34.08614347786837,
+        20.383366518414988,
+        10.198735676024294
+      ],
+      "quaternion": [
+        -0.07700349368487175,
+        0.0003835715690012867,
+        0.000024600456995371336,
+        0.997030748887913
+      ],
+      "fov": 43.2228493312,
+      "earthNDC": [
+        -0.004082652983131228,
+        0.5158870323268802,
+        0.9999933999597451
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 69.24569019309756,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.58902107139744,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.65649876728224,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.326848480787817
+    },
+    {
+      "time": 245,
+      "position": [
+        33.93392807530836,
+        20.325190412720193,
+        10.055881352056995
+      ],
+      "quaternion": [
+        -0.07626853255958593,
+        -0.0003977094766084716,
+        -0.0000369971669038102,
+        0.9970872335957316
+      ],
+      "fov": 43.36512,
+      "earthNDC": [
+        -0.01117665098183686,
+        0.510169280052484,
+        0.999993402840791
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 69.40208828919664,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.74090711528663,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.80627558446392,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.258886813602203
+    },
+    {
+      "time": 246,
+      "position": [
+        33.78438140996246,
+        20.267395694660596,
+        9.917582740113817
+      ],
+      "quaternion": [
+        -0.07561028950669794,
+        -0.0011509725973503544,
+        -0.00009468780167105885,
+        0.9971367761831942
+      ],
+      "fov": 43.4982053888,
+      "earthNDC": [
+        -0.017964009481335322,
+        0.5050127069773368,
+        0.9999934053707963
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 69.57915866815824,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 70.9118639833292,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 69.97706142061872,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.1915707202852
+    },
+    {
+      "time": 247,
+      "position": [
+        33.63714860548834,
+        20.210198087413715,
+        9.783367705202574
+      ],
+      "quaternion": [
+        -0.07501837449551292,
+        -0.0018798962217726621,
+        -0.00014897424916401393,
+        0.9971803684815099
+      ],
+      "fov": 43.6189474816,
+      "earthNDC": [
+        -0.024488735866359287,
+        0.5003934627646468,
+        0.9999934075997405
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 69.76287360208816,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 71.0898343630202,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 70.15455585614018,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.12508645582102
+    },
+    {
+      "time": 248,
+      "position": [
+        33.49187478554367,
+        20.153813314157077,
+        9.652764112331079
+      ],
+      "quaternion": [
+        -0.07448239327602146,
+        -0.002588158971219693,
+        -0.0002003593268510042,
+        0.9972189500712247
+      ],
+      "fov": 43.7247043584,
+      "earthNDC": [
+        -0.03079535438224182,
+        0.49628123522536266,
+        0.99999340957538
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 69.96006163389706,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 71.28172349081379,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 70.34560950824427,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 21.059621070411936
+    },
+    {
+      "time": 249,
+      "position": [
+        33.34820507378612,
+        20.098457098068216,
+        9.52529982650715
+      ],
+      "quaternion": [
+        -0.07399194802548195,
+        -0.0032794395712044825,
+        -0.000249345860613462,
+        0.9972534155018647
+      ],
+      "fov": 43.8134976512,
+      "earthNDC": [
+        -0.03692834981321949,
+        0.49263797176141005,
+        0.999993411343563
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 70.17649763507293,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 71.4933569698141,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 70.55600859904828,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.99536237118639
+    },
+    {
+      "time": 250,
+      "position": [
+        33.20578459387336,
+        20.04434516232466,
+        9.400502712738598
+      ],
+      "quaternion": [
+        -0.07353663787507518,
+        -0.0039574167846953235,
+        -0.0002964366794481422,
+        0.997284620290375
+      ],
+      "fov": 43.88416,
+      "earthNDC": [
+        -0.04293157401530464,
+        0.4894165198678164,
+        0.9999934129484951
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 70.41665225705181,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 71.72922638750471,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 70.79022367194888,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.932498889236626
+    },
+    {
+      "time": 251,
+      "position": [
+        33.06425846946308,
+        19.99169323010394,
+        9.27790063603324
+      ],
+      "quaternion": [
+        -0.07310605932485215,
+        -0.004625769360895264,
+        -0.0003421346114908241,
+        0.9973133856976547
+      ],
+      "fov": 43.9364825088,
+      "earthNDC": [
+        -0.048847598793399914,
+        0.4865591571823314,
+        0.9999934144329446
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 70.68343342206435,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 71.99222685199874,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 71.05115040081719,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.871219851984165
+    },
+    {
+      "time": 252,
+      "position": [
+        32.923271824212925,
+        19.940717024583588,
+        9.157021461398884
+      ],
+      "quaternion": [
+        -0.07268980655362889,
+        -0.005288175993665479,
+        -0.00038694248086279466,
+        0.9973405022826318
+      ],
+      "fov": 43.9713622016,
+      "earthNDC": [
+        -0.05471698923197771,
+        0.483995999032144,
+        0.9999934158383998
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 70.9779125364415,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 72.28337902400335,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 71.33983514693276,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.811715160870335
+    },
+    {
+      "time": 253,
+      "position": [
+        32.78246978178057,
+        19.891632268941123,
+        9.037393053843351
+      ],
+      "quaternion": [
+        -0.07227747162927126,
+        -0.005948315284188585,
+        -0.00043136310490374187,
+        0.9973667322334505
+      ],
+      "fov": 43.9909494784,
+      "earthNDC": [
+        -0.06057746389033684,
+        0.4816432956483606,
+        0.9999934172051707
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 71.2990293899439,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 72.60152954793631,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 71.65517921867384,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.754175374368515
+    },
+    {
+      "time": 254,
+      "position": [
+        32.64149746582371,
+        19.844654686354087,
+        8.91854327837445
+      ],
+      "quaternion": [
+        -0.07185864462395875,
+        -0.006609865702786985,
+        -0.00047589929139976153,
+        0.9973928104754227
+      ],
+      "fov": 43.9987955712,
+      "earthNDC": [
+        -0.06646290297562138,
+        0.47940166421565733,
+        0.9999934185724374
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 71.64327233794936,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 72.94302648923943,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 71.99361844826534,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.6987916963177
+    },
+    {
+      "time": 255,
+      "position": [
+        32.5,
+        19.8,
+        8.8
+      ],
+      "quaternion": [
+        -0.07142291363852127,
+        -0.007276505545003828,
+        -0.0005210538354429761,
+        0.9974194445554682
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.07240216385510495,
+        0.477154344916163,
+        0.9999934199782505
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 72.00433471606813,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 73.30137083837758,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 72.34877908591142,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.64575596957286
+    },
+    {
+      "time": 256,
+      "position": [
+        32.35862895540019,
+        19.757454488242534,
+        8.682720979145843
+      ],
+      "quaternion": [
+        -0.07097004625721373,
+        -0.007976573186900773,
+        -0.0005680662964095954,
+        0.9974463915996322
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.07864111686471244,
+        0.4748344909553677,
+        0.9999934214126059
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 72.37042071513605,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 73.66430772098985,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 72.70841330479871,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.594898842844827
+    },
+    {
+      "time": 257,
+      "position": [
+        32.21820996208383,
+        19.71655266591384,
+        8.567822399213517
+      ],
+      "quaternion": [
+        -0.07050983032041175,
+        -0.008727701597418374,
+        -0.0006173851264416731,
+        0.9974727113503504
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.08533548480901118,
+        0.4724783167224861,
+        0.9999934228283395
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 72.73521859141437,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 74.02529121757696,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 73.06589911534567,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.545808687625026
+    },
+    {
+      "time": 258,
+      "position": [
+        32.078649232161794,
+        19.677132610894194,
+        8.455069759674387
+      ],
+      "quaternion": [
+        -0.07004688487014044,
+        -0.00951751089291008,
+        -0.0006683264565716118,
+        0.9974980723019672
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.09237438283476555,
+        0.47010961029668885,
+        0.9999934242080247
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 73.09835464116753,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 74.38405412969082,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 73.42100253862576,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.498314601274956
+    },
+    {
+      "time": 259,
+      "position": [
+        31.939852977744934,
+        19.63903240106385,
+        8.344228559999811
+      ],
+      "quaternion": [
+        -0.06958583198283316,
+        -0.010333621406480548,
+        -0.000720206435269742,
+        0.9975221849956898
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.09964701760851936,
+        0.4677521102026714,
+        0.9999934255359288
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 73.45947874716991,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 74.7403574722558,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 73.7735202726596,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.452245930711
+    },
+    {
+      "time": 260,
+      "position": [
+        31.801727410944135,
+        19.602090114303085,
+        8.23506429966115
+      ],
+      "quaternion": [
+        -0.06913129700927256,
+        -0.01116365380733926,
+        -0.0007723412361979812,
+        0.9975448060596077
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.10704268254509039,
+        0.4654295046459475,
+        0.9999934267981704
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 73.81826377929535,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 75.09398982661112,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 74.12327908033232,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.407432264725685
+    },
+    {
+      "time": 261,
+      "position": [
+        31.664178743870263,
+        19.566143828492148,
+        8.127342478129764
+      ],
+      "quaternion": [
+        -0.06868790868479586,
+        -0.011995229218751069,
+        -0.0008240470656942774,
+        0.997565740501814
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.11445074982302532,
+        0.46316543254469544,
+        0.9999934279828081
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 74.17440575959203,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 75.44476744165442,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 74.47013590759045,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.363703427204996
+    },
+    {
+      "time": 262,
+      "position": [
+        31.527113188634182,
+        19.531031621511314,
+        8.020828594877017
+      ],
+      "quaternion": [
+        -0.06826029911516149,
+        -0.012815969325156561,
+        -0.000874640169385355,
+        0.9975848422563061
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.1217606598981187,
+        0.4609834861741265,
+        0.9999934290798597
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 74.52762482123616,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 75.79253511440075,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 74.81397876399217,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.320889471246005
+    },
+    {
+      "time": 263,
+      "position": [
+        31.39043695734676,
+        19.496591571240845,
+        7.915288149374264
+      ],
+      "quaternion": [
+        -0.06785310364337832,
+        -0.013613496458437374,
+        -0.0009234368373062505,
+        0.9976020129814016
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.12886190926349447,
+        0.4589072152393413,
+        0.9999934300812499
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 74.87766699090423,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 76.13716788150637,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 75.15472839806074,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.27882067418011
+    },
+    {
+      "time": 264,
+      "position": [
+        31.25405626211887,
+        19.462661755561008,
+        7.81048664109287
+      ],
+      "quaternion": [
+        -0.06747096060247774,
+        -0.014375433653310378,
+        -0.0009697534069196471,
+        0.9976171991104545
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.13564403719833606,
+        0.4569601322020881,
+        0.9999934309806892
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 75.22430682380586,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 76.47857355325277,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 75.49234080002998,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.237327533499183
+    },
+    {
+      "time": 265,
+      "position": [
+        31.117877315061378,
+        19.42908025235207,
+        7.706189569504193
+      ],
+      "quaternion": [
+        -0.0671185109586602,
+        -0.0150894046624513,
+        -0.0010129062634760728,
+        0.997630387154745
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.14199661219739224,
+        0.45516571870563594,
+        0.9999934317734841
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 75.56735091994256,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 76.81669612121338,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 75.82681056458172,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.196240763693254
+    },
+    {
+      "time": 266,
+      "position": [
+        30.98180632828515,
+        19.39568513949429,
+        7.6021624340795935
+      ],
+      "quaternion": [
+        -0.06680039784847054,
+        -0.015743033923171234,
+        -0.0010522118372375973,
+        0.9976415972584692
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.14780921868002891,
+        0.4535474329699816,
+        0.9999934324562771
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 75.90664234919669,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 77.15152007047277,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 76.15817514619282,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.15539129399724
+    },
+    {
+      "time": 267,
+      "position": [
+        30.84574951390106,
+        19.36231449486794,
+        7.498170734290435
+      ],
+      "quaternion": [
+        -0.06652126601265212,
+        -0.01632394646929971,
+        -0.0010869865972027689,
+        0.9976508750058202
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.15297144444091967,
+        0.45212871806679206,
+        0.9999934330267166
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 76.24206601174203,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 77.48307562695007,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 76.48652003985654,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.114610267050807
+    },
+    {
+      "time": 268,
+      "position": [
+        30.70961308401997,
+        19.32880639635328,
+        7.393979969608074
+      ],
+      "quaternion": [
+        -0.06628576112809671,
+        -0.016819767784364857,
+        -0.0011165470411191424,
+        0.997658281480214
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.15737286912444534,
+        0.4509330110298018,
+        0.9999934334830588
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 76.57355495915154,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 77.81144497028089,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 76.81198492042022,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.073729038475335
+    },
+    {
+      "time": 269,
+      "position": [
+        30.57330325075276,
+        19.294998921830576,
+        7.2893556395038726
+      ],
+      "quaternion": [
+        -0.066098529037846,
+        -0.017218123595204825,
+        -0.0011402096817518799,
+        0.9976638815757414
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.16090305378141298,
+        0.44998375281182645,
+        0.9999934338236993
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 76.90109770063239,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 78.13676944300917,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 77.13477077477725,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 20.03257917736721
+    },
+    {
+      "time": 270,
+      "position": [
+        30.436726226210286,
+        19.260730149180095,
+        7.184063243449193
+      ],
+      "quaternion": [
+        -0.06596421487741073,
+        -0.017506639608794707,
+        -0.0011572910295925228,
+        0.9976677305609755
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.16345153129964837,
+        0.4493043991641988,
+        0.9999934340466351
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 77.22474651831662,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 78.45925778783182,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 77.45514806296111,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 19.990992467711294
+    },
+    {
+      "time": 271,
+      "position": [
+        30.29978822250342,
+        19.225838156282098,
+        7.077868280915394
+      ],
+      "quaternion": [
+        -0.06588746209375647,
+        -0.0176729411993305,
+        -0.0011671075724412022,
+        0.9976698588952774
+      ],
+      "fov": 44,
+      "earthNDC": [
+        -0.16490779718917106,
+        0.4489184325883445,
+        0.9999934341488576
+      ],
+      "earthVisible": true,
+      "crewReadable": true,
+      "crewFigures": [
+        {
+          "name": "Rei Ayanami",
+          "pixelHeight": 77.54462681574063,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Shinji Ikari",
+          "pixelHeight": 78.77919544659102,
+          "blocked": false,
+          "inFrame": true
+        },
+        {
+          "name": "Asuka Langley",
+          "pixelHeight": 77.77346594710903,
+          "blocked": false,
+          "inFrame": true
+        }
+      ],
+      "radiusClearance": 19.948800910717864
+    }
+  ],
+  "audio": {
+    "duration": 78.726667,
+    "sourceEnd": 271.726667,
+    "sourceStart": 193,
+    "volume": 0.8,
+    "muted": false,
+    "readyState": 4,
+    "networkState": 1
+  },
+  "playback": {
+    "completed": 1,
+    "frames": 4729,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 3.3333333249174757e-7,
+    "stalls": 0,
+    "muted": false,
+    "nativeEnded": true
+  },
+  "pixelStats": [
+    {
+      "time": 193,
+      "bottom120RowsNonBlackPixels": 355,
+      "top240RowsStarPixels": 1126
+    },
+    {
+      "time": 205,
+      "bottom120RowsNonBlackPixels": 64701,
+      "top240RowsStarPixels": 1224
+    },
+    {
+      "time": 216,
+      "bottom120RowsNonBlackPixels": 64704,
+      "top240RowsStarPixels": 6492
+    },
+    {
+      "time": 222,
+      "bottom120RowsNonBlackPixels": 64274,
+      "top240RowsStarPixels": 78932
+    },
+    {
+      "time": 226,
+      "bottom120RowsNonBlackPixels": 64800,
+      "top240RowsStarPixels": 23475
+    },
+    {
+      "time": 230,
+      "bottom120RowsNonBlackPixels": 53766,
+      "top240RowsStarPixels": 6101
+    },
+    {
+      "time": 234,
+      "bottom120RowsNonBlackPixels": 59712,
+      "top240RowsStarPixels": 6612
+    },
+    {
+      "time": 242,
+      "bottom120RowsNonBlackPixels": 61858,
+      "top240RowsStarPixels": 5056
+    },
+    {
+      "time": 250,
+      "bottom120RowsNonBlackPixels": 62158,
+      "top240RowsStarPixels": 3504
+    },
+    {
+      "time": 255,
+      "bottom120RowsNonBlackPixels": 62159,
+      "top240RowsStarPixels": 2827
+    },
+    {
+      "time": 263,
+      "bottom120RowsNonBlackPixels": 62694,
+      "top240RowsStarPixels": 2336
+    },
+    {
+      "time": 271.7266666666667,
+      "bottom120RowsNonBlackPixels": 61506,
+      "top240RowsStarPixels": 2165
+    }
+  ],
+  "errors": []
+}

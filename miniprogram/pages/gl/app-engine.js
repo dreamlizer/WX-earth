@@ -1,4 +1,7 @@
 import { ZenOpeningArt, DarknessVisual } from './zen-opening-art.js';
+import { GoWestVisual } from './go-west-visual.js';
+import { GoWestChorusSky } from './go-west-chorus.js';
+import { GoWestFinale } from './go-west-finale.js';
 
 // app-engine.js —— 核心引擎 (AppEngine)
 // 职责：负责 3D 环境初始化、Manager 组装、状态管理及核心业务逻辑
@@ -34,6 +37,7 @@ import { ZenModeManager, applyZenAutoRotate, applyZenBrake, advanceZenAnimation,
 import { MoonVoyageManager } from './moon-voyage-manager.js';
 import { SaturnPreviewManager } from './saturn-preview-manager.js';
 import { AmbientEncounterManager, ambientBrowseState } from './ambient-encounter-manager.js';
+import { GoWestEncounterManager } from './go-west-encounter.js';
 import { clearZenAudioSaved } from './zen-audio.js';
 import { createTweenManager } from './tween-manager.js';
 import { createFadeOverlay } from './fade-overlay.js';
@@ -66,6 +70,7 @@ export class AppEngine {
     this.moonMgr = null;
     this.saturnPreview = null;
     this.ambientEncounter = null;
+    this.goWestEncounter = null;
     this.zenEncounter = null;
     this.managers = {}; // 存放 input, fly, lighting 等管理器
     
@@ -98,6 +103,9 @@ export class AppEngine {
     this.themeController = null;
     this.starCtl = null;
     this.zenSongVisual = null;
+    this.goWestVisual = null;
+    this.goWestChorus = null;
+    this.goWestFinale = null;
     this.loop = null;
     this.sceneCtx = null;
 
@@ -156,11 +164,15 @@ export class AppEngine {
     this.themeController = null;
     this.starCtl = null;
     this.zenSongVisual = null;
+    this.goWestVisual = null;
+    this.goWestChorus = null;
+    this.goWestFinale = null;
     this.loop = null;
     this.sceneCtx = null;
     this.moonMgr = null;
     this.saturnPreview = null;
     this.ambientEncounter = null;
+    this.goWestEncounter = null;
     this.zenEncounter = null;
   }
 
@@ -205,7 +217,7 @@ export class AppEngine {
 
     // 3. Moon Manager
     this.moonMgr = new MoonVoyageManager();
-    this.moonMgr.init(THREE, scene, globeGroup, camera, page, fader);
+    this.moonMgr.init(THREE, scene, globeGroup, camera, page, fader, renderer);
 
     updateCamDist(camera, baseDist, zenState.zoom);
 
@@ -470,6 +482,10 @@ export class AppEngine {
     this.zenSongVisual = new DarknessVisual({ THREE, scene, camera, globeGroup, starCtl:this.starCtl, renderer });
     
     const sceneUpdater = createSceneUpdater({
+      beforeRender:()=>{
+        this.goWestVisual?.updateLights();
+        this.goWestFinale?.update(page.__goWestSong?.frame);
+      },
       perfMonitor, runtimeDiagnostics, textureHealthChecker,
       tweener, highlight, page, flyMgr, starCtl: this.starCtl, tzMgr,
       lighting, touch: this.touch, globeGroup, camera, baseDist, clampZoom, updateCamDist,
@@ -481,18 +497,35 @@ export class AppEngine {
       THREE, renderer, scene, width, height,
       refs: { ...sceneCtx.refs, ...sceneCtx.setters },
       getState: () => this.state,
-      isMoonVoyageActive: () => this.moonMgr && this.moonMgr.isActive()
+      isMoonVoyageActive: () => this.moonMgr && this.moonMgr.isActive(),
+      renderMoonTerrain: () => this.moonMgr?._terrain?.render(this.moonMgr._accumTime)
     });
 
     this.saturnPreview = new SaturnPreviewManager(THREE, renderer, page);
     this.ambientEncounter = new AmbientEncounterManager({ THREE, scene, camera, globeGroup, renderer, page });
-    this.zenOpeningArt = new ZenOpeningArt({ THREE, scene, camera, getViewport: () => page.__getLayoutMgr().getViewport() });
+    this.zenOpeningArt = new ZenOpeningArt({ THREE, scene, camera, globeGroup, getViewport: () => page.__getLayoutMgr().getViewport() });
+    this.goWestVisual = new GoWestVisual({THREE,scene,camera,globeGroup,renderer,
+      getEarth:()=>this.earthMesh,getNightTexture:()=>this.earthNightTex,getCloud:()=>this.cloudMesh,
+      getStars:()=>this.starCtl?.mesh});
+    this.goWestEncounter = new GoWestEncounterManager({THREE,scene,camera,globeGroup,renderer,page});
+    this.goWestChorus = new GoWestChorusSky({THREE,scene,camera,getStars:()=>this.starCtl?.mesh,
+      getViewport:()=>page.__getLayoutMgr().getViewport()});
+    this.goWestFinale = new GoWestFinale({THREE,scene,camera,globeGroup});
     const render = () => {
       const openingEnabled = page.data.zenMode && zenState.active && !page.__zenPoetryPaused &&
         !page.data.specialVisible && !page.data.moonVoyageActive && !this.moonMgr?._entering &&
         !this.moonMgr?._exiting && !page.__isMoonLocked?.() && !this.saturnPreview?.active;
       page.__zenSongOpening?.update(openingEnabled);
-      this.zenOpeningArt.update(page.__zenSongOpening,openingEnabled);
+      const goWestFrame = page.__goWestSong?.update(openingEnabled);
+      if(!goWestFrame)this.goWestFinale.reset();
+      const goWestNight=page.data.zenMode && page.data.goWestActive && !page.data.moonVoyageActive &&
+        !this.moonMgr?._entering && !this.moonMgr?._exiting && !page.__isMoonLocked?.() && !this.saturnPreview?.active;
+      this.goWestVisual.update(goWestFrame,goWestNight ? page.__goWestSong?.lightingFrame?.nightMix || 0 : 0);
+      this.goWestEncounter.updateSong({enabled:openingEnabled && page.data.goWestActive,
+        audio:page.__goWestSong?.getAudio()});
+      this.zenOpeningArt.update(page.__zenSongOpening,openingEnabled,page.data.goWestChinese,
+        Math.max(10,(page.data.zenChineseBottomPx || 22)-12));
+      this.goWestChorus.update(goWestFrame?.lyricTime ?? null,goWestFrame?.callLeadSec || 0);
       this.ambientEncounter.update(Date.now(), ambientBrowseState({
         page, touch: this.touch, ready: this.earthReady, zen: zenState.active,
         moon: this.isMoonVoyageActive() || this.moonMgr?._entering || this.moonMgr?._exiting || page.__isMoonLocked?.(),
@@ -556,9 +589,13 @@ export class AppEngine {
     try { if (state?.onWinResizeCb) wx.offWindowResize(state.onWinResizeCb); } catch(_){ }
     try { this.loop?.stop(); } catch(_){ }
     try { this.ambientEncounter?.dispose(); } catch(_){ }
+    try { this.goWestEncounter?.dispose(); } catch(_){ }
     try { this.zenEncounter?.dispose(); } catch(_){ }
     try { this.zenOpeningArt?.dispose(); } catch(_){ }
     try { this.zenSongVisual?.dispose(); } catch(_){ }
+    try { this.goWestVisual?.dispose(); } catch(_){ }
+    try { this.goWestChorus?.dispose(); } catch(_){ }
+    try { this.goWestFinale?.dispose(); } catch(_){ }
     try { this.saturnPreview?.dispose(); } catch(_){ }
     try { this.moonMgr?.dispose?.(); } catch(_){ }
     try { this.poetry3d?.stop?.(); this.poetry3d?.setEnabled?.(false); } catch(_){ }
@@ -669,6 +706,7 @@ export class AppEngine {
   
   setPaused(on) {
     const p = !!on;
+    this.moonMgr?._terrain?.keepsake?.setSuspended(p);
     if (p) this.ambientEncounter?.pause();
     this.saturnPreview?.pause();
     if (p) this.loop?.stop(); else this.loop?.start(); 
@@ -688,6 +726,8 @@ export class AppEngine {
   exitMoonVoyage() {
     if (this.moonMgr) this.moonMgr.exit();
   }
+
+  toggleMoonKeepsakeControls() { this.moonMgr?._terrain?.keepsake?.toggleControls(); }
   
   setMoonVoyageSpeed(mult) {
     if (this.moonMgr) this.moonMgr.setSpeed(mult);

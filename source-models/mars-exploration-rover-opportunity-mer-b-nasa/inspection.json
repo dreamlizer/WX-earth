@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 1,
+  "meshes": 1,
+  "materials": 9,
+  "images": 0,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 3845,
+  "vertices_est": 4854,
+  "extensions_used": [
+    "KHR_draco_mesh_compression",
+    "KHR_materials_specular"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29.glb",
+  "nasa_folder": "Mars Exploration Rover - Opportunity (MER-B)",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/mars-exploration-rover-opportunity-mer-b-nasa/Mars Exploration Rover - Opportunity (MER-B).glb",
+  "bytes": 36668,
+  "sha256": "95c852efb385b55bea3104a0fca2730cd2ef25353af4d38273d3f0bda5c68c31"
+}

@@ -1,0 +1,16 @@
+Input #0, mp3, from 'source-models/moon-terrain-trial/descent-to-earth-193/assets/Zen-moon.mp3':
+  Duration: 00:04:31.75, start: 0.023021, bitrate: 154 kb/s
+  Stream #0:0: Audio: mp3 (mp3float), 48000 Hz, stereo, fltp, 154 kb/s
+      Metadata:
+        encoder         : LAME3.99r
+Stream mapping:
+  Stream #0:0 -> #0:0 (mp3 (mp3float) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, wav, to 'source-models/moon-terrain-trial/descent-to-earth-193/assets/moon-tail-193.wav':
+  Metadata:
+    ISFT            : Lavf61.7.100
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s
+      Metadata:
+        encoder         : Lavc61.19.100 pcm_s16le
+[out#0/wav @ 0x13ee051f0] video:0KiB audio:14761KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.000516%
+size=   14761KiB time=00:01:18.72 bitrate=1536.0kbits/s speed= 459x    

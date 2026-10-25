@@ -1,0 +1,266 @@
+<!-- 统一顶部工具栏：语言 | 时间 | 设置 -->
+<view capture-bind:touchstart="onAmbientDismiss">
+<view wx:if="{{!saturnPreviewActive}}" class="top-bar">
+  <view id="langBtn" class="top-icon-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleLang" role="button">{{lang === 'zh' ? '中' : 'EN'}}</view>
+  <text id="timePill" class="time-pill {{zenMode ? 'inert' : ''}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onTapTimePill">{{currentTime}}</text>
+  <view class="top-icon-btn settings-btn {{zenMode ? 'inert' : ''}}" bindtap="onToggleSettings" role="button">⚙</view>
+  <!-- 第二行：左侧“切”按钮（与右侧“禅”按钮对称） -->
+  <!-- 恢复原搜索放大镜；禅模式下隐藏但占位，避免布局跳动 -->
+  <view class="top-icon-btn search-btn {{zenMode ? 'inert' : ''}} {{settingsOpen ? 'fading-out' : ''}}" bindtap="onToggleSearch" role="button"></view>
+  <!-- 第二行：右侧“禅”按钮（位于设置按钮正下方） -->
+  <view class="top-icon-btn zen-btn {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleZenMode" role="button" aria-label="禅定">禅</view>
+  <!-- 第一行第三列：“切”按钮常驻，通过 inert 类淡入淡出（禅定下可见） -->
+  <view class="top-icon-btn cut-btn {{zenMode ? '' : 'inert'}} {{moonVoyageActive ? 'fading-out' : ''}}" bindtap="onToggleCut" role="button">
+    <text>定</text>
+    <view class="cut-btn-toast {{zenToastVisible ? 'visible' : ''}}">{{zenToastText}}</view>
+  </view>
+  <!-- 提示信息（可选）：与时间保持同一行，不占宽度 -->
+  <view class="top-tip {{hoverText ? 'visible' : ''}} {{zenMode ? 'inert' : ''}} {{moonVoyageActive ? 'fading-out' : ''}}">{{hoverText}}</view>
+  <!-- 禅定诗句改为独立层：双容器交替，支持淡入淡出与位移 -->
+</view>
+
+<!-- 登月模式时间显示：右上角长按4秒切换显隐 -->
+<view wx:if="{{moonVoyageActive && !moonKeepsakeVisible}}" class="moon-timer-container" bindtouchstart="onMoonTimerTouchStart" bindtouchend="onMoonTimerTouchEnd" bindtouchcancel="onMoonTimerTouchEnd">
+  <text class="moon-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonTimerText}}</text>
+  <text class="moon-phase-timer {{moonVoyageActive && moonTimeVisible ? 'visible' : ''}}">{{moonPhaseText}}</text>
+</view>
+
+
+<!-- 登月模式入口：右下角按钮（禅定模式下淡入显示，避免 wx:if 造成“闪现”） -->
+<view wx:if="{{!moonKeepsakeVisible}}" class="top-icon-btn moon-btn {{zenBtnVisible ? 'visible' : ''}}" bindtap="onEnterMoonVoyage" role="button">
+  <image wx:if="{{moonBtnUrl}}" class="moon-btn-img" src="{{moonBtnUrl}}" mode="aspectFill"></image>
+  <text wx:else>🌖</text>
+</view>
+<!-- 调试热区只在原版登月播放时接收触摸。 -->
+<view class="moon-debug-hotspot {{moonVoyageActive && !moonKeepsakeVisible ? 'visible' : ''}}" bindtouchstart="onSpeedTouchStart" bindtouchend="onSpeedTouchEnd" bindtouchcancel="onSpeedTouchEnd"></view>
+
+<!-- 预设列表（禅定模式下，“定”按钮下方展开） -->
+<view wx:if="{{false}}" class="preset-list" style="right: {{presetListRight}}px; top: {{presetListTop}}px; opacity: {{presetListOpacity}};">
+  <view wx:for="{{presetList}}" wx:key="id" id="preset-item-{{item.id}}" class="preset-item {{currentPreset===item.id?'active':''}} {{presetLatched && currentPreset===item.id?'breathing':''}} {{presetLatched && presetCollapsed && currentPreset!==item.id?'fadeout':''}}" data-id="{{item.id}}" data-disabled="{{presetLatched && currentPreset===item.id}}" style="transform: translate3d(0, {{presetPinnedId===item.id ? presetPinnedDy : 0}}px, 0);" bindtap="onPickPreset">
+    <text class="preset-text">{{item.label}}</text>
+  </view>
+</view>
+
+<!-- 彩蛋点击感应区：禅定模式下覆盖时间胶囊附近，接受点击（扩大容忍度） -->
+<view wx:if="{{zenMode && eggSensorVisible}}" id="eggArea" class="egg-sensor" style="left: {{eggSensorLeft}}px; top: {{eggSensorTop}}px; width: {{eggSensorWidth}}px; height: {{eggSensorHeight}}px;" bindtap="onEggTap"></view>
+
+<!-- 亮度调节竖条：普通模式下可用，隐藏但可触摸；位于“禅”按钮下方 -->
+<view wx:if="{{!zenMode && !saturnPreviewActive && brightnessSensorVisible}}" id="brightnessArea"
+      class="brightness-sensor"
+      style="left: {{brightnessSensorLeft}}px; top: {{brightnessSensorTop}}px; width: {{brightnessSensorWidth}}px; height: {{brightnessSensorHeight}}px;"
+      catchtouchstart="onBrightnessTouchStart" catchtouchmove="onBrightnessTouchMove" catchtouchend="onBrightnessTouchEnd" catchtouchcancel="onBrightnessTouchEnd"></view>
+
+<!-- 诗句独立层：固定覆盖在页面上，避免受工具栏布局影响 -->
+<view wx:if="{{zenMode && !moonVoyageActive && !goWestActive}}" class="poetry-layer">
+  <view id="poetryA" class="poetry-item {{poetryHorizontal?'horizontal':''}} {{poetryA.visible?'visible':''}}" style="left: {{poetryA.x}}px; top: {{poetryA.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryA.moveMs}}ms linear, opacity {{poetryA.fadeMs}}ms ease-in-out; transform: translate3d({{poetryA.tx}}px, {{poetryA.ty}}px, 0);">
+    <text class="poetry-text {{poetryAFirst?'first-line':''}}" style="font-size: {{poetryHorizontal ? 82 : 100}}%; line-height: {{poetryHorizontal ? poetryFontSizePx * 1.4 + 'px' : 'inherit'}};">{{poetryA.text}}</text>
+  </view>
+  <view id="poetryB" class="poetry-item {{poetryHorizontal?'horizontal':''}} {{poetryB.visible?'visible':''}}" style="left: {{poetryB.x}}px; top: {{poetryB.y}}px; font-size: {{poetryFontSizePx}}px; transition: transform {{poetryB.moveMs}}ms linear, opacity {{poetryB.fadeMs}}ms ease-in-out; transform: translate3d({{poetryB.tx}}px, {{poetryB.ty}}px, 0);">
+    <text class="poetry-text {{poetryBFirst?'first-line':''}}" style="font-size: {{poetryHorizontal ? 82 : 100}}%; line-height: {{poetryHorizontal ? poetryFontSizePx * 1.4 + 'px' : 'inherit'}};">{{poetryB.text}}</text>
+  </view>
+</view>
+
+<!-- Track four: impact, centre-out reveal, continuous approach, then fade. -->
+<view wx:if="{{zenMode && !moonVoyageActive && goWestActive && !specialVisible}}" class="go-west-lyrics">
+  <view wx:for="{{goWestGroups}}" wx:key="id" style="{{item.pairFadeStyle}}" class="go-west-fade go-west-group go-west-{{item.slot}} go-west-{{item.style}} go-west-look-{{item.chorusLook}} go-west-row-{{item.row}} {{item.intro ? 'go-west-intro' : ''}}">
+    <view class="go-west-call-slot">
+      <view wx:if="{{item.callVisible && !item.skyCall}}" ><view class="go-west-grow" style="{{item.callGrowStyle}}"><view class="go-west-call {{item.chorus ? 'go-west-anthem' : ''}}" style="font-size: {{item.callSize}}px; {{item.callEnterStyle}}">{{item.call}}</view></view></view>
+    </view>
+    <view wx:if="{{item.responseVisible}}" ><view class="go-west-grow" style="{{item.responseGrowStyle}}"><view class="go-west-reveal-box" style="width: {{item.revealWidth}}px;"><view class="go-west-curtain" style="{{item.responseEnterStyle}}"><view class="go-west-curtain-content" style="width: {{item.revealWidth}}px;"><view class="go-west-response" style="font-size: {{item.responseSize}}px; {{item.responseEnterStyle}}">{{item.response}}</view></view></view></view></view></view>
+  </view>
+
+  <view wx:if="{{lang === 'zh' && goWestChinese[0].style !== 'tableau'}}" class="go-west-chinese" style="bottom: {{zenChineseBottomPx > 12 ? zenChineseBottomPx - 12 : 10}}px;">
+    <view wx:for="{{goWestChinese}}" wx:key="id" class="go-west-fade go-west-chinese-pair go-west-{{item.style}} go-west-row-{{item.row}}" style="{{item.pairFadeStyle}}">
+      <view class="go-west-chinese-call-slot"><view wx:if="{{item.callVisible && item.style !== 'choir'}}" ><view class="go-west-grow" style="{{item.callGrowStyle}}"><view class="go-west-chinese-call" style="font-size: {{item.callSize}}px; {{item.callEnterStyle}}">{{item.call}}</view></view></view></view>
+      <view wx:if="{{item.responseVisible}}" ><view class="go-west-grow" style="{{item.responseGrowStyle}}"><view class="go-west-reveal-box" style="width: {{item.revealWidth}}px;"><view class="go-west-curtain" style="{{item.responseEnterStyle}}"><view class="go-west-curtain-content" style="width: {{item.revealWidth}}px;"><view class="go-west-chinese-response" style="font-size: {{item.responseSize}}px; {{item.responseEnterStyle}}">{{item.response}}</view></view></view></view></view></view>
+    </view>
+  </view>
+</view>
+
+<!-- 地球加载中提示：居中显示，仅在 loading=true 时可见 -->
+<view wx:if="{{loading && !saturnPreviewActive}}" class="loading-overlay">
+  <text class="loading-text">地球加载中...</text>
+</view>
+
+<!-- Special 文本独立层：覆盖全屏显示，淡入/缓慢移动后淡出 -->
+<view wx:if="{{zenMode && !moonVoyageActive}}" class="special-layer">
+  <view id="specialText" class="special-item {{specialVisible?'visible':''}}" style="left: {{specialX}}px; top: {{specialY}}px; font-size: {{specialFontSizePx}}px; transition: transform {{specialMoveMs}}ms linear, opacity {{specialFadeMs}}ms ease-in-out; transform: translate3d({{specialTx}}px, {{specialTy}}px, 0) scale({{specialScale}});">
+    <text class="special-text">{{specialText}}</text>
+  </view>
+  
+  <!-- 说明：special-layer 设为 pointer-events:none，不阻挡地球旋转；感应区 egg-sensor 单独捕获点击 -->
+  
+</view>
+
+<!-- 搜索面板遮罩：点击任意空白关闭，同时把触摸事件转交到渲染层（与国家面板一致） -->
+<view wx:if="{{searchOpen}}" class="search-mask" bindtap="onCloseSearch" bindtouchstart="onSearchMaskTouchStart" bindtouchmove="onSearchMaskTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
+
+<!-- 搜索面板：出现输入框与候选列表 -->
+<view class="search-panel" wx:if="{{searchOpen}}">
+  <input class="search-input" placeholder="搜索国家或城市" value="{{searchQuery}}" bindinput="onSearchInput" focus="true" />
+  <view class="search-list">
+    <view wx:for="{{suggestions}}" wx:key="index" class="search-item" data-type="{{item.type}}" data-id="{{item.id}}" data-lat="{{item.lat}}" data-lon="{{item.lon}}" bindtap="onPickSuggestionOpen">
+      <text class="search-item-text">{{item.display}}</text>
+    </view>
+    <view wx:if="{{suggestions.length===0 && searchQuery.length>=2}}" class="search-empty">无匹配项</view>
+  </view>
+</view>
+
+<!-- 面板外点击关闭：透明遮罩，放在画布之上、面板之下 -->
+<view wx:if="{{settingsOpen}}" class="settings-mask {{settingsFading?'fading-out':''}}" bindtap="onCloseSettings" bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
+
+<!-- 设置面板：移出滚动容器，保持与顶栏同层级，避免遮挡与层级冲突 -->
+<view class="settings-panel {{settingsFading?'fading-out':''}}" wx:if="{{settingsOpen}}" style="left: {{settingsPanelLeft}}px; width: {{settingsPanelWidth}}px;">
+  <view class="settings-title">设置</view>
+  <view class="settings-row">
+    <text>主题</text>
+    <view class="qty-group">
+      <view class="qty-btn {{theme==='day8k'?'active':''}}" data-val="daylight" bindtap="onSetTheme" role="button">白昼</view>
+      <view class="qty-btn {{theme==='default'?'active':''}}" data-val="default" bindtap="onSetTheme" role="button">默认</view>
+      <view class="qty-btn {{theme==='night'?'active':''}}" data-val="night" bindtap="onSetTheme" role="button">夜景</view>
+      <view class="qty-btn {{showCloud?'active':''}}" bindtap="onTapCloudBtn" role="button">云层</view>
+    </view>
+  </view>
+  <view class="settings-row">
+    <text>标签密度</text>
+    <view class="qty-group">
+      <view class="qty-btn {{labelQty==='none'?'active':''}}" data-val="none" bindtap="onSetLabelQty" role="button">无</view>
+      <view class="qty-btn {{labelQty==='few'?'active':''}}" data-val="few" bindtap="onSetLabelQty" role="button">少</view>
+      <view class="qty-btn {{labelQty==='default'?'active':''}}" data-val="default" bindtap="onSetLabelQty" role="button">默认</view>
+      <view class="qty-btn {{labelQty==='many'?'active':''}}" data-val="many" bindtap="onSetLabelQty" role="button">多</view>
+    </view>
+  </view>
+  <view class="settings-row inertia-row">
+    <text>惯性</text>
+    <view class="qty-group">
+      <view class="qty-btn {{inertiaPct===0?'active':''}}" data-val="0" bindtap="onSetInertiaBtn" role="button">无</view>
+      <view class="qty-btn {{inertiaPct===30?'active':''}}" data-val="30" bindtap="onSetInertiaBtn" role="button">默认</view>
+      <view class="qty-btn {{inertiaPct===90?'active':''}}" data-val="90" bindtap="onSetInertiaBtn" role="button">快</view>
+      <view class="qty-btn {{inertiaPct===100?'active':''}}" data-val="100" bindtap="onSetInertiaBtn" role="button">无限</view>
+    </view>
+  </view>
+</view>
+
+<scroll-view
+  class="wrap"
+  scroll-y="{{isPC}}"
+  show-scrollbar="false"
+  scroll-anchoring="false"
+  scroll-top="{{scrollTop}}"
+>
+  <!-- 工具栏已在页面顶部固定，此处不再重复按钮 -->
+  <canvas
+    type="webgl"
+    id="gl"
+    disable-scroll="true"
+    bindtap="onMoonKeepsakeTap"
+    bindtouchstart="onTouchStart"
+    bindtouchmove="onTouchMove"
+    bindtouchend="onTouchEnd"
+    bindtouchcancel="onTouchEnd"
+  >
+    <cover-view wx:if="{{zenMode && !moonVoyageActive && !goWestActive && lang === 'zh'}}" class="zen-chinese-line {{zenChineseA.visible ? 'visible' : ''}}" style="bottom: {{zenChineseBottomPx}}px; transition: transform {{zenChineseA.moveMs}}ms ease, opacity {{zenChineseA.moveMs}}ms ease; transform: translate3d(0, {{zenChineseA.y - 14}}px, 0);"><cover-view class="zen-chinese-text">{{zenChineseA.text}}</cover-view></cover-view>
+    <cover-view wx:if="{{zenMode && !moonVoyageActive && !goWestActive && lang === 'zh'}}" class="zen-chinese-line {{zenChineseB.visible ? 'visible' : ''}}" style="bottom: {{zenChineseBottomPx}}px; transition: transform {{zenChineseB.moveMs}}ms ease, opacity {{zenChineseB.moveMs}}ms ease; transform: translate3d(0, {{zenChineseB.y - 14}}px, 0);"><cover-view class="zen-chinese-text">{{zenChineseB.text}}</cover-view></cover-view>
+    <!-- Native overlay: lyrics must cover the WebGL hull, including on devices. -->
+    <cover-view wx:if="{{ambientName && !zenMode && !moonVoyageActive && !saturnPreviewActive}}" class="ambient-caption" bindtap="onAmbientDismiss">
+      <cover-view class="ambient-caption-name">{{ambientName}}</cover-view>
+      <cover-view class="ambient-caption-description">{{ambientDescription}}</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{moonVoyageActive}}" class="moon-lyrics" style="bottom: {{moonLyricBottomPx}}px;">
+      <cover-view class="moon-lyrics-text {{moonLyricA.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricA.text}}</cover-view>
+      <cover-view class="moon-lyrics-text {{moonLyricB.visible ? 'visible' : ''}}" style="transition: opacity {{moonLyricFadeMs}}ms ease-in-out;">{{moonLyricB.text}}</cover-view>
+    </cover-view>
+
+<!-- 临时共同评审入口：本次发布关闭；恢复原条件即可重新启用。 -->
+<cover-view wx:if="{{false}}" class="saturn-preview-entry" bindtap="onEnterSaturnPreview" role="button" aria-label="预览土星模型">
+  <cover-view class="saturn-entry-symbol"><cover-view class="saturn-entry-ring"></cover-view><cover-view class="saturn-entry-body"></cover-view></cover-view>
+  <cover-view>土星预览</cover-view>
+</cover-view>
+
+<cover-view wx:if="{{saturnPreviewActive}}" class="saturn-preview-heading"><cover-view class="saturn-preview-name">土星</cover-view><cover-view class="saturn-preview-caption">SATURN · 模型预览</cover-view></cover-view>
+  <cover-view wx:if="{{saturnPreviewActive}}" class="saturn-preview-exit" bindtap="onExitSaturnPreview" role="button" aria-label="返回地球">返回地球</cover-view>
+  <cover-view wx:if="{{saturnPreviewActive && saturnPreviewLoading}}" class="saturn-preview-status">正在载入土星…</cover-view>
+  <cover-view wx:if="{{saturnPreviewActive && saturnPreviewError}}" class="saturn-preview-status saturn-preview-retry" bindtap="onRetrySaturnPreview">{{saturnPreviewError}}</cover-view>
+  <cover-view wx:if="{{saturnPreviewActive && !saturnPreviewLoading && !saturnPreviewError}}" class="saturn-preview-bottom">
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-voyage-stage">{{saturnVoyageComplete ? '已抵达 · 阴影中回望' : saturnVoyageStage}}</cover-view>
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-voyage-time">{{saturnVoyageTime}}</cover-view>
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-preview-hint">{{saturnVoyagePaused ? '已停留 · 仍可拖动观看' : '拖动观看 · 航线自动前行'}}</cover-view>
+    <cover-view wx:if="{{saturnVoyageActive}}" class="saturn-voyage-controls">
+      <cover-view wx:if="{{!saturnVoyageComplete}}" class="saturn-voyage-button primary" bindtap="onToggleSaturnVoyagePause">{{saturnVoyagePaused ? '继续航行' : '暂停航行'}}</cover-view>
+      <cover-view class="saturn-voyage-button" bindtap="onResetSaturnVoyageGaze">回正视线</cover-view>
+      <cover-view class="saturn-voyage-button" bindtap="onStartSaturnVoyage">{{saturnVoyageComplete ? '再次航行' : '重新起航'}}</cover-view>
+      <cover-view class="saturn-voyage-button" bindtap="onStopSaturnVoyage">模型预览</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-voyage-start" bindtap="onStartSaturnVoyage">开始航行 · 约 2 分钟</cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-look-caption">{{saturnLookCaption}}</cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-looks">
+      <cover-view wx:for="{{saturnLooks}}" wx:key="key" class="saturn-look {{saturnLook === item.key ? 'selected' : ''}}" data-look="{{item.key}}" bindtap="onSaturnPreviewLook">{{item.label}}</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-hint">拖动环绕 · 双指远近</cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-views">
+      <cover-view class="saturn-view {{saturnView === 'whole' ? 'selected' : ''}}" data-view="whole" bindtap="onSaturnPreviewView">整体</cover-view>
+      <cover-view class="saturn-view {{saturnView === 'close' ? 'selected' : ''}}" data-view="close" bindtap="onSaturnPreviewView">近看</cover-view>
+      <cover-view class="saturn-view {{saturnView === 'rings' ? 'selected' : ''}}" data-view="rings" bindtap="onSaturnPreviewView">掠环</cover-view>
+      <cover-view class="saturn-view {{saturnView === 'ice' ? 'selected' : ''}}" data-view="ice" bindtap="onSaturnPreviewView">冰环近景</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{!saturnVoyageActive}}" class="saturn-preview-credit">SSS · Björn Jónsson · Spacekit · I,Voyager</cover-view>
+  </cover-view>
+
+  </canvas>
+  <!-- 已移除：PC 端滚轮触发空间 -->
+  
+</scroll-view>
+<view wx:if="{{moonKeepsakeVisible && moonKeepsakeControls}}" class="moon-keepsake-action moon-keepsake-save" catchtap="onMoonKeepsakeSave" role="button">{{moonKeepsakeSaving ? '保存中…' : '保存照片'}}</view>
+<view wx:if="{{moonKeepsakeVisible && moonKeepsakeControls}}" class="moon-keepsake-action moon-keepsake-return" catchtap="onMoonKeepsakeReturn" role="button">返回地球</view>
+
+<!-- 底部缩放条：统一胶囊风格（受 showZoomBar 控制，可见才渲染） -->
+<view wx:if="{{showZoomBar && !saturnPreviewActive}}" class="zoom-bar {{zenMode ? 'inert' : ''}}" catchtouchstart="onCatchTouchMove" catchtouchmove="onCatchTouchMove" catchtouchend="onCatchTouchMove">
+  <slider class="zoom-slider"
+          min="{{uiZoomMin}}" max="{{uiZoomMax}}" step="0.01"
+          value="{{uiZoom}}"
+          active-color="#78aadc"
+          backgroundColor="#17283c"
+          block-size="18"
+          show-value="false"
+          bindchanging="onZoomChanging"
+          bindchange="onZoomChange" />
+</view>
+
+<!-- 国家信息面板遮罩：已移除点击关闭功能，完全交由 Canvas 内部的点击检测来决定（点中空白处关闭，点中已选国家保持） -->
+<!-- 保留该层仅为了可能的触摸事件转发（虽然 Canvas 自身也能捕获，但为了保险起见保留结构并设为穿透） -->
+<view wx:if="{{countryPanelOpen}}" class="country-mask {{countryPanelFading?'fading-out':''}}" style="pointer-events: none;" bindtouchstart="onMaskTouchStart" bindtouchmove="onMaskTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></view>
+
+<!-- 国家信息面板：点击国家后显示（保持画布可旋转；遮罩负责关闭） -->
+<!-- 移除 style="top: ..."，改为完全由 CSS 控制位置 -->
+<view class="country-panel {{lang==='en'?'lang-en':''}} {{countryPanelFading?'fading-out':''}}" wx:if="{{countryPanelOpen}}" bindtouchstart="onPanelTouchStart" bindtouchmove="onPanelTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+  <view wx:if="{{countryInfo.flag}}" class="country-flag">
+    <image
+      class="country-flag-sprite"
+      src="{{countryInfo.flag.src}}"
+      mode="scaleToFill"
+      style="{{countryInfo.flag.style}}"
+    />
+  </view>
+  <view class="country-title">{{countryInfo.name || '未知'}}{{countryInfo.titleTzSuffix || ''}}</view>
+  <view class="country-row"><text class="k">{{labels.capital}}</text><text class="v">{{countryInfo.capital || '--'}}</text></view>
+  <view class="country-row"><text class="k">{{labels.area}}</text><text class="v">{{countryInfo.areaKm2 || '--'}} km²</text></view>
+  <view class="country-row"><text class="k">{{labels.population}}</text><text class="v">{{countryInfo.population || '--'}}</text></view>
+  <view class="country-row"><text class="k">{{labels.gdp}}</text><text class="v">{{lang==='zh' ? (countryInfo.gdp || '--') + ' 万亿美元' : (countryInfo.gdp || '--') + ' USD trillion'}}</text></view>
+  </view>
+
+<cover-view
+  wx:if="{{globalBlackMask}}"
+  class="global-black-mask"
+  style="opacity: {{globalBlackMaskOpacity}}; transition: opacity {{globalBlackMaskFadeMs}}ms linear;"
+  catchtouchstart="onCatchTouchMove"
+  catchtouchmove="onCatchTouchMove"
+  catchtouchend="onCatchTouchMove"
+  catchtouchcancel="onCatchTouchMove"
+/>
+
+<!-- 登月模式柔和 Toast -->
+<view class="moon-toast {{moonToastVisible ? 'visible' : ''}}" style="opacity: {{moonToastOpacity}};">
+  <text>{{moonToastText}}</text>
+</view>
+
+</view>

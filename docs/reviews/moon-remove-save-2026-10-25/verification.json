@@ -1,0 +1,22 @@
+{
+  "removed": [
+    "save button",
+    "page handler and saving state",
+    "main export",
+    "engine forwarding",
+    "controller save method",
+    "image-info and album API calls",
+    "save toast/trace"
+  ],
+  "photoAndTimingPreserved": true,
+  "returnOnly": true,
+  "returnButtonCentered": true,
+  "albumReferencesInMiniprogram": 0,
+  "testsPassed": 49,
+  "testsTotal": 49,
+  "compileErrors": 0,
+  "oldPreviewFilesPreserved": 108,
+  "uploaded": false,
+  "published": false,
+  "nativeCheck": "DevTools accelerated middle, normal ending and actual return button; not phone acceptance"
+}

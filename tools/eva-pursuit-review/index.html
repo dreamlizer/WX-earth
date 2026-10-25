@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>登月 · EVA 追逐检查</title>
+<style>body{margin:0;background:#05070c;color:#ccd7e5;font:14px system-ui;text-align:center}canvas{display:block;margin:auto;width:390px;height:720px}button,input{margin:8px}p{margin:8px}</style>
+<p>正式模型与轨迹 · 构图检查，微信效果另行验收</p><button id="play">播放 79–92 秒</button><input id="time" type="range" min="79" max="92" step="0.01"><span id="status"></span><canvas width="780" height="1440"></canvas>
+<script>var exports={};</script><script src="/adapter.js"></script><script type="module">
+import {VoyageGundam} from '/pages/gl/moon-voyage-gundam.js';
+import {VoyageEvaPursuit} from '/pages/gl/moon-voyage-eva.js';
+import {shadeCraft} from '/pages/gl/moon-voyage-craft-light.js';
+const canvas=document.querySelector('canvas');canvas.createImage=()=>new Image();
+const T=exports.createScopedThreejs(canvas),renderer=new T.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setSize(780,1440,false);renderer.gammaOutput=true;
+const scene=new T.Scene(),camera=new T.PerspectiveCamera(45,390/720,.1,1000);camera.position.z=5;
+scene.add(new T.AmbientLight(0xffffff,.6));const sun=new T.DirectionalLight(0xffffff,1.2);sun.position.set(2,5,8);scene.add(sun);
+const positions=[];let seed=71;for(let i=0;i<900;i++){const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};positions.push((rnd()-.5)*450,(rnd()-.5)*650,-200-rnd()*400);}
+const stars=new T.Points(new T.BufferGeometry().addAttribute('position',new T.BufferAttribute(new Float32Array(positions),3)),new T.PointsMaterial({color:0x8095b0,size:.24}));scene.add(stars);
+const read=root=>fetch('/'+root+'/geometry.bin').then(r=>{if(!r.ok)throw Error(root);return r.arrayBuffer();});
+const gundam=new VoyageGundam({THREE:T,scene,readBuffer:()=>read('gundam-assets')}),eva=new VoyageEvaPursuit({THREE:T,scene,readEvaBuffer:unit=>read(unit==='unit01'?'eva01-assets':'eva02-assets')});
+await gundam.preload();await eva.preload();
+const params=new URLSearchParams(location.search),pose=params.has('pose');let time=Number(params.get('t')||85),playing=false,previous;
+function draw(t){
+  if(pose){
+    stars.visible=false;gundam.reset();
+    eva.actors.forEach((actor,i)=>{actor.model.visible=true;actor.wake.group.visible=false;actor.model.position.set(i?.9:-.9,0,0);actor.model.quaternion.set(0,0,0,1);actor.model.rotation.y=-.38;actor.raw.rotation.x=params.has('stand')?0:-Math.PI*.47;actor.materials[0].opacity=1;shadeCraft(T,actor.materials,camera);});
+    camera.position.set(0,params.has('stand')?0:2.1,9);camera.lookAt(new T.Vector3());
+  }else{gundam.update(t,camera);eva.update(t,camera);shadeCraft(T,gundam.materials,camera);eva.actors.forEach(a=>shadeCraft(T,a.materials,camera));}
+  renderer.render(scene,camera);document.querySelector('#status').textContent=t.toFixed(2)+'秒';document.querySelector('#time').value=t;
+}
+draw(time);window.review={scene,camera,gundam,eva,draw,renderer};
+document.querySelector('#time').oninput=e=>{playing=false;time=Number(e.target.value);draw(time);};
+document.querySelector('#play').onclick=()=>{time=79;playing=true;previous=performance.now();requestAnimationFrame(tick);};
+function tick(now){if(!playing)return;time=Math.min(92,time+(now-previous)/1000);previous=now;draw(time);if(time<92)requestAnimationFrame(tick);else playing=false;}
+if(params.has('capture'))await fetch('/capture',{method:'POST',body:JSON.stringify({name:(pose?'pose':'pursuit')+'-'+time,image:canvas.toDataURL('image/png')})});
+if(params.has('play'))document.querySelector('#play').click();
+</script>

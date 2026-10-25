@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "generator": "Sketchfab-13.74.0",
+  "extras": {
+    "author": "NASA Astromaterials 3D (https://sketchfab.com/Astromaterials3D)",
+    "license": "CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)",
+    "source": "https://sketchfab.com/3d-models/apollo-lunar-sample-150160-73c4fa8c048e46638f9f19d5b2785624",
+    "title": "Apollo Lunar Sample 15016,0"
+  },
+  "nodes": 4,
+  "meshes": 2,
+  "materials": 1,
+  "images": 1,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 200000,
+  "vertices_est": 121669,
+  "extensions_used": [],
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-106/73c4fa8c048e46638f9f19d5b2785624.glb",
+  "final_url": "https://us.aws.cdn.hf.co/xet-bridge-us/63977bb96bdef8095268ded0/29304a111f61b1b320756ec101a203e8cd2596709701d967e03bacf75f9f1daf?X-Xet-Cas-Uid=public&response-content-type=model%2Fgltf-binary&response-content-disposition=inline%3B+filename*%3DUTF-8%27%2773c4fa8c048e46638f9f19d5b2785624.glb%3B+filename%3D%2273c4fa8c048e46638f9f19d5b2785624.glb%22%3B&user_id=public&xip=dUMiaxerFRM&Expires=1792521739&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly91cy5hd3MuY2RuLmhmLmNvL3hldC1icmlkZ2UtdXMvNjM5NzdiYjk2YmRlZjgwOTUyNjhkZWQwLzI5MzA0YTExMWY2MWIxYjMyMDc1NmVjMTAxYTIwM2U4Y2QyNTk2NzA5NzAxZDk2N2UwM2JhY2Y3NWY5ZjFkYWZcXD9YLVhldC1DYXMtVWlkPXB1YmxpYyZyZXNwb25zZS1jb250ZW50LXR5cGU9bW9kZWwlMkZnbHRmLWJpbmFyeSZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWlubGluZSUzQitmaWxlbmFtZSUyQSUzRFVURi04JTI3JTI3NzNjNGZhOGMwNDhlNDY2MzhmOWYxOWQ1YjI3ODU2MjQuZ2xiJTNCK2ZpbGVuYW1lJTNEJTIyNzNjNGZhOGMwNDhlNDY2MzhmOWYxOWQ1YjI3ODU2MjQuZ2xiJTIyJTNCJnVzZXJfaWQ9cHVibGljJnhpcD1kVU1pYXhlckZSTSIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiRXBvY2hUaW1lIjoxNzkyNTIxNzM5fX19XX0_&Signature=MEUCIFhv4%7EQ6SNOxwV9Xi4tNERxTqHy94vsG6GByLfgwHUcIAiEAhS-iFaf2Rg0RjMNuAWpxB--67SCACaw9WfZjveE4ftA_&Key-Pair-Id=01KXEF4KZ1B6FV465MAWR4M21F&Hash-Algorithm=SHA256",
+  "uid": "73c4fa8c048e46638f9f19d5b2785624",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/other-astromaterials3d-apollo-lunar-sample-15016-0/model.glb",
+  "bytes": 7149744,
+  "sha256": "d9492a91595b7af53bec8d7430f78d02d2bacc5e788cfb85b3b12b2a485954e4"
+}

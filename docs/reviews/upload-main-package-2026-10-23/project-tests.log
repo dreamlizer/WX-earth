@@ -1,0 +1,315 @@
+
+tools/ambient-encounter.test.cjs (exit 0)
+[Ambient] chandra unavailable Error: test failure
+    at /Users/a1234/Documents/Codex项目/wx-earth/tools/ambient-encounter.test.cjs:199:53
+Ambient spacecraft: random quiet scheduling, mode/interaction gates, native geometry and async disposal PASS
+
+tools/app-engine-lifecycle.test.cjs (exit 0)
+app-engine lifecycle tests passed
+
+tools/city-markers-policy.test.cjs (exit 0)
+city-markers policy tests passed
+
+tools/console-noise-policy.test.cjs (exit 0)
+TAP version 13
+# Subtest: poetry loader does not call disabled poetrySetsV2 fallback
+ok 1 - poetry loader does not call disabled poetrySetsV2 fallback
+  ---
+  duration_ms: 0.683416
+  type: 'test'
+  ...
+# Subtest: poetry loader tries the uploaded cloud function before database fallback
+ok 2 - poetry loader tries the uploaded cloud function before database fallback
+  ---
+  duration_ms: 0.253041
+  type: 'test'
+  ...
+# Subtest: poetry loader keeps cloud poetry available in DevTools
+ok 3 - poetry loader keeps cloud poetry available in DevTools
+  ---
+  duration_ms: 0.14225
+  type: 'test'
+  ...
+# Subtest: special text loader has no missing DevTools helper or normal success log
+ok 4 - special text loader has no missing DevTools helper or normal success log
+  ---
+  duration_ms: 0.653625
+  type: 'test'
+  ...
+# Subtest: app launch initializes cloud for poetry and database APIs
+ok 5 - app launch initializes cloud for poetry and database APIs
+  ---
+  duration_ms: 0.423666
+  type: 'test'
+  ...
+# Subtest: moon button cloud url resolution is skipped in DevTools
+ok 6 - moon button cloud url resolution is skipped in DevTools
+  ---
+  duration_ms: 0.173
+  type: 'test'
+  ...
+# Subtest: selection manager has no temporary SEL-DIAG console noise
+ok 7 - selection manager has no temporary SEL-DIAG console noise
+  ---
+  duration_ms: 0.346542
+  type: 'test'
+  ...
+# Subtest: moon background preload is skipped in WeChat DevTools
+ok 8 - moon background preload is skipped in WeChat DevTools
+  ---
+  duration_ms: 0.203167
+  type: 'test'
+  ...
+# Subtest: isDevtools recognizes environment, brand, and platform markers
+ok 9 - isDevtools recognizes environment, brand, and platform markers
+  ---
+  duration_ms: 1.54725
+  type: 'test'
+  ...
+# Subtest: optional cloud texture prefetch is skipped in DevTools and PC clients
+ok 10 - optional cloud texture prefetch is skipped in DevTools and PC clients
+  ---
+  duration_ms: 0.711458
+  type: 'test'
+  ...
+# Subtest: moon manager avoids deprecated getSystemInfoSync
+ok 11 - moon manager avoids deprecated getSystemInfoSync
+  ---
+  duration_ms: 0.166708
+  type: 'test'
+  ...
+# Subtest: texture refresh does not preload moon assets in DevTools and PC clients
+ok 12 - texture refresh does not preload moon assets in DevTools and PC clients
+  ---
+  duration_ms: 0.171125
+  type: 'test'
+  ...
+# Subtest: normal startup success logs stay quiet by default
+ok 13 - normal startup success logs stay quiet by default
+  ---
+  duration_ms: 0.88625
+  type: 'test'
+  ...
+# Subtest: pipeline diagnostics are behind the perf debug flag
+ok 14 - pipeline diagnostics are behind the perf debug flag
+  ---
+  duration_ms: 0.222583
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12.499958
+
+tools/country-info-manager-timezone.test.cjs (exit 0)
+country-info-manager timezone tests passed
+
+tools/country-selection-init-policy.test.cjs (exit 0)
+TAP version 13
+# Subtest: makeBorder uses BufferGeometry attribute compatibility for threejs-miniprogram r108
+ok 1 - makeBorder uses BufferGeometry attribute compatibility for threejs-miniprogram r108
+  ---
+  duration_ms: 0.494625
+  type: 'test'
+  ...
+# Subtest: country search index is initialized before border rendering can fail
+ok 2 - country search index is initialized before border rendering can fail
+  ---
+  duration_ms: 0.095375
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4.144625
+
+tools/flag-sprite-policy.test.cjs (exit 0)
+flag-sprite policy tests passed
+
+tools/go-west-chorus.test.cjs (exit 0)
+Go West chorus: A/B/A, original-star gathering/restore, hollow glyphs, light ribbons, reverse vocals, mobile bounds and disposal PASS
+
+tools/go-west-encounter.test.cjs (exit 0)
+Go West EVE: local load, random plans, two turns, lower flight, audio/exit gates and disposal PASS
+
+tools/go-west-finale.test.cjs (exit 0)
+Go West finale: timed impacts, lit ending, live globe, mobile title, deterministic foil, exits and GPU disposal PASS
+
+tools/go-west.test.cjs (exit 0)
+Go West: call/response, paired Chinese, chorus anchors, clock, exclusions and missing audio PASS
+
+tools/highlight-manager-policy.test.cjs (exit 0)
+highlight-manager policy tests passed
+
+tools/labels-layout-policy.test.cjs (exit 0)
+labels-layout policy tests passed
+
+tools/labels-workset-policy.test.cjs (exit 0)
+labels-workset policy tests passed
+
+tools/moon-atmosphere.test.cjs (exit 0)
+Moon atmosphere: isolated discovery, quiet arrival/ending, continuous fade and deterministic replay PASS
+
+tools/moon-encounters.test.cjs (exit 0)
+Voyager geometry, three phases, Moon gate, camera preservation and cleanup PASS
+Forward star flow, acceleration, trails and fade PASS
+Persistent stars and gradual direction/density transition PASS
+(node:30669) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+WeChat subpackage API and async asset loading PASS
+
+tools/moon-eva-pursuit.test.cjs (exit 0)
+(node:30729) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Measured first visible silhouette [ 83.06, 83.56 ]
+[Moon] EVA pursuit unavailable; retaining Gundam flyby Error: expected missing second asset
+    at VoyageEvaPursuit.readEvaBuffer [as readBuffer] (/Users/a1234/Documents/Codex项目/wx-earth/tools/moon-eva-pursuit.test.cjs:66:123)
+    at load (evalmachine.<anonymous>:120:48)
+    at async evalmachine.<anonymous>:131:52
+    at async /Users/a1234/Documents/Codex项目/wx-earth/tools/moon-eva-pursuit.test.cjs:67:3
+EVA half-second stagger, actual silhouettes, chase depth, short exhaust and lifecycle PASS
+
+tools/moon-gundam.test.cjs (exit 0)
+(node:30730) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Gundam accelerating full-body flight, flowing short-lived exhaust, package and async cleanup PASS
+
+tools/moon-keepsake-audio.test.cjs (exit 0)
+[Moon] Audio ended, keeping the floating photo
+[Moon] Audio ended, triggering exit
+Moon keepsake audio: original song, one player, natural-end hold, stale callbacks and original fallback PASS
+
+tools/moon-keepsake.test.cjs (exit 0)
+Moon keepsake: approved motion, portrait fit, render-state recovery, ended hold/background resume, hidden controls, album API and cancelled loads PASS
+
+tools/moon-light-continuity.test.cjs (exit 0)
+Moon approach-to-orbit brightness and light-direction continuity PASS
+
+tools/moon-loading-warmup.test.cjs (exit 0)
+[Moon] Preloading assets...
+[Moon] Downloaded (cloud): cloud://audio
+[Moon] Assets downloaded
+[Moon] Voyager unavailable; keeping voyage running Error: Voyager load timeout (30s)
+    at cancel (evalmachine.<anonymous>:86:107)
+    at Array.<anonymous> (evalmachine.<anonymous>:87:28)
+    at /Users/a1234/Documents/Codex项目/wx-earth/tools/moon-loading-warmup.test.cjs:33:230 {
+  cancelled: false
+}
+[Moon terrain] Ready { milliseconds: 1, gpuWarmupMs: 1, downloads: 0, cacheHits: 10 }
+[Moon terrain] Handoff {
+  time: 193,
+  moonCenterNDCError: 0,
+  originalNDC: [ 0, 0, 0.9800990049502474 ],
+  tailNDC: [ 0, 0, 0.99989999499975 ]
+}
+Moon loading: required-only launch, optional timeout/cancel/late disposal, offscreen state recovery and fully warmed readiness PASS
+
+tools/moon-original-earth.test.cjs (exit 0)
+visible orbit samples [ 174.3, 231.4, 239.4 ]
+original Earth integration: exact original orbit and lighting restored, early visibility, fixed Earth, final framing, disposal PASS
+
+tools/moon-paper-plane.test.cjs (exit 0)
+paper plane lifecycle and timing PASS
+
+tools/moon-playback-resume.test.cjs (exit 0)
+Moon playback: accelerated release seeks music and cannot rewind at the terrain handoff PASS
+
+tools/moon-robot.test.cjs (exit 0)
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+Robot package loading, frozen body, native flames, fading and asynchronous cleanup PASS
+
+tools/moon-terrain-loading.test.cjs (exit 0)
+[Moon terrain] Original tail selected loading
+Moon tail: native music clock, foreground/waiting, cold/warm cache, checksum repair, and real task cancellation PASS
+
+tools/moon-terrain.test.cjs (exit 0)
+PASS r108 terrain construction, authored three pilots, 11 contacts, full camera path and shader patch anchors
+
+tools/moon-voyage-lifecycle.test.cjs (exit 0)
+moon voyage lifecycle tests passed
+
+tools/page-lifecycle.test.cjs (exit 0)
+page lifecycle tests passed
+
+tools/perf-monitor-policy.test.cjs (exit 0)
+perf-monitor policy tests passed
+
+tools/planet-visual.test.cjs (exit 0)
+Planet visual: retained Earth object, opaque depth, themes/clouds/brightness, original Moon appearance with terrain normals only PASS
+
+tools/poetry-cache.test.cjs (exit 0)
+poetry cache tests passed
+
+tools/poetry-overlap.test.cjs (exit 0)
+poetry overlap tests passed: vertical/horizontal, movement, unequal frames, no-space fallback, three tracks
+
+tools/poetry-timing.test.cjs (exit 0)
+poetry timing tests passed
+
+tools/render-loop.test.cjs (exit 0)
+render-loop tests passed
+
+tools/runtime-diagnostics.test.cjs (exit 0)
+runtime-diagnostics tests passed
+
+tools/saturn-preview.test.cjs (exit 0)
+[Saturn preview] test asset failure
+Saturn preview: legacy Three geometry, subpackage loading, drag/pinch, re-entry, failure and disposal PASS
+
+tools/scene-updater-policy.test.cjs (exit 0)
+scene-updater policy tests passed
+
+tools/texture-health.test.cjs (exit 0)
+texture-health tests passed
+
+tools/texture-source.test.cjs (exit 0)
+[texture] Earth preview package unavailable; keeping small local preview
+[texture] Earth preview package unavailable; keeping small local preview
+[texture] Scene art package unavailable; keeping placeholder
+[texture] Scene art package unavailable; keeping placeholder
+texture-source tests passed
+
+tools/timezone-manager-policy.test.cjs (exit 0)
+timezone-manager policy tests passed
+
+tools/update-country-meta-imf-weo.test.cjs (exit 0)
+update-country-meta-imf-weo tests passed
+
+tools/update-country-meta-worldbank.test.cjs (exit 0)
+update-country-meta-worldbank tests passed
+
+tools/zen-darkness-visual.test.cjs (exit 0)
+Out of Darkness: cue-driven light, delayed visibility, repeats, pause/resume, other-mode restoration and disposal PASS
+
+tools/zen-english-tracks.test.cjs (exit 0)
+zen English-only track tests passed
+
+tools/zen-lifecycle.test.cjs (exit 0)
+zen lifecycle tests passed
+
+tools/zen-smooth-motion.test.cjs (exit 0)
+GPU title: continuous subpixel scale, smooth clock, foreground/disposal; zen arcs: constant speed; EVE/astronaut source geometry PASS
+
+tools/zen-song-presentation.test.cjs (exit 0)
+Zen songs: both openings, original lyric motion, Chinese cue matching and delay, home encounters retained, zen encounters disabled PASS
+
+RESULT: 49/49 passed

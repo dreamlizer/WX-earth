@@ -115,7 +115,11 @@ export const getInitialData = () => ({
   cloudZen2FileId: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/Zen-2.mp3',
   // 新增第三首禅定音乐（preset3）：Zen-3.mp3 的云文件ID（来自你的截图）
   cloudZen3FileId: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/Zen-3.mp3',
-  cloudZen4FileId: '',
+  cloudZen4FileId: 'cloud://cloud1-1g6316vt2769d82c.636c-cloud1-1g6316vt2769d82c-1380715696/assets/Go-West.mp3',
+  goWestActive: false,
+  goWestPreview: false,
+  goWestGroups: [],
+  goWestChinese: [],
   // —— 彩蛋：时间胶囊感应区与 Special 文本展示 ——
   eggSensorVisible: false,
   eggSensorLeft: 0,

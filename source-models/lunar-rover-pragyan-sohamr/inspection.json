@@ -1,0 +1,22 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/2a84cfca3dc54359a3bd834fb279e9fd.glb",
+  "uid": "2a84cfca3dc54359a3bd834fb279e9fd",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-rover-pragyan-sohamr/pragyan.glb",
+  "bytes": 452204,
+  "sha256": "6063069855bdb7da188fb99f6c854e8e17e2a1d3908e8270fc5cd1fc27c8a880",
+  "triangles_est": 3872,
+  "vertices_est": 4429,
+  "meshes": 12,
+  "materials": 11,
+  "images": 3,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [],
+  "generator": "Sketchfab-12.63.0",
+  "extras": {
+    "author": "sohamr.sr (https://sketchfab.com/sohamr.sr)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/pragyan-rover-2a84cfca3dc54359a3bd834fb279e9fd",
+    "title": "Pragyan Rover"
+  }
+}

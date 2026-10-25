@@ -1,0 +1,22 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-141/d7419015501640998bc5d00ca4c0f9f4.glb",
+  "uid": "d7419015501640998bc5d00ca4c0f9f4",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-rover-lunokhod-2-tashtego/lunokhod2.glb",
+  "bytes": 2663452,
+  "sha256": "e16bbd1a67c1ab066b6491c2283a250376b18d27c10cff5a665177d7f65e655a",
+  "triangles_est": 17522,
+  "vertices_est": 24459,
+  "meshes": 2,
+  "materials": 2,
+  "images": 4,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [],
+  "generator": "Sketchfab-12.89.0",
+  "extras": {
+    "author": "tashtego (https://sketchfab.com/tashtego)",
+    "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+    "source": "https://sketchfab.com/3d-models/lunokhod-2-d7419015501640998bc5d00ca4c0f9f4",
+    "title": "Lunokhod-2"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "preservedFiles": 123,
+  "fullNativeMusicPlayback": {
+    "completed": 1,
+    "frames": 4730,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 3.3333333249174757e-07,
+    "stalls": 0,
+    "muted": false,
+    "crewSwitches": [],
+    "maxFrameGapMs": 25.800000190734863,
+    "nativeEnded": true
+  },
+  "duration": 78.726667,
+  "cameraScaleMusicAndApprovedCharacterSourceUnchanged": true,
+  "endTerrainAndCrewPixelDifferenceFromApprovedStill": 0,
+  "crewReadableFrom": 233.5,
+  "earthVisibleFrom": 238.9,
+  "terrainLODWhenCrewReadable": 1,
+  "fixedContactPoints": 11,
+  "sampledContactClearanceMin": 7.999965356297878e-05,
+  "frameAndControlsVisible": true,
+  "pageErrors": [],
+  "webglError": 0,
+  "scope": "independent desktop preview; no compression or mini-program integration"
+}

@@ -1,0 +1,1294 @@
+{
+  "start": 1792604460766,
+  "rows": [
+    {
+      "event": "start",
+      "wall": 1792604462311,
+      "elapsed": 0,
+      "time": 0,
+      "audio": 0,
+      "duration": null,
+      "waiting": true,
+      "phase": "VOYAGE",
+      "terrain": "idle",
+      "terrainActive": false,
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604462442,
+      "elapsed": 0.131,
+      "time": 0,
+      "audio": 0,
+      "duration": null,
+      "waiting": true,
+      "phase": "VOYAGE",
+      "terrain": "loading",
+      "terrainActive": false,
+      "photo": "loading",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "photo-ready",
+      "wall": 1792604462446,
+      "elapsed": 0.135,
+      "time": 0,
+      "audio": 0,
+      "duration": null,
+      "waiting": true,
+      "phase": "VOYAGE",
+      "terrain": "loading",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "audio-canplay",
+      "wall": 1792604462759,
+      "elapsed": 0.448,
+      "time": 0,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "loading",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "audio-play",
+      "wall": 1792604462760,
+      "elapsed": 0.449,
+      "time": 0,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "loading",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604468471,
+      "elapsed": 6.16,
+      "time": 5.706666666666667,
+      "audio": 5.712,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604473471,
+      "elapsed": 11.16,
+      "time": 10.709333333333333,
+      "audio": 10.709333333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604478487,
+      "elapsed": 16.176,
+      "time": 15.722666666666669,
+      "audio": 15.728000000000002,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604483500,
+      "elapsed": 21.189,
+      "time": 20.735999999999997,
+      "audio": 20.735999999999997,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604488517,
+      "elapsed": 26.206,
+      "time": 25.754666666666665,
+      "audio": 25.754666666666665,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604493533,
+      "elapsed": 31.222,
+      "time": 30.773333333333333,
+      "audio": 30.773333333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604498549,
+      "elapsed": 36.238,
+      "time": 35.78666666666667,
+      "audio": 35.78666666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604503566,
+      "elapsed": 41.255,
+      "time": 40.80533333333333,
+      "audio": 40.80533333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604508581,
+      "elapsed": 46.27,
+      "time": 45.81866666666667,
+      "audio": 45.81866666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604513597,
+      "elapsed": 51.286,
+      "time": 50.831999999999994,
+      "audio": 50.83733333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604518613,
+      "elapsed": 56.302,
+      "time": 55.85066666666667,
+      "audio": 55.85066666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604523630,
+      "elapsed": 61.319,
+      "time": 60.86933333333333,
+      "audio": 60.86933333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604528646,
+      "elapsed": 66.335,
+      "time": 65.88266666666667,
+      "audio": 65.88266666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604533662,
+      "elapsed": 71.351,
+      "time": 70.90133333333333,
+      "audio": 70.90133333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604538678,
+      "elapsed": 76.367,
+      "time": 75.91466666666666,
+      "audio": 75.91466666666666,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604543694,
+      "elapsed": 81.383,
+      "time": 80.93333333333334,
+      "audio": 80.93333333333334,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604548709,
+      "elapsed": 86.398,
+      "time": 85.94666666666667,
+      "audio": 85.94666666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604553725,
+      "elapsed": 91.414,
+      "time": 90.96533333333333,
+      "audio": 90.96533333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604558741,
+      "elapsed": 96.43,
+      "time": 95.97866666666667,
+      "audio": 95.97866666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604563758,
+      "elapsed": 101.447,
+      "time": 100.99733333333333,
+      "audio": 100.99733333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604568774,
+      "elapsed": 106.463,
+      "time": 106.01066666666667,
+      "audio": 106.01066666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604573789,
+      "elapsed": 111.478,
+      "time": 111.02933333333333,
+      "audio": 111.02933333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "VOYAGE",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604578805,
+      "elapsed": 116.494,
+      "time": 116.04266666666668,
+      "audio": 116.04266666666668,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604583822,
+      "elapsed": 121.511,
+      "time": 121.06133333333334,
+      "audio": 121.06133333333334,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604588837,
+      "elapsed": 126.526,
+      "time": 126.07466666666666,
+      "audio": 126.07466666666666,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604593853,
+      "elapsed": 131.542,
+      "time": 131.08800000000002,
+      "audio": 131.0933333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604598869,
+      "elapsed": 136.558,
+      "time": 136.10666666666668,
+      "audio": 136.10666666666668,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604603885,
+      "elapsed": 141.574,
+      "time": 141.12533333333334,
+      "audio": 141.12533333333334,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604608902,
+      "elapsed": 146.591,
+      "time": 146.13866666666667,
+      "audio": 146.13866666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604613917,
+      "elapsed": 151.606,
+      "time": 151.15733333333333,
+      "audio": 151.15733333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604618935,
+      "elapsed": 156.624,
+      "time": 156.176,
+      "audio": 156.176,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604623950,
+      "elapsed": 161.639,
+      "time": 161.1893333333333,
+      "audio": 161.1893333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604628966,
+      "elapsed": 166.655,
+      "time": 166.2026666666667,
+      "audio": 166.2026666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604633982,
+      "elapsed": 171.671,
+      "time": 171.22133333333335,
+      "audio": 171.22133333333335,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604638998,
+      "elapsed": 176.687,
+      "time": 176.23466666666667,
+      "audio": 176.23466666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604644014,
+      "elapsed": 181.703,
+      "time": 181.25333333333333,
+      "audio": 181.25333333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604649030,
+      "elapsed": 186.719,
+      "time": 186.26666666666665,
+      "audio": 186.26666666666665,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604654046,
+      "elapsed": 191.735,
+      "time": 191.2853333333333,
+      "audio": 191.2853333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "ORBIT",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": false,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604659061,
+      "elapsed": 196.75,
+      "time": 196.2986666666667,
+      "audio": 196.2986666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604664078,
+      "elapsed": 201.767,
+      "time": 201.31733333333335,
+      "audio": 201.31733333333335,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604669094,
+      "elapsed": 206.783,
+      "time": 206.33066666666667,
+      "audio": 206.33066666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604674109,
+      "elapsed": 211.798,
+      "time": 211.34933333333333,
+      "audio": 211.34933333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604679125,
+      "elapsed": 216.814,
+      "time": 216.36266666666666,
+      "audio": 216.36266666666666,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604684142,
+      "elapsed": 221.831,
+      "time": 221.38133333333332,
+      "audio": 221.38133333333332,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604689158,
+      "elapsed": 226.847,
+      "time": 226.3946666666667,
+      "audio": 226.3946666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604694174,
+      "elapsed": 231.863,
+      "time": 231.41333333333336,
+      "audio": 231.41333333333336,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604699190,
+      "elapsed": 236.879,
+      "time": 236.42666666666668,
+      "audio": 236.42666666666668,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604704205,
+      "elapsed": 241.894,
+      "time": 241.44533333333334,
+      "audio": 241.44533333333334,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604709221,
+      "elapsed": 246.91,
+      "time": 246.45866666666666,
+      "audio": 246.45866666666666,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604714237,
+      "elapsed": 251.926,
+      "time": 251.47733333333332,
+      "audio": 251.47733333333332,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604719254,
+      "elapsed": 256.943,
+      "time": 256.49466666666666,
+      "audio": 256.49066666666664,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604724269,
+      "elapsed": 261.958,
+      "time": 261.50849999999997,
+      "audio": 261.5093333333333,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "tick",
+      "wall": 1792604729285,
+      "elapsed": 266.974,
+      "time": 266.52566666666667,
+      "audio": 266.5226666666667,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "TERRAIN",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": false
+    },
+    {
+      "event": "photo-shown",
+      "wall": 1792604729838,
+      "elapsed": 267.527,
+      "time": 267.05066666666664,
+      "audio": 267.07733333333334,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": true
+    },
+    {
+      "event": "tick",
+      "wall": 1792604734301,
+      "elapsed": 271.99,
+      "time": 271.539,
+      "audio": 271.54133333333334,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": true
+    },
+    {
+      "event": "audio-ended",
+      "wall": 1792604734487,
+      "elapsed": 272.176,
+      "time": 271.70666666666665,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": false,
+      "photoShown": true
+    },
+    {
+      "event": "photo-hold",
+      "wall": 1792604734490,
+      "elapsed": 272.179,
+      "time": 271.70666666666665,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": true,
+      "photoShown": true
+    },
+    {
+      "event": "tick",
+      "wall": 1792604739317,
+      "elapsed": 277.006,
+      "time": 276.5536666666667,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": true,
+      "photoShown": true
+    },
+    {
+      "event": "tick",
+      "wall": 1792604744333,
+      "elapsed": 282.022,
+      "time": 281.5696666666667,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": true,
+      "photoShown": true
+    },
+    {
+      "event": "tick",
+      "wall": 1792604749349,
+      "elapsed": 287.038,
+      "time": 286.58566666666667,
+      "audio": 0,
+      "duration": 271.7266666666667,
+      "waiting": false,
+      "phase": "KEEPSAKE",
+      "terrain": "ready",
+      "selected": true,
+      "terrainActive": true,
+      "photo": "ready",
+      "photoHold": true,
+      "photoShown": true
+    }
+  ],
+  "frames": [
+    {
+      "elapsed": 21.996,
+      "file": "normal-22.0.jpg"
+    },
+    {
+      "elapsed": 30.554,
+      "file": "normal-30.6.jpg"
+    },
+    {
+      "elapsed": 39.108,
+      "file": "normal-39.1.jpg"
+    },
+    {
+      "elapsed": 47.655,
+      "file": "normal-47.7.jpg"
+    },
+    {
+      "elapsed": 53.996,
+      "file": "normal-54.0.jpg"
+    },
+    {
+      "elapsed": 77.598,
+      "file": "normal-77.6.jpg"
+    },
+    {
+      "elapsed": 86.088,
+      "file": "normal-86.1.jpg"
+    },
+    {
+      "elapsed": 94.47,
+      "file": "normal-94.5.jpg"
+    },
+    {
+      "elapsed": 102.845,
+      "file": "normal-102.8.jpg"
+    },
+    {
+      "elapsed": 109.598,
+      "file": "normal-109.6.jpg"
+    },
+    {
+      "elapsed": 126.2,
+      "file": "normal-126.2.jpg"
+    },
+    {
+      "elapsed": 134.588,
+      "file": "normal-134.6.jpg"
+    },
+    {
+      "elapsed": 142.972,
+      "file": "normal-143.0.jpg"
+    },
+    {
+      "elapsed": 151.342,
+      "file": "normal-151.3.jpg"
+    },
+    {
+      "elapsed": 158.2,
+      "file": "normal-158.2.jpg"
+    },
+    {
+      "elapsed": 175.293,
+      "file": "normal-175.3.jpg"
+    },
+    {
+      "elapsed": 177.169,
+      "file": "normal-177.2.jpg"
+    },
+    {
+      "elapsed": 179.055,
+      "file": "normal-179.1.jpg"
+    },
+    {
+      "elapsed": 180.911,
+      "file": "normal-180.9.jpg"
+    },
+    {
+      "elapsed": 182.775,
+      "file": "normal-182.8.jpg"
+    },
+    {
+      "elapsed": 184.652,
+      "file": "normal-184.7.jpg"
+    },
+    {
+      "elapsed": 186.536,
+      "file": "normal-186.5.jpg"
+    },
+    {
+      "elapsed": 188.405,
+      "file": "normal-188.4.jpg"
+    },
+    {
+      "elapsed": 190.288,
+      "file": "normal-190.3.jpg"
+    },
+    {
+      "elapsed": 192.158,
+      "file": "normal-192.2.jpg"
+    },
+    {
+      "elapsed": 194.039,
+      "file": "normal-194.0.jpg"
+    },
+    {
+      "elapsed": 195.909,
+      "file": "normal-195.9.jpg"
+    },
+    {
+      "elapsed": 197.788,
+      "file": "normal-197.8.jpg"
+    },
+    {
+      "elapsed": 199.66,
+      "file": "normal-199.7.jpg"
+    },
+    {
+      "elapsed": 201.536,
+      "file": "normal-201.5.jpg"
+    },
+    {
+      "elapsed": 203.42,
+      "file": "normal-203.4.jpg"
+    },
+    {
+      "elapsed": 205.303,
+      "file": "normal-205.3.jpg"
+    },
+    {
+      "elapsed": 207.188,
+      "file": "normal-207.2.jpg"
+    },
+    {
+      "elapsed": 209.088,
+      "file": "normal-209.1.jpg"
+    },
+    {
+      "elapsed": 210.987,
+      "file": "normal-211.0.jpg"
+    },
+    {
+      "elapsed": 212.87,
+      "file": "normal-212.9.jpg"
+    },
+    {
+      "elapsed": 213.792,
+      "file": "normal-213.8.jpg"
+    },
+    {
+      "elapsed": 232.694,
+      "file": "normal-232.7.jpg"
+    },
+    {
+      "elapsed": 234.586,
+      "file": "normal-234.6.jpg"
+    },
+    {
+      "elapsed": 236.47,
+      "file": "normal-236.5.jpg"
+    },
+    {
+      "elapsed": 238.354,
+      "file": "normal-238.4.jpg"
+    },
+    {
+      "elapsed": 240.243,
+      "file": "normal-240.2.jpg"
+    },
+    {
+      "elapsed": 242.128,
+      "file": "normal-242.1.jpg"
+    },
+    {
+      "elapsed": 244.003,
+      "file": "normal-244.0.jpg"
+    },
+    {
+      "elapsed": 245.887,
+      "file": "normal-245.9.jpg"
+    },
+    {
+      "elapsed": 247.77,
+      "file": "normal-247.8.jpg"
+    },
+    {
+      "elapsed": 249.653,
+      "file": "normal-249.7.jpg"
+    },
+    {
+      "elapsed": 251.544,
+      "file": "normal-251.5.jpg"
+    },
+    {
+      "elapsed": 253.42,
+      "file": "normal-253.4.jpg"
+    },
+    {
+      "elapsed": 255.303,
+      "file": "normal-255.3.jpg"
+    },
+    {
+      "elapsed": 257.188,
+      "file": "normal-257.2.jpg"
+    },
+    {
+      "elapsed": 259.07,
+      "file": "normal-259.1.jpg"
+    },
+    {
+      "elapsed": 260.953,
+      "file": "normal-261.0.jpg"
+    },
+    {
+      "elapsed": 262.837,
+      "file": "normal-262.8.jpg"
+    },
+    {
+      "elapsed": 264.72,
+      "file": "normal-264.7.jpg"
+    },
+    {
+      "elapsed": 266.193,
+      "file": "normal-266.2.jpg"
+    },
+    {
+      "elapsed": 276.292,
+      "file": "normal-276.3.jpg"
+    },
+    {
+      "elapsed": 277.06,
+      "file": "normal-277.1.jpg"
+    },
+    {
+      "elapsed": 277.961,
+      "file": "normal-278.0.jpg"
+    },
+    {
+      "elapsed": 279.307,
+      "file": "normal-279.3.jpg"
+    },
+    {
+      "elapsed": 281.041,
+      "file": "normal-281.0.jpg"
+    },
+    {
+      "elapsed": 282.243,
+      "file": "normal-282.2.jpg"
+    },
+    {
+      "elapsed": 283.311,
+      "file": "normal-283.3.jpg"
+    },
+    {
+      "elapsed": 284.363,
+      "file": "normal-284.4.jpg"
+    },
+    {
+      "elapsed": 285.445,
+      "file": "normal-285.4.jpg"
+    },
+    {
+      "elapsed": 286.562,
+      "file": "normal-286.6.jpg"
+    },
+    {
+      "elapsed": 287.656,
+      "file": "normal-287.7.jpg"
+    },
+    {
+      "elapsed": 288.846,
+      "file": "normal-288.8.jpg"
+    },
+    {
+      "elapsed": 290.026,
+      "file": "normal-290.0.jpg"
+    },
+    {
+      "elapsed": 291.147,
+      "file": "normal-291.1.jpg"
+    },
+    {
+      "elapsed": 292.28,
+      "file": "normal-292.3.jpg"
+    },
+    {
+      "elapsed": 293.397,
+      "file": "normal-293.4.jpg"
+    }
+  ]
+}

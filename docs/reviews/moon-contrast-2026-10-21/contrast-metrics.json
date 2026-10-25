@@ -1,0 +1,20 @@
+{
+  "normal-on": {
+    "nightMean": 6.833588625868453,
+    "nightP90": 6.2126,
+    "nightFractionOver20": 0.05204476432167076,
+    "dayMean": 83.11759745991635
+  },
+  "normal-off": {
+    "nightMean": 4.1034992220327,
+    "nightP90": 5.212599999999999,
+    "nightFractionOver20": 0.0,
+    "dayMean": 84.55184003136982
+  },
+  "persisted": {
+    "nightMean": 0.0,
+    "nightP90": 0.0,
+    "nightFractionOver20": 0.0,
+    "dayMean": 81.03646558905541
+  }
+}

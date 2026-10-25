@@ -1,0 +1,14 @@
+const fs=require('fs'),path=require('path');
+const root=path.resolve(__dirname,'../../..');
+const {createScopedThreejs}=require(root+'/miniprogram/node_modules/threejs-miniprogram');
+const T=createScopedThreejs({width:540,height:960,createImage(){return {}}});
+const reference=JSON.parse(fs.readFileSync(root+'/docs/reviews/moon-contrast-2026-10-21/earth-reference-255.json'));
+const anchor=JSON.parse(fs.readFileSync(__dirname+'/orbit-anchor.json'));
+const V=a=>new T.Vector3(...a),Q=a=>new T.Quaternion(...a);
+const actualUp=V([0,1,0]).applyQuaternion(Q(reference.cameraQuaternion));
+const actualView=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().lookAt(V(reference.cameraPosition),V(reference.earthPosition),actualUp));
+const end=JSON.parse(fs.readFileSync(__dirname+'/end-pose.json'));const targetView=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().lookAt(V(end.position),V(anchor.earthPosition),V([0,1,0]).applyQuaternion(Q(end.quaternion))));
+const relativeEarth=actualView.clone().inverse().multiply(Q(reference.earthQuaternion));
+const sunInEarthView=V(reference.sunWorld).applyQuaternion(actualView.clone().inverse());
+const calibration={referenceTime:255,reference:'WeChat DevTools actual framebuffer and scene pose',earthQuaternionAtReference:targetView.clone().multiply(relativeEarth).toArray(),sunDirection:sunInEarthView.clone().applyQuaternion(targetView).toArray(),sunInEarthView:sunInEarthView.toArray(),earthInEarthView:relativeEarth.toArray(),cloudOpacity:.58,earthAngularSpeed:.009,cloudAngularSpeed:.00035};
+fs.writeFileSync(__dirname+'/earth-calibration.json',JSON.stringify(calibration,null,2)+'\n');console.log(calibration);

@@ -5,6 +5,16 @@ import { FBXLoader } from './vendor/loaders/FBXLoader.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
 
 const models = [
+  { id: 'eva-01-lefort', name: 'Evangelion Unit-01', type: 'EVA 机体', author: 'lefort', format: 'GLB · PBR 贴图', url: '/eva-unit-01-lefort/evangelion_unit_01.glb', source: 'https://sketchfab.com/3d-models/evangelion-unit-01-49c7a77272c84154a711d7cfd5cb47f4' },
+  { id: 'eva-02-ryanwill', name: 'EVA 02', type: 'EVA 机体', author: 'Ryanwill679', format: 'GLB · 内嵌贴图', url: '/eva-unit-02-ryanwill679/eva_02.glb', source: 'https://sketchfab.com/3d-models/eva-02-8ebab4116b9c42a5bd0582ee61823c9f' },
+  { id: 'eva-00-tigerar1', name: 'Evangelion Unit-00', type: 'EVA 低模', author: 'Tigerar1', format: 'GLB · 低模', url: '/eva-units-github-juan-hernandez/eva00.glb', source: 'https://sketchfab.com/3d-models/evangelion-unit-00-abe48f0c88914d66b7a5c916704767b3' },
+  { id: 'apollo-lm', name: 'Apollo Lunar Module', type: '月面着陆器', author: 'NASA 3D Resources', format: 'GLB', url: '/apollo-lunar-module-nasa/Apollo%20Lunar%20Module.glb', source: 'https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Apollo%20Lunar%20Module' },
+  { id: 'lunokhod-2', name: 'Lunokhod-2', type: '月面巡视器', author: 'tashtego', format: 'GLB', url: '/lunar-rover-lunokhod-2-tashtego/lunokhod2.glb', source: 'https://sketchfab.com/3d-models/lunokhod-2-d7419015501640998bc5d00ca4c0f9f4' },
+  { id: 'pragyan', name: 'Pragyan Rover', type: '月面巡视器', author: 'sohamr.sr', format: 'GLB', url: '/lunar-rover-pragyan-sohamr/pragyan.glb', source: 'https://sketchfab.com/3d-models/pragyan-rover-2a84cfca3dc54359a3bd834fb279e9fd' },
+  { id: 'lrv-toy', name: 'Lunar Rover', type: '月面巡视器', author: 'Cameron-Main', format: 'GLB', url: '/lunar-rover-toy-cameron-main/lunar_rover_toy.glb', source: 'https://sketchfab.com/3d-models/lunar-rover-toymodel-eae9a5b20d324fe6855fd3c4b37f41b6' },
+  { id: 'polar-hab', name: 'Polar Hab', type: '月面营地', author: 'briligg', format: 'GLB', url: '/lunar-habitat-polar-hab-briligg/polar_hab.glb', source: 'https://sketchfab.com/3d-models/polar-hab-e107c4ea7d3c48449f453707fda3c6ec' },
+  { id: 'habitat-demo', name: 'Habitat Demonstration Unit', type: '月面居住舱', author: 'NASA 3D Resources', format: 'GLB', url: '/habitat-demonstration-unit-nasa/Habitat%20Demonstration%20Unit%20(part%201).glb', source: 'https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Habitat%20Demonstration%20Unit' },
+  { id: 'viking-lander', name: 'Viking Lander', type: '着陆器', author: 'NASA 3D Resources', format: 'GLB', url: '/viking-lander-nasa/Viking%20Lander.glb', source: 'https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Viking%20Lander' },
   { id: 'mech', name: 'Mech Drone', type: '机械无人机', author: 'Willy Decarpentrie', format: 'glTF · 贴图', url: '/mech-encounter-candidates/mech-drone/scene.gltf', source: 'https://sketchfab.com/3d-models/mech-drone-8d06874aac5246c59edb4adbe3606e0e' },
   { id: 'shayan', name: 'Flying Robot', type: '飞行机器人', author: 'Shayan', format: 'GLB · 动画', url: '/mech-encounter-candidates/shayan-flying-robot/robot-extracted.glb', source: 'https://sketchfab.com/3d-models/futuristic-flying-animated-robot-low-poly-c5b92c281dc444448e64c0607719c7a2' },
   { id: 'eve', name: 'EVE from Wall-E', type: '角色机器人', author: 'mdv_mlhtr_dev_', format: 'GLB', url: '/mech-encounter-candidates/eve-from-wall-e/eve-from-wall-e.glb', source: 'https://sketchfab.com/3d-models/eve-from-wall-e-d23a3ce48b4e4fc9aa33340c3634330d' },
@@ -208,6 +218,9 @@ async function selectModel(index) {
     setLoading(`加载失败：${error.message}`);
   }
 }
+
+const sectionLabel = document.querySelector('.section-label');
+if (sectionLabel) sectionLabel.textContent = `当前预览 · ${models.length} 款`;
 
 models.forEach((model, index) => {
   const button = document.createElement('button');

@@ -1,0 +1,23 @@
+{
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/eva-unit-01-lefort/evangelion_unit_01.glb",
+  "bytes": 5297120,
+  "sha256": "a39e63769d033babd8f56a09ccb287c2fdebf4be74609513948f12125ebea7a3",
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-115/49c7a77272c84154a711d7cfd5cb47f4.glb",
+  "version": "2.0",
+  "generator": "Sketchfab-12.67.0",
+  "extras": {
+    "author": "lefort (https://sketchfab.com/lefort)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/evangelion-unit-01-49c7a77272c84154a711d7cfd5cb47f4",
+    "title": "Evangelion unit 01"
+  },
+  "nodes": 3,
+  "meshes": 1,
+  "materials": 1,
+  "images": 3,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 60522,
+  "vertices_est": 35599,
+  "extensions_used": []
+}

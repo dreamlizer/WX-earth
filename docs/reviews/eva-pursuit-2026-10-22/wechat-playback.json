@@ -1,0 +1,13 @@
+{
+  "environment": "WeChat DevTools wx-earth",
+  "speed": 1,
+  "samples": 150,
+  "fromSeconds": 79.085,
+  "toSeconds": 94.003,
+  "wallSeconds": 15.014,
+  "allThreeScheduledDuring84To89": true,
+  "evaTailClearAtEnd": true,
+  "starshipVisibleAtEnd": true,
+  "errors": 0,
+  "scope": "segment playback and composition, not full MV or device acceptance"
+}

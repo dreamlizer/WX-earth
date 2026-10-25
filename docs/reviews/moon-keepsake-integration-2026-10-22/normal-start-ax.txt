@@ -1,0 +1,16 @@
+The following is a diff from the previous accessibility tree for Window: "wx-earth" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 280, 378-380, 382
++								650 文本 2026/10/22 01:41:00
++								651 文本 00:00
++						652 文本 登船准备中...
++											653 文本 4
++																		654 文本 5 hidden
++																				655 container
++																					656 链接 poetry-manager.js:268
++																						657 文本 poetry-manager.js:268
++																					658 text [Poetry] Play #3 @ 16.56s: "日月之行，若出其中。" (Duration: 9.00s)
++																				659 container
++																					660 链接 moon-voyage-assets.js:106
++																						661 文本 moon-voyage-assets.js:106
++																					662 text [Moon] Preloading assets...
+The focused UI element is 24 HTML 内容 Webview: pages/gl/index, URL: 127.0.0.1:48356/__pageframe__/pages/gl/index

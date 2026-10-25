@@ -1,0 +1,20 @@
+{
+  "originalBytes": 13065006,
+  "candidateBytes": 9093615,
+  "reductionPercent": 30.397161700499797,
+  "normalDirectionErrorsFromDecodedSource": {
+    "base-normal.jpg": {
+      "meanDegrees": 2.528110468730571,
+      "p95Degrees": 6.870862912550314,
+      "p99Degrees": 10.01725478650283,
+      "sizeUnchanged": true
+    },
+    "near-normal.jpg": {
+      "meanDegrees": 0.15965136979133115,
+      "p95Degrees": 0.8204456977073104,
+      "p99Degrees": 0.9963598083392037,
+      "sizeUnchanged": true
+    }
+  },
+  "notes": "CPU image statistics only. Visual and shader validation uses actual WeChat DevTools playback."
+}

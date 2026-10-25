@@ -1,0 +1,43 @@
+{
+  "newlyExcluded": [
+    {
+      "path": "libs/troika-three-text.min.js.txt",
+      "bytes": 31034,
+      "sha256": "447aeafd67d26d4d468e0f2a217959d4c8b7b597d512a75dce3a8d9e5604e7d1"
+    },
+    {
+      "path": "assets/models/paper-airplane.json",
+      "bytes": 7753,
+      "sha256": "50236b11f0e56964a0202c7cb62bba54361c9266f3c2c1b46a5d386c4f57c647"
+    },
+    {
+      "path": "assets/data/countries.geojson",
+      "bytes": 838720,
+      "sha256": "7fdc52c8a7017cd8cdefd842948814130bad2b86633624ed18ea68e9bd799164"
+    },
+    {
+      "path": "assets/data/country_data.json",
+      "bytes": 37364,
+      "sha256": "6952bfc2cc41a62153dad7d72f01091ad600717c76f7ba88293ce340c4a6b6f4"
+    },
+    {
+      "path": "assets/data/County_meta.json",
+      "bytes": 37409,
+      "sha256": "c894aecf80e51a82093d683498dd1eb31b332dfb6330baa2b0cca81412fe3a2e"
+    },
+    {
+      "path": "pages/gl/tz-lookup.js",
+      "bytes": 73309,
+      "sha256": "f5b51a99872c77e9ae6fddc725ae86ffd77f249ca763194ae0727be9ced1377d"
+    },
+    {
+      "path": "pages/gl/country_data.json",
+      "bytes": 37364,
+      "sha256": "6952bfc2cc41a62153dad7d72f01091ad600717c76f7ba88293ce340c4a6b6f4"
+    }
+  ],
+  "newlyExcludedBytes": 1062953,
+  "retainedSourceReferencesToExclusions": [],
+  "runtimeFilesModified": false,
+  "assetsReencoded": false
+}

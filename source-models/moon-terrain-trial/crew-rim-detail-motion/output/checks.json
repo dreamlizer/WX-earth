@@ -1,0 +1,23 @@
+{
+  "preservedFiles": 68,
+  "fullNativePlayback": true,
+  "playback": {
+    "completed": 1,
+    "frames": 4729,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 3.3333333249174757e-07,
+    "stalls": 0,
+    "muted": false,
+    "detailSwitches": [],
+    "maxFrameGapMs": 22.100000143051147,
+    "nativeEnded": true
+  },
+  "duration": 78.726667,
+  "frameAndControlsVisible": true,
+  "sameCameraMusicActorsLighting": true,
+  "endingTerrainMaxChannelDifferenceFromApprovedStill": 0,
+  "pageErrors": [],
+  "webglError": 0,
+  "scope": "independent desktop browser preview, no mini-program integration or compression"
+}

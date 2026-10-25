@@ -14,6 +14,13 @@
   "lazyCodeLoading": "requiredComponents",
   "subpackages": [
     {
+      "root": "moon-photo-assets",
+      "name": "moon-photo-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
       "root": "saturn-assets",
       "name": "saturn-assets",
       "pages": [
@@ -63,6 +70,13 @@
       ]
     },
     {
+      "root": "moon-color-assets",
+      "name": "moon-color-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
       "root": "chandra-assets",
       "name": "chandra-assets",
       "pages": [
@@ -100,6 +114,20 @@
     {
       "root": "scene-art-assets",
       "name": "scene-art-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "eva01-assets",
+      "name": "eva01-assets",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "root": "eva02-assets",
+      "name": "eva02-assets",
       "pages": [
         "index"
       ]

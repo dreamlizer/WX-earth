@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 1,
+  "meshes": 1,
+  "materials": 23,
+  "images": 0,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 49544,
+  "vertices_est": 73219,
+  "extensions_used": [
+    "KHR_draco_mesh_compression"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Atmosphere%20and%20Dust%20Environment%20Explorer%20%28LADEE%29/Lunar%20Atmosphere%20and%20Dust%20Environment%20Explorer%20%28LADEE%29.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Atmosphere%20and%20Dust%20Environment%20Explorer%20%28LADEE%29/Lunar%20Atmosphere%20and%20Dust%20Environment%20Explorer%20%28LADEE%29.glb",
+  "nasa_folder": "Lunar Atmosphere and Dust Environment Explorer (LADEE)",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-atmosphere-and-dust-environment-explorer-ladee-nasa/Lunar Atmosphere and Dust Environment Explorer (LADEE).glb",
+  "bytes": 235468,
+  "sha256": "92d5c7b782ab620ea0f7eb8e26d1905de43daeffdf6bcae8eaac878f123c59a0"
+}

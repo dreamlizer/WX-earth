@@ -1,0 +1,60 @@
+{
+  "start": 193,
+  "end": 271.7266666666667,
+  "holdFrom": 255,
+  "width": 540,
+  "height": 960,
+  "moonRadius": 650,
+  "blendEdge": 12,
+  "keyframes": [
+    193,
+    200,
+    205,
+    210,
+    216,
+    222,
+    226,
+    229,
+    238,
+    246,
+    255,
+    271.7266666666667
+  ],
+  "phases": [
+    [
+      193,
+      "远景接近"
+    ],
+    [
+      205,
+      "下降至月面上空"
+    ],
+    [
+      216,
+      "环形山展开"
+    ],
+    [
+      222,
+      "第二次看见地球"
+    ],
+    [
+      229,
+      "B 构图 · 月面回望"
+    ],
+    [
+      238,
+      "月面缓慢退出"
+    ],
+    [
+      255,
+      "远地球 · 留白至曲终"
+    ]
+  ],
+  "audio": {
+    "file": "./assets/moon-tail-193.wav",
+    "sourceStart": 193,
+    "sha1": "b6907476df6166a35745ebfeebab0d20f550fe4f",
+    "clock": "sourceStart + HTMLAudioElement.currentTime (exact decoded PCM tail)",
+    "sourceFile": "./assets/Zen-moon.mp3"
+  }
+}

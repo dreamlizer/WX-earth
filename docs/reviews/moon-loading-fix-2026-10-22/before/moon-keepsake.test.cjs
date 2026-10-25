@@ -1,0 +1,25 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const T=require('../miniprogram/node_modules/threejs-miniprogram').createScopedThreejs({width:390,height:720,createImage:()=>({})});
+const load=(name,names,extra={})=>{const s=fs.readFileSync('miniprogram/pages/gl/'+name+'.js','utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'');const box={module:{exports:{}},console,Promise,setTimeout,clearTimeout,...extra};vm.runInNewContext(s+'\nmodule.exports={'+names+'};',box);return box.module.exports;};
+const motion=load('moon-keepsake-motion','keepsakeAt,keepsakeGeometry,PHOTO_END,PHOTO_SHUTTER');
+const previewCode=fs.readFileSync('source-models/moon-terrain-trial/crew-keepsake-motion/keepsake-motion.js','utf8').replace(/^export /gm,'');const previewBox={};vm.runInNewContext(previewCode+'\nthis.at=keepsakeAt;',previewBox);
+for(const [width,height] of [[390,720],[390,844],[375,812],[540,960],[844,390]])for(let t=267.07;t<500;t+=.2){const state=motion.keepsakeAt(t),g=motion.keepsakeGeometry(state,width,height),c=Math.cos(g.angle),s=Math.sin(g.angle);for(const x of [-g.w/2,g.w/2])for(const y of [-g.h/2,g.h/2]){const px=width/2+g.x+x*c-y*s,py=height/2+g.y+x*s+y*c;assert.ok(px>=0&&px<=width&&py>=0&&py<=height,'photo clipped');}assert.equal(JSON.stringify(state),JSON.stringify(previewBox.at(t),(k,v)=>k==='time'?undefined:v),'native motion must match approved preview');}
+let now=10000;const DateMock={now:()=>now};const clock=load('moon-playback-clock','moonPlaybackTime',{Date:DateMock}).moonPlaybackTime;
+let timerNext=0;const timers=new Map(),trace=[],saved=[],toasts=[];
+const page={data:{},setData(d){Object.assign(this.data,d);}};
+const mgr={active:true,THREE:T,page,_terrain:{active:true},_speedMult:1,_accumTime:271.7,audioContext:{currentTime:0}};
+let target={name:'previous'},draws=0;const renderer={autoClear:false,capabilities:{maxTextureSize:2048},getSize:v=>v.set(390,720),getDrawingBufferSize:v=>v.set(1170,2160),getRenderTarget:()=>target,setRenderTarget:v=>{target=v;},compile(){},render(){draws++;}};
+const originalLoader=T.TextureLoader;T.TextureLoader=class{load(path,resolve){queueMicrotask(()=>resolve(new T.Texture({width:941,height:1672})));}};
+const runtime=load('moon-keepsake','MoonKeepsake,PHOTO_PATH',{...motion,moonPlaybackTime:clock,Date:DateMock,fixTexture(){},traceMoon:(m,event)=>trace.push(event),require:(name,resolve)=>resolve(),setTimeout:fn=>{timers.set(++timerNext,fn);return timerNext;},clearTimeout:id=>timers.delete(id),wx:{getImageInfo:o=>o.success({path:'/temporary/photo.jpg'}),saveImageToPhotosAlbum:o=>{saved.push(o.filePath);o.success({});},showToast:o=>toasts.push(o.title)}});
+(async()=>{
+ const photo=new runtime.MoonKeepsake(mgr,renderer);mgr._terrain.keepsake=photo;await photo.prepare();assert.equal(photo.status,'ready');
+ const old=target;assert.throws(()=>photo.render(270,()=>{throw Error('world failed');}),/world failed/);assert.equal(target,old);assert.equal(renderer.autoClear,false);
+ assert.equal(photo.render(266,()=>{}),false);photo.render(270,()=>{});assert.equal(draws,1);assert.equal(target,old);assert.equal(page.data.moonKeepsakeVisible,true);assert.equal(page.data.moonKeepsakeControls,false);assert.ok(photo.target.width<=2048&&photo.target.height<=2048);
+ photo.toggleControls();assert.equal(page.data.moonKeepsakeControls,true);[...timers.values()].forEach(fn=>fn());assert.equal(page.data.moonKeepsakeControls,false);
+ assert.equal(photo.holdAtEnd(),true);now+=5000;assert.ok(Math.abs(clock(mgr)-(motion.PHOTO_END+5))<1e-6);photo.setSuspended(true);const held=clock(mgr);now+=60000;assert.equal(clock(mgr),held);photo.setSuspended(false);now+=2000;assert.equal(clock(mgr),held+2);
+ await photo.save();assert.deepEqual(saved,['/temporary/photo.jpg']);assert.equal(page.data.moonKeepsakeSaving,false);assert.deepEqual(toasts,['照片已保存']);
+ photo.dispose();assert.equal(page.data.moonKeepsakeVisible,false);assert.equal(mgr._moonPhotoHold,null);assert.equal(photo.status,'disposed');assert.equal(photo.holdAtEnd(),false);
+ let late,loaded;const loaderStarted=new Promise(resolve=>{loaded=resolve;});T.TextureLoader=class{load(path,resolve){late=resolve;loaded();}};const stale=new runtime.MoonKeepsake(mgr,renderer),pending=stale.prepare();await loaderStarted;stale.dispose();let disposed=0;const texture=new T.Texture();texture.dispose=()=>disposed++;late(texture);await pending;assert.equal(disposed,1);assert.equal(stale.status,'disposed');
+ T.TextureLoader=originalLoader;
+ console.log('Moon keepsake: approved motion, portrait fit, render-state recovery, ended hold/background resume, hidden controls, album API and cancelled loads PASS');
+})().catch(e=>{console.error(e);process.exitCode=1;});

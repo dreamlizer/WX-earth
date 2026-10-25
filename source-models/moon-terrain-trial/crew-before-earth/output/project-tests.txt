@@ -1,0 +1,47 @@
+2026-10-21 local verification
+Command: for f in tools/*.test.cjs; do node "$f" || exit 1; done
+Exit code: 0
+41 test files passed.
+Expected simulated failure messages and Node MODULE_TYPELESS_PACKAGE_JSON warnings appeared; no failing test process.
+
+tools/ambient-encounter.test.cjs
+tools/app-engine-lifecycle.test.cjs
+tools/city-markers-policy.test.cjs
+tools/console-noise-policy.test.cjs
+tools/country-info-manager-timezone.test.cjs
+tools/country-selection-init-policy.test.cjs
+tools/flag-sprite-policy.test.cjs
+tools/go-west-chorus.test.cjs
+tools/go-west-encounter.test.cjs
+tools/go-west.test.cjs
+tools/highlight-manager-policy.test.cjs
+tools/labels-layout-policy.test.cjs
+tools/labels-workset-policy.test.cjs
+tools/moon-atmosphere.test.cjs
+tools/moon-encounters.test.cjs
+tools/moon-gundam.test.cjs
+tools/moon-light-continuity.test.cjs
+tools/moon-original-earth.test.cjs
+tools/moon-paper-plane.test.cjs
+tools/moon-robot.test.cjs
+tools/moon-voyage-lifecycle.test.cjs
+tools/page-lifecycle.test.cjs
+tools/perf-monitor-policy.test.cjs
+tools/planet-visual.test.cjs
+tools/poetry-cache.test.cjs
+tools/poetry-overlap.test.cjs
+tools/poetry-timing.test.cjs
+tools/render-loop.test.cjs
+tools/runtime-diagnostics.test.cjs
+tools/saturn-preview.test.cjs
+tools/scene-updater-policy.test.cjs
+tools/texture-health.test.cjs
+tools/texture-source.test.cjs
+tools/timezone-manager-policy.test.cjs
+tools/update-country-meta-imf-weo.test.cjs
+tools/update-country-meta-worldbank.test.cjs
+tools/zen-darkness-visual.test.cjs
+tools/zen-english-tracks.test.cjs
+tools/zen-lifecycle.test.cjs
+tools/zen-smooth-motion.test.cjs
+tools/zen-song-presentation.test.cjs

@@ -1,0 +1,40 @@
+--- before/miniprogram/pages/gl/moon-keepsake-motion.js
++++ miniprogram/pages/gl/moon-keepsake-motion.js
+@@ -1,11 +1,11 @@
+-// Approved crew-keepsake-motion timing. Paper stays opaque under the shutter.
++// Approved motion, shifted 5s earlier. Original song end stays unchanged.
+ export const PHOTO_END = 271.7266666666667;
+-export const PHOTO_SHUTTER = 266.94;
++export const PHOTO_SHUTTER = 261.94;
+ const smooth=x=>{const u=Math.max(0,Math.min(1,x));return u*u*(3-2*u);};
+ export function keepsakeAt(t){
+-  const reveal=smooth((t-267.07)/.42),grow=smooth((t-267.07)/8.5),linger=Math.max(0,t-275.57),drift=smooth(linger/2);
+-  const shutter=t<PHOTO_SHUTTER?0:t<267.05?smooth((t-PHOTO_SHUTTER)/.11):1-smooth((t-267.05)/.27);
+-  return {opacity:t>=267.07?1:0,shutter,backgroundDim:.46*smooth((t-PHOTO_SHUTTER)/1.2),blur:1.25*reveal,
++  const reveal=smooth((t-262.07)/.42),grow=smooth((t-262.07)/8.5),linger=Math.max(0,t-270.57),drift=smooth(linger/2);
++  const shutter=t<PHOTO_SHUTTER?0:t<262.05?smooth((t-PHOTO_SHUTTER)/.11):1-smooth((t-262.05)/.27);
++  return {opacity:t>=262.07?1:0,shutter,backgroundDim:.46*smooth((t-PHOTO_SHUTTER)/1.2),blur:1.25*reveal,
+     heightRatio:.61+.235*grow,angleDegrees:-2.4+3.5*grow+.32*Math.sin(linger*.30)*drift,
+     offsetX:1.4*Math.sin(linger*.24)*drift,offsetY:9*(1-grow)+1.8*Math.sin(linger*.33)*drift};
+ }
+--- before/tools/moon-keepsake.test.cjs
++++ tools/moon-keepsake.test.cjs
+@@ -4,7 +4,8 @@
+ const gpu=load('moon-gpu-warmup','withMoonRenderTarget,warmMoonTextures');
+ const motion=load('moon-keepsake-motion','keepsakeAt,keepsakeGeometry,PHOTO_END,PHOTO_SHUTTER');
+ const previewCode=fs.readFileSync('source-models/moon-terrain-trial/crew-keepsake-motion/keepsake-motion.js','utf8').replace(/^export /gm,'');const previewBox={};vm.runInNewContext(previewCode+'\nthis.at=keepsakeAt;',previewBox);
+-for(const [width,height] of [[390,720],[390,844],[375,812],[540,960],[844,390]])for(let t=267.07;t<500;t+=.2){const state=motion.keepsakeAt(t),g=motion.keepsakeGeometry(state,width,height),c=Math.cos(g.angle),s=Math.sin(g.angle);for(const x of [-g.w/2,g.w/2])for(const y of [-g.h/2,g.h/2]){const px=width/2+g.x+x*c-y*s,py=height/2+g.y+x*s+y*c;assert.ok(px>=0&&px<=width&&py>=0&&py<=height,'photo clipped');}assert.equal(JSON.stringify(state),JSON.stringify(previewBox.at(t),(k,v)=>k==='time'?undefined:v),'native motion must match approved preview');}
++for(const [width,height] of [[390,720],[390,844],[375,812],[540,960],[844,390]])for(let t=262.07;t<500;t+=.2){const state=motion.keepsakeAt(t),g=motion.keepsakeGeometry(state,width,height),c=Math.cos(g.angle),s=Math.sin(g.angle);for(const x of [-g.w/2,g.w/2])for(const y of [-g.h/2,g.h/2]){const px=width/2+g.x+x*c-y*s,py=height/2+g.y+x*s+y*c;assert.ok(px>=0&&px<=width&&py>=0&&py<=height,'photo clipped');}const original=previewBox.at(t+5);for(const key of Object.keys(state))assert.ok(Math.abs(state[key]-original[key])<1e-10,'approved motion shifts exactly 5 seconds: '+key);}
++assert.equal(motion.PHOTO_SHUTTER,261.94);assert.equal(motion.keepsakeAt(262.069).opacity,0);assert.equal(motion.keepsakeAt(262.07).opacity,1);assert.equal(motion.PHOTO_END,271.7266666666667,'original song ending is unchanged');
+ let now=10000;const DateMock={now:()=>now};const clock=load('moon-playback-clock','moonPlaybackTime',{Date:DateMock}).moonPlaybackTime;
+ let timerNext=0;const timers=new Map(),trace=[],saved=[],toasts=[];
+ const page={data:{},setData(d){Object.assign(this.data,d);}};
+@@ -15,7 +16,7 @@
+ (async()=>{
+  const photo=new runtime.MoonKeepsake(mgr,renderer);mgr._terrain.keepsake=photo;await photo.prepare();assert.equal(photo.status,'ready');assert.equal(draws,1,'prepare samples the photo in a hidden target');assert.equal(photo.shown,false);assert.equal(page.data.moonKeepsakeVisible,undefined,'warmup cannot show ending UI');
+  const old=target;assert.throws(()=>photo.render(270,()=>{throw Error('world failed');}),/world failed/);assert.equal(target,old);assert.equal(renderer.autoClear,false);
+- assert.equal(photo.render(266,()=>{}),false);photo.render(270,()=>{});assert.equal(draws,2);assert.equal(target,old);assert.equal(page.data.moonKeepsakeVisible,true);assert.equal(page.data.moonKeepsakeControls,false);assert.ok(photo.target.width<=2048&&photo.target.height<=2048);
++ assert.equal(photo.render(261.939,()=>{}),false);photo.render(262.069,()=>{});assert.equal(photo.shown,false);photo.render(262.07,()=>{});assert.equal(draws,3);assert.equal(target,old);assert.equal(page.data.moonKeepsakeVisible,true);assert.equal(page.data.moonKeepsakeControls,false);assert.ok(photo.target.width<=2048&&photo.target.height<=2048);
+  photo.toggleControls();assert.equal(page.data.moonKeepsakeControls,true);[...timers.values()].forEach(fn=>fn());assert.equal(page.data.moonKeepsakeControls,false);
+  assert.equal(photo.holdAtEnd(),true);now+=5000;assert.ok(Math.abs(clock(mgr)-(motion.PHOTO_END+5))<1e-6);photo.setSuspended(true);const held=clock(mgr);now+=60000;assert.equal(clock(mgr),held);photo.setSuspended(false);now+=2000;assert.equal(clock(mgr),held+2);
+  await photo.save();assert.deepEqual(saved,['/temporary/photo.jpg']);assert.equal(page.data.moonKeepsakeSaving,false);assert.deepEqual(toasts,['照片已保存']);

@@ -26,6 +26,7 @@ import { getInitialData } from './page-state.js';
 import { getSystemInfo } from './sys-info.js';
 import { enterSaturnPreview, exitSaturnPreview, retrySaturnPreview, setSaturnPreviewView, setSaturnPreviewLook, startSaturnVoyage, toggleSaturnVoyagePause, stopSaturnVoyage, resetSaturnVoyageGaze } from './main.js';
 import { SATURN_LOOKS, DEFAULT_SATURN_LOOK } from './saturn-preview-looks.js';
+import { toggleMoonKeepsakeControls } from './main.js';
 
 Page({
   data: {
@@ -34,6 +35,8 @@ Page({
     moonToastVisible: false,
     moonToastText: '',
     moonToastOpacity: 0,
+    moonKeepsakeVisible: false,
+    moonKeepsakeControls: false,
     saturnPreviewActive: false,
     saturnPreviewLoading: false,
     saturnPreviewError: '',
@@ -107,6 +110,9 @@ Page({
     try { if (this.__isMoonLocked()) return; } catch(_){ }
     enterMoonVoyage();
   },
+
+  onMoonKeepsakeTap() { toggleMoonKeepsakeControls(); },
+  onMoonKeepsakeReturn() { exitMoonVoyage(); },
 
   onEnterSaturnPreview() {
     if (this.data.zenMode || this.__isMoonLocked() || this.data.saturnPreviewActive) return;

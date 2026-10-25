@@ -1,4 +1,5 @@
 import { VoyageGundam } from './moon-voyage-gundam.js';
+import { VoyageEvaPursuit } from './moon-voyage-eva.js';
 import { createStarFlow, updateStarFlow, disposeStarFlow } from './moon-voyage-star-flow.js';
 import { VoyageRobot } from './moon-voyage-robot.js';
 import { VoyageStarship } from './moon-voyage-starship.js';
@@ -67,28 +68,48 @@ export function buildVoyager(T, buffer, textures) {
 }
 
 export class VoyageEncounters {
-  setContext({THREE,scene,camera,readBuffer,readRobotBuffer,readStarshipBuffer,readGundamBuffer}) {this.dispose();this.THREE=THREE;this.scene=scene;this.camera=camera;this.readBuffer=readBuffer;this.readGundamBuffer=readGundamBuffer;this.readRobotBuffer=readRobotBuffer;this.readStarshipBuffer=readStarshipBuffer;this.robot=new VoyageRobot({THREE,scene,readBuffer:readRobotBuffer});this.starship=new VoyageStarship({THREE,scene,readBuffer:readStarshipBuffer});}
+  setContext({THREE,scene,camera,readBuffer,readRobotBuffer,readStarshipBuffer,readGundamBuffer,readEvaBuffer}) {this.dispose();this.THREE=THREE;this.scene=scene;this.camera=camera;this.readBuffer=readBuffer;this.readGundamBuffer=readGundamBuffer;this.readEvaBuffer=readEvaBuffer;this.readRobotBuffer=readRobotBuffer;this.readStarshipBuffer=readStarshipBuffer;this.robot=new VoyageRobot({THREE,scene,readBuffer:readRobotBuffer});this.starship=new VoyageStarship({THREE,scene,readBuffer:readStarshipBuffer});}
   preload() {
     if(!this.gundam)this.gundam=new VoyageGundam({THREE:this.THREE,scene:this.scene,readBuffer:this.readGundamBuffer});
     this.gundam.preload();
+    if(!this.eva)this.eva=new VoyageEvaPursuit({THREE:this.THREE,scene:this.scene,readEvaBuffer:this.readEvaBuffer});
+    this.eva.preload();
     if(!this.robot)this.robot=new VoyageRobot({THREE:this.THREE,scene:this.scene,readBuffer:this.readRobotBuffer});
     if(!this.starship)this.starship=new VoyageStarship({THREE:this.THREE,scene:this.scene,readBuffer:this.readStarshipBuffer});
     if(this.robot)this.robot.preload();if(this.starship)this.starship.preload();
     if(this.model)return Promise.resolve();if(this.pending)return this.pending;
+    if(this.attempted)return Promise.resolve();this.attempted=true;
     const generation=this.generation||0,T=this.THREE,textures=[];
+    const current=()=>generation===(this.generation||0);
+    let timer,cancel;
+    const deadline=new Promise((resolve,reject)=>{
+      cancel=(timedOut=false)=>{clearTimeout(timer);if(current())this.generation=generation+1;const error=Error(timedOut?'Voyager load timeout (30s)':'Voyager load cancelled');error.cancelled=!timedOut;reject(error);};
+      timer=setTimeout(()=>cancel(true),30000);this._cancelVoyagerLoad=cancel;
+    });
     const read=this.readBuffer||(()=>new Promise((resolve,reject)=>wx.getFileSystemManager().readFile({filePath:ROOT+'geometry.bin',success:r=>resolve(r.data),fail:reject})));
     const ready=this.readBuffer?Promise.resolve():new Promise((resolve,reject)=>require('../../voyager-assets/ready.js',resolve,reject));
-    this.pending=ready.then(()=>Promise.all([read(),...Array.from({length:4},(_,i)=>new Promise((resolve,reject)=>new T.TextureLoader().load('/'+ROOT+'texture-'+i+'.png',tex=>{tex.flipY=false;tex.encoding=T.sRGBEncoding;textures.push(tex);resolve(tex);},undefined,reject)))])).then(([buffer,...maps])=>{
+    const work=ready.then(()=>{if(!current())throw Error('Voyager load cancelled');return Promise.all([read(),...Array.from({length:4},(_,i)=>new Promise((resolve,reject)=>new T.TextureLoader().load('/'+ROOT+'texture-'+i+'.png',tex=>{if(!current()){tex.dispose();reject(Error('Voyager load cancelled'));return;}tex.flipY=false;tex.encoding=T.sRGBEncoding;textures.push(tex);resolve(tex);},undefined,reject)))]);}).then(([buffer,...maps])=>{
       if(generation!==(this.generation||0)){maps.forEach(t=>t.dispose());return;}
       Object.assign(this,buildVoyager(T,buffer,maps));this.textures=maps;this.model.visible=false;this.scene.add(this.model);
       this.flow=createStarFlow(T);this.scene.add(this.flow.group);
       const pixels=new Uint8Array(64*64*4);for(let y=0;y<64;y++)for(let x=0;x<64;x++){const dx=Math.abs(x-31.5)/31.5,dy=Math.abs(y-31.5)/31.5,v=Math.exp(-Math.min(dx*dx*180+dy*dy*5,dy*dy*180+dx*dx*5));const k=(y*64+x)*4;pixels[k]=pixels[k+1]=pixels[k+2]=255;pixels[k+3]=255*v;}
       const map=new T.DataTexture(pixels,64,64,T.RGBAFormat);map.needsUpdate=true;this.glint=new T.Sprite(new T.SpriteMaterial({map,transparent:true,depthWrite:false,depthTest:false}));this.glint.renderOrder=20;this.glint.visible=false;this.scene.add(this.glint);
-    }).catch(e=>{textures.forEach(t=>t.dispose());console.warn('[Moon] Voyager unavailable',e);}).then(()=>{if(generation===(this.generation||0))this.pending=null;});return this.pending;
+    });
+    const pending=Promise.race([work,deadline]).catch(e=>{if(current())this.generation=generation+1;textures.forEach(t=>t.dispose());if(!e.cancelled)console.warn('[Moon] Voyager unavailable; keeping voyage running',e);}).then(()=>{clearTimeout(timer);if(this._cancelVoyagerLoad===cancel)this._cancelVoyagerLoad=null;if(this.pending===pending)this.pending=null;});
+    this.pending=pending;return pending;
   }
   update({t,node1Time,node2Time,node3Time,moonMesh,globeGroup,dtSec=0}) {
-    if(!this.model){if(!this.pending&&!this.attempted){this.attempted=true;this.preload();}return;}
-    const T=this.THREE,cam=this.camera;this.model.visible=false;this.model.scale.setScalar(this.baseScale);this.glint.visible=false;if(this.robot)this.robot.reset();if(this.starship)this.starship.reset();
+    const T=this.THREE,cam=this.camera;
+    cam.updateMatrixWorld(true);
+    // The chase does not depend on Voyager's fallback asset. A missing leader
+    // suppresses both pursuers rather than showing an unexplained half chase.
+    if(this.gundam){shadeCraft(T,this.gundam.materials,cam);this.gundam.update(t,cam);}
+    if(this.eva){
+      if(this.gundam&&this.gundam.model){this.eva.actors.forEach(a=>shadeCraft(T,a.materials,cam));this.eva.update(t,cam);}
+      else this.eva.reset();
+    }
+    if(!this.model){if(!this.pending&&!this.attempted)this.preload();return;}
+    this.model.visible=false;this.model.scale.setScalar(this.baseScale);this.glint.visible=false;if(this.robot)this.robot.reset();if(this.starship)this.starship.reset();
     const e1=t-(node1Time-28),e2=t-(node1Time+9);
     // Shorten the robot encounter by 2.5 seconds; its action clock is independent
     // of star travel and the original Moon / starship timing.
@@ -97,7 +118,6 @@ export class VoyageEncounters {
     let x=0,y=0,z=0,alpha=1,rot=[.28,.4,.45],active=false,second=false;
     cam.updateMatrixWorld(true);
     shadeCraft(T,this.materials,cam);if(this.robot)shadeCraft(T,this.robot.materials,cam);if(this.starship)shadeCraft(T,this.starship.materials,cam);
-    if(this.gundam){shadeCraft(T,this.gundam.materials,cam);this.gundam.update(t,cam);}
     if(e1>=0&&e1<32&&!this.earthRay&&globeGroup){
       const source=cam.worldToLocal(globeGroup.getWorldPosition(new T.Vector3()));
       this.earthRay={x:source.x/Math.max(.1,-source.z),y:source.y/Math.max(.1,-source.z)};
@@ -179,6 +199,6 @@ export class VoyageEncounters {
       this.flow.group.quaternion.copy(cam.quaternion);
     }
   }
-  reset(){if(this.gundam)this.gundam.reset();if(this.starship)this.starship.reset();if(this.robot)this.robot.reset();this.landing=null;this.shipEntry=null;this.earthRay=null;this.moonStart=null;this.travel=0;if(this.model)this.model.visible=false;if(this.flow)this.flow.group.visible=false;if(this.glint)this.glint.visible=false;}
-  dispose(){if(this.gundam){this.gundam.dispose();this.gundam=null;}if(this.starship){this.starship.dispose();this.starship=null;}if(this.robot){this.robot.dispose();this.robot=null;}this.generation=(this.generation||0)+1;this.pending=null;this.attempted=false;this.reset();disposeStarFlow(this.flow);this.flow=null;if(this.model){this.model.traverse(o=>{if(o.geometry)o.geometry.dispose();});this.materials.forEach(m=>m.dispose());this.textures.forEach(t=>t.dispose());}for(const key of ['model','stars','glint']){const o=this[key];if(o){if(key==='key')this.scene.remove(o.target);if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}if(o.parent)o.parent.remove(o);this[key]=null;}}}
+  reset(){if(this.eva)this.eva.reset();if(this.gundam)this.gundam.reset();if(this.starship)this.starship.reset();if(this.robot)this.robot.reset();this.landing=null;this.shipEntry=null;this.earthRay=null;this.moonStart=null;this.travel=0;if(this.model)this.model.visible=false;if(this.flow)this.flow.group.visible=false;if(this.glint)this.glint.visible=false;}
+  dispose(){this._cancelVoyagerLoad?.();this._cancelVoyagerLoad=null;if(this.eva){this.eva.dispose();this.eva=null;}if(this.gundam){this.gundam.dispose();this.gundam=null;}if(this.starship){this.starship.dispose();this.starship=null;}if(this.robot){this.robot.dispose();this.robot=null;}this.generation=(this.generation||0)+1;this.pending=null;this.attempted=false;this.reset();disposeStarFlow(this.flow);this.flow=null;if(this.model){this.model.traverse(o=>{if(o.geometry)o.geometry.dispose();});this.materials.forEach(m=>m.dispose());this.textures.forEach(t=>t.dispose());}for(const key of ['model','stars','glint']){const o=this[key];if(o){if(key==='key')this.scene.remove(o.target);if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}if(o.parent)o.parent.remove(o);this[key]=null;}}}
 }

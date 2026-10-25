@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v3.6.27",
+  "extras": null,
+  "nodes": 68,
+  "meshes": 51,
+  "materials": 15,
+  "images": 39,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 92209,
+  "vertices_est": 116896,
+  "extensions_used": [
+    "KHR_materials_specular",
+    "KHR_materials_ior"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Gateway/Gateway%20Core.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Gateway/Gateway%20Core.glb",
+  "nasa_folder": "Gateway",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/gateway-nasa/Gateway Core.glb",
+  "bytes": 66214552,
+  "sha256": "2817a541047a30554dc8ecf489f82235c034ad034cfa65d75546330b1dae2e05"
+}

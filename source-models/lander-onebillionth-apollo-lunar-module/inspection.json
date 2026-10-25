@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "generator": "Sketchfab-12.65.0",
+  "extras": {
+    "author": "OneBillionth LLC (https://sketchfab.com/onebillionth)",
+    "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+    "source": "https://sketchfab.com/3d-models/apollo-lunar-module-c495d75f2a89496a89d92e92e42a4694",
+    "title": "Apollo Lunar Module"
+  },
+  "nodes": 16,
+  "meshes": 12,
+  "materials": 12,
+  "images": 2,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 99540,
+  "vertices_est": 60669,
+  "extensions_used": [],
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-048/c495d75f2a89496a89d92e92e42a4694.glb",
+  "final_url": "https://us.aws.cdn.hf.co/xet-bridge-us/63977bb96bdef8095268ded0/ae045a569aa969ddda2f1394a5abefffd2658da4e0992e607ec4e9640cead474?response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c495d75f2a89496a89d92e92e42a4694.glb%3B+filename%3D%22c495d75f2a89496a89d92e92e42a4694.glb%22%3B&X-Xet-Cas-Uid=public&response-content-type=model%2Fgltf-binary&user_id=public&xip=dUMiaxerFRM&Expires=1792521766&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly91cy5hd3MuY2RuLmhmLmNvL3hldC1icmlkZ2UtdXMvNjM5NzdiYjk2YmRlZjgwOTUyNjhkZWQwL2FlMDQ1YTU2OWFhOTY5ZGRkYTJmMTM5NGE1YWJlZmZmZDI2NThkYTRlMDk5MmU2MDdlYzRlOTY0MGNlYWQ0NzRcXD9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWlubGluZSUzQitmaWxlbmFtZSUyQSUzRFVURi04JTI3JTI3YzQ5NWQ3NWYyYTg5NDk2YTg5ZDkyZTkyZTQyYTQ2OTQuZ2xiJTNCK2ZpbGVuYW1lJTNEJTIyYzQ5NWQ3NWYyYTg5NDk2YTg5ZDkyZTkyZTQyYTQ2OTQuZ2xiJTIyJTNCJlgtWGV0LUNhcy1VaWQ9cHVibGljJnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1tb2RlbCUyRmdsdGYtYmluYXJ5JnVzZXJfaWQ9cHVibGljJnhpcD1kVU1pYXhlckZSTSIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiRXBvY2hUaW1lIjoxNzkyNTIxNzY2fX19XX0_&Signature=MEYCIQD50uHmJuyGWtEYOWBLesLZ9i7QRlnDj%7EWXbvu8gzlSkQIhAN9cx-DVT5DzdS6DEHYCb94jVQKtsojx8wn460ukePzA&Key-Pair-Id=01KXEF4KZ1B6FV465MAWR4M21F&Hash-Algorithm=SHA256",
+  "uid": "c495d75f2a89496a89d92e92e42a4694",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lander-onebillionth-apollo-lunar-module/model.glb",
+  "bytes": 3179104,
+  "sha256": "890ccbe4aac0d7bf79f921e533c339b74864a86216b998a3d6816b4cec52c080"
+}

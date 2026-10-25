@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "generator": "Sketchfab-12.64.0",
+  "extras": {
+    "author": "emin31284 (https://sketchfab.com/emin31284)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/mars-polar-lander-8c87cc5b86864b5a8c986d603fda1cef",
+    "title": "Mars Polar Lander"
+  },
+  "nodes": 173,
+  "meshes": 96,
+  "materials": 42,
+  "images": 17,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 194960,
+  "vertices_est": 173449,
+  "extensions_used": [],
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-158/8c87cc5b86864b5a8c986d603fda1cef.glb",
+  "final_url": "https://us.aws.cdn.hf.co/xet-bridge-us/63977bb96bdef8095268ded0/31df3cb34098c5aac9e5c2597dd80a674a5ca1e750598a8973b8fb5d689a898a?X-Xet-Cas-Uid=public&xip=dUMiaxerFRM&response-content-type=model%2Fgltf-binary&response-content-disposition=inline%3B+filename*%3DUTF-8%27%278c87cc5b86864b5a8c986d603fda1cef.glb%3B+filename%3D%228c87cc5b86864b5a8c986d603fda1cef.glb%22%3B&user_id=public&Expires=1792521753&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly91cy5hd3MuY2RuLmhmLmNvL3hldC1icmlkZ2UtdXMvNjM5NzdiYjk2YmRlZjgwOTUyNjhkZWQwLzMxZGYzY2IzNDA5OGM1YWFjOWU1YzI1OTdkZDgwYTY3NGE1Y2ExZTc1MDU5OGE4OTczYjhmYjVkNjg5YTg5OGFcXD9YLVhldC1DYXMtVWlkPXB1YmxpYyZ4aXA9ZFVNaWF4ZXJGUk0mcmVzcG9uc2UtY29udGVudC10eXBlPW1vZGVsJTJGZ2x0Zi1iaW5hcnkmcmVzcG9uc2UtY29udGVudC1kaXNwb3NpdGlvbj1pbmxpbmUlM0IrZmlsZW5hbWUlMkElM0RVVEYtOCUyNyUyNzhjODdjYzViODY4NjRiNWE4Yzk4NmQ2MDNmZGExY2VmLmdsYiUzQitmaWxlbmFtZSUzRCUyMjhjODdjYzViODY4NjRiNWE4Yzk4NmQ2MDNmZGExY2VmLmdsYiUyMiUzQiZ1c2VyX2lkPXB1YmxpYyIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiRXBvY2hUaW1lIjoxNzkyNTIxNzUzfX19XX0_&Signature=MEUCID0j6yldof4qMSMiDdIL4OlCj0NBNgyBZDWceniSZA3lAiEAjC3lzhfd8wcKc0i1WcpGl8csYIlt6Lwz7K2NB1HgTkw_&Key-Pair-Id=01KXEF4KZ1B6FV465MAWR4M21F&Hash-Algorithm=SHA256",
+  "uid": "8c87cc5b86864b5a8c986d603fda1cef",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lander-emin31284-mars-polar-lander/model.glb",
+  "bytes": 11393172,
+  "sha256": "91ae247272e36defb1d99b95acc00fcd2f40ac521755238ada185a312f55aaf2"
+}

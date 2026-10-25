@@ -1,7 +1,7 @@
 
 import { APP_CFG } from './config.js';
 import { createMoon } from './moon-voyage-scene-setup.js';
-import { ensureMoonVisualPackage } from './planet-visual-loader.js';
+import { ensureMoonVisualPackage, ensureMoonColorPackage } from './planet-visual-loader.js';
 
 const mergeCompanionRobotCfg = (baseCfg, tuneCfg) => {
   const b = baseCfg || {};
@@ -114,10 +114,16 @@ export const preloadAssets = async (mgrState, ASSETS) => {
   const companionTune = (APP_CFG?.moonVoyage?.timeline?.companionRobot) || {};
   const companionCfg = mergeCompanionRobotCfg(companionBase, companionTune);
   const lifecycleToken = mgrState._lifecycleToken;
+  // Optional encounters own their cancellation/fallback. They must not hold the
+  // launch gate when the Moon and original music are already available.
+  Promise.resolve().then(() => {
+    if (mgrState._isLifecycleCurrent && !mgrState._isLifecycleCurrent(lifecycleToken)) return;
+    return mgrState._companionFx?.preload?.(companionCfg);
+  }).catch(() => null);
   const preloadPromise = Promise.all([
-    ensureMoonVisualPackage().then(() => '/moon-look-assets/moon-color.jpg'),
-    downloadFile(ASSETS.AUDIO, mgrState, lifecycleToken),
-    Promise.resolve().then(() => mgrState._companionFx?.preload?.(companionCfg)).catch(() => null)
+    Promise.all([ensureMoonVisualPackage(), ensureMoonColorPackage()])
+      .then(() => '/moon-color-assets/2k_moon.jpg'),
+    downloadFile(ASSETS.AUDIO, mgrState, lifecycleToken)
   ]).then(([texPath, audioPath]) => {
     if (typeof mgrState._isLifecycleCurrent === 'function' &&
         !mgrState._isLifecycleCurrent(lifecycleToken)) return false;

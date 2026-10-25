@@ -1,0 +1,483 @@
+Window: "wx-earth", App: 微信开发者工具.
+0 标准窗口 wx-earth, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&projectname=wx-earth&projectid=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&theme=dark&skeletonPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F45d96a16732744f89acf418bfabca55a%2Fpageskeleton.html&appid=wx6f41ba1a7d7bc51e&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=34598&userDataPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608070&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608070
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 普通编译
+					16 container
+						17 container
+							18 text 1 : 29
+						19 container
+							20 标题 行星物语, Value: 3
+								21 文本 行星物语
+							22 链接
+							23 链接
+						24 HTML 内容 Webview: pages/gl/index, URL: 127.0.0.1:48356/__pageframe__/pages/gl/index
+							25 container
+								26 文本 中
+								27 文本 2026/10/22 02:29:39
+								28 文本 ⚙
+								29 container 禅定
+									30 文本 禅
+								31 container
+									32 文本 定
+								33 文本 04:25
+								34 文本 同望地球
+								35 图像
+								36 container
+									37 文本 绘图区域
+									38 图像
+								39 文本 登月启动
+						40 HTML 内容 小程序逻辑层, URL: 127.0.0.1:48356/appservice/s0/_sessionId/simulator-app-session-s0/mainframe?load
+							41 container
+								42 HTML 内容 小程序逻辑层, URL: 127.0.0.1:48356/appservice/instanceframe?s=1792603661704&autoload#id_1
+								43 HTML 内容 127.0.0.1:48356/appservice/appContext?contextName=app&id=ifr-1_2#id_1
+								44 HTML 内容 127.0.0.1:48356/appservice/app_xrframe_renderContext?contextName=app_xrframe_render&id=ifr-1_3&empty=true#id_1
+								45 HTML 内容 小程序逻辑层, URL: 127.0.0.1:48356/appservice/instanceframe?s=1792603661704#id_2
+								46 HTML 内容 127.0.0.1:48356/appservice/app_sub_debugContext?contextName=app_sub_debug&id=ifr-1_4&empty=true#id_1
+						47 container
+							48 链接
+							49 链接
+						50 container
+							51 文本 速度：1x
+					52 container
+						53 文本 iPhone 12/13 (Pro) 75% 16
+					54 container
+						55 文本 页面路径
+					56 文本 pages/gl/index
+					57 链接 复制
+				58 container
+					59 container
+						60 container
+							61 文本 wx-earth
+							62 工具栏
+								63 按钮 Toggle Primary Side Bar (⌘K ⌘B)
+									64 文本 
+								65 按钮 切换面板 (⌘J)
+									66 文本 
+								67 按钮 Toggle Secondary Side Bar (⌥⌘B)
+									68 文本 
+						69 container
+							70 container
+								71 标签页组 活动视图切换器
+									72 标签 (selected) Description: 资源管理器 (⌘K ⇧⌘E), Value: 1
+										73 container 资源管理器 (⌘K ⇧⌘E)
+											74 文本 
+									75 标签 (settable, integer) Search (⇧⌘F), Value: 0
+										76 container Search (⇧⌘F)
+											77 文本 
+									78 标签 (settable, integer) Description: 源代码管理 (⌃⇧G) - 1423 个挂起的更改, Value: 0
+										79 文本 
+									80 标签 (settable, integer) 扩展 (⇧⌘X), Value: 0
+										81 container 扩展 (⇧⌘X)
+											82 文本 
+									83 弹出式按钮 其他视图
+										84 文本 
+								85 container
+									86 标题 资源管理器, Help: 资源管理器 (⌘K ⇧⌘E), Value: 2
+										87 文本 资源管理器
+									88 内容列表 资源管理器操作
+										89 弹出式按钮 Views and More Actions...
+									90 container
+										91 container
+											92 按钮 文件资源管理器部分
+												93 文本 
+												94 标题 Description: 文件资源管理器部分, Help: wx-earth, Value: 3
+													95 文本 WX-EARTH
+											96 外框 树
+												97 container
+													98 row .vscode
+														99 container
+															100 文本 
+															101 文本 .vscode
+													102 row archives
+														103 container
+															104 文本 
+															105 文本 archives
+													106 row cloudfunctions
+														107 container
+															108 文本 
+															109 文本 cloudfunctions | 当前环境: cloud1
+													110 row citiesFetch
+														111 container
+															112 文本 
+															113 文本 citiesFetch
+													114 row citiesImport
+														115 container
+															116 文本 
+															117 文本 citiesImport
+													118 row countryMeta
+														119 container
+															120 文本 
+															121 文本 countryMeta
+													122 row poetryCalib
+														123 container
+															124 文本 
+															125 文本 poetryCalib
+													126 row poetrySets
+														127 container
+															128 文本 
+															129 文本 poetrySets
+													130 row poetrySetsV2
+														131 container
+															132 文本 
+															133 文本 poetrySetsV2
+													134 row quickstartFunctions
+														135 container
+															136 文本 
+															137 文本 quickstartFunctions
+													138 row docs
+														139 container
+															140 文本 
+															141 container ~/Documents/Codex项目/wx-earth/docs • 包含强调项
+																142 文本 docs
+																143 文本 
+													144 row experiments
+														145 container
+															146 文本 
+															147 container ~/Documents/Codex项目/wx-earth/experiments • 包含强调项
+																148 文本 experiments
+																149 文本 
+													150 row Flying
+														151 container
+															152 文本 
+															153 文本 Flying
+													154 row miniprogram
+														155 container
+															156 文本 
+															157 container ~/Documents/Codex项目/wx-earth/miniprogram • 包含强调项
+																158 文本 miniprogram
+																159 文本 
+													160 row node_modules
+														161 container
+															162 文本 
+															163 文本 node_modules
+													164 row solar-system-card-complete
+														165 container
+															166 文本 
+															167 文本 solar-system-card-complete
+													168 row source-lyrics
+														169 container
+															170 文本 
+															171 container ~/Documents/Codex项目/wx-earth/source-lyrics • 包含强调项
+																172 文本 source-lyrics
+																173 文本 
+													174 row source-models
+														175 container
+															176 文本 
+															177 container ~/Documents/Codex项目/wx-earth/source-models • 包含强调项
+																178 文本 source-models
+																179 文本 
+													180 row tools
+														181 container
+															182 文本 
+															183 container ~/Documents/Codex项目/wx-earth/tools • 包含强调项
+																184 文本 tools
+																185 文本 
+													186 row Video
+														187 container
+															188 文本 
+															189 container ~/Documents/Codex项目/wx-earth/Video • 包含强调项
+																190 文本 Video
+																191 文本 
+													192 row 2k_moon.jpg
+														193 container
+															194 文本 2k_moon.jpg
+													195 row 歌词update.json
+														196 container
+															197 文本 歌词update.json
+													198 row 两首歌曲-中英歌词.txt
+														199 container
+															200 文本 两首歌曲-中英歌词.txt
+													201 row 启动登月片头预览.command
+														202 container
+															203 container ~/Documents/Codex项目/wx-earth/启动登月片头预览.command • Untracked
+																204 文本 启动登月片头预览.command
+																205 文本 U
+													206 row 诗句_更新版.json
+														207 container
+															208 文本 诗句_更新版.json
+													209 row 诗句_英文版_时间轴样本.json
+														210 container
+															211 文本 诗句_英文版_时间轴样本.json
+													212 row 诗句_英文版.json
+														213 container
+															214 文本 诗句_英文版.json
+													215 row 诗句.json
+														216 container
+															217 文本 诗句.json
+										218 按钮 大纲 Section
+											219 文本 
+											220 标题 大纲, Value: 3
+												221 文本 大纲
+										222 按钮 时间线 Section
+											223 文本 
+											224 标题 时间线, Value: 3
+												225 文本 时间线
+							226 container
+								227 container
+									228 container 第 1 组 (空)
+								229 container
+									230 标签页组 活动视图切换器
+										231 标签 (settable, integer) 构建, Value: 0
+											232 container 构建
+												233 文本 构建
+										234 标签 (selected) Description: 调试器 - Errors: 0, Warnings: 5, Value: 1
+											235 文本 调试器
+											236 文本 5
+										237 标签 (settable, integer) Description: 问题 (⌘K ⇧⌘M) - 总计 0 个问题, Value: 0
+											238 文本 问题
+										239 标签 (settable, integer) Description: 输出, Value: 0
+											240 文本 输出
+										241 标签 (settable, integer) Description: 调试控制台 (⇧⌘Y), Value: 0
+											242 文本 调试控制台
+										243 标签 (settable, integer) 终端 (⌃`), Value: 0
+											244 container 终端 (⌃`)
+												245 文本 终端
+										246 标签 (settable, integer) 代码质量, Value: 0
+											247 container 代码质量
+												248 文本 代码质量
+									249 工具栏 调试器操作
+									250 工具栏
+										251 按钮 最大化面板大小
+											252 文本 
+										253 按钮 关闭面板
+											254 文本 
+									255 container
+										256 container
+											257 HTML 内容 devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@61dafe6541432a46304ba3c84a0a6135b7cddd69/&can_dock=&toolbarColor=rgba(223,223,223,1)&textColor=rgba(0,0,0,1)&experiments=true
+												258 container
+													259 container
+														260 container
+															261 切换按钮 Description: Select an element in the page to inspect it, Value: 0
+															262 标签页组 Panels
+																263 标签 (settable, integer) Description: Wxml, Value: 0
+																264 标签 (selected) Description: Console, Value: 1
+																265 标签 (settable, integer) Description: Sources, Value: 0
+																266 标签 (settable, integer) Description: Network, Value: 0
+																267 标签 (settable, integer) Description: Performance, Value: 0
+															268 弹出式按钮 More tabs
+															269 container
+																270 container 5 warnings
+															271 按钮 Settings
+															272 弹出式按钮 Customize and control DevTools
+															273 container Undock into separate window
+															274 container Console panel
+																275 container console
+																	276 container
+																		277 按钮 Show console sidebar
+																		278 按钮 Clear console
+																		279 按钮 JavaScript context: top
+																		280 按钮 Create live expression
+																		281 container
+																			282 文本输入区 (settable) Value: ​, Placeholder: Filter
+																		283 弹出式按钮 Log level: Default levels
+																			284 文本 Default levels
+																		285 文本 4 hidden
+																		286 切换按钮 Description: Console settings, Value: 0
+																		287 container
+																			288 container
+																				289 container
+																					290 链接 moon-voyage-assets.js:128
+																						291 文本 moon-voyage-assets.js:128
+																					292 text [Moon] Assets downloaded
+																				293 container
+																					294 链接 moon-voyage-lifecycle.js:312
+																						295 文本 moon-voyage-lifecycle.js:312
+																					296 text [Moon] Starting voyage sequence
+																				297 container
+																					298 链接 moon-voyage-trace.js:16
+																						299 文本 moon-voyage-trace.js:16
+																					300 text [Moon trace] {"event":"start","wall":1792603780848,"elapsed":0,"time":0,"audio":0,"duration":null,"waiting":true,"phase":"VOYAGE","terrain":"idle","terrainActive":false,"photoHold":false,"photoShown":false}
+																				301 container
+																					302 链接 moon-voyage-trace.js:16
+																						303 文本 moon-voyage-trace.js:16
+																					304 text [Moon trace] {"event":"tick","wall":1792603780960,"elapsed":0.112,"time":0,"audio":0,"duration":null,"waiting":true,"phase":"VOYAGE","terrain":"loading","terrainActive":false,"photo":"loading","photoHold":false,"photoShown":false}
+																				305 container
+																					306 链接 moon-voyage-trace.js:16
+																						307 文本 moon-voyage-trace.js:16
+																					308 text [Moon trace] {"event":"photo-ready","wall":1792603781254,"elapsed":0.406,"time":0,"audio":0,"duration":null,"waiting":true,"phase":"VOYAGE","terrain":"loading","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				309 container
+																					310 链接 moon-voyage-trace.js:16
+																						311 文本 moon-voyage-trace.js:16
+																					312 text [Moon trace] {"event":"audio-canplay","wall":1792603782235,"elapsed":1.387,"time":0,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"loading","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				313 container
+																					314 链接 moon-voyage-trace.js:16
+																						315 文本 moon-voyage-trace.js:16
+																					316 text [Moon trace] {"event":"audio-play","wall":1792603782236,"elapsed":1.388,"time":0,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"loading","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				317 container
+																					318 链接 moon-voyage-audio.js:33
+																						319 文本 moon-voyage-audio.js:33
+																					320 text [Moon] Audio playing
+																				321 container
+																					322 链接 moon-terrain-sequence.js:46
+																						323 文本 moon-terrain-sequence.js:46
+																					324 text [Moon terrain] Ready
+																					325 外框
+																						326 row    {milliseconds: 6911, downloads: 0, cacheHits: 10}
+																							327 container
+																								328 文本 {
+																								329 文本 milliseconds
+																								330 文本 : 
+																								331 文本 6911
+																								332 文本 , 
+																								333 文本 downloads
+																								334 文本 : 
+																								335 文本 0
+																								336 文本 , 
+																								337 文本 cacheHits
+																								338 文本 : 
+																								339 文本 10
+																								340 文本 }
+																				341 container
+																					342 链接 moon-voyage-trace.js:16
+																						343 文本 moon-voyage-trace.js:16
+																					344 text [Moon trace] {"event":"tick","wall":1792603787764,"elapsed":6.916,"time":5.525333333333329,"audio":5.525333333333329,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				345 container
+																					346 链接 moon-voyage-trace.js:16
+																						347 文本 moon-voyage-trace.js:16
+																					348 text [Moon trace] {"event":"tick","wall":1792603792769,"elapsed":11.921,"time":10.527999999999999,"audio":10.533333333333331,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				349 container
+																					350 链接 moon-voyage-trace.js:16
+																						351 文本 moon-voyage-trace.js:16
+																					352 text [Moon trace] {"event":"tick","wall":1792603797783,"elapsed":16.935,"time":15.541333333333334,"audio":15.546666666666667,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				353 container
+																					354 链接 moon-voyage-trace.js:16
+																						355 文本 moon-voyage-trace.js:16
+																					356 text [Moon trace] {"event":"tick","wall":1792603802799,"elapsed":21.951,"time":20.559999999999995,"audio":20.559999999999995,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				357 container
+																					358 链接 moon-voyage-trace.js:16
+																						359 文本 moon-voyage-trace.js:16
+																					360 text [Moon trace] {"event":"tick","wall":1792603807816,"elapsed":26.968,"time":25.57333333333333,"audio":25.578666666666663,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				361 container
+																					362 链接 moon-voyage-trace.js:16
+																						363 文本 moon-voyage-trace.js:16
+																					364 text [Moon trace] {"event":"tick","wall":1792603812833,"elapsed":31.985,"time":30.592,"audio":30.59733333333333,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				365 container
+																					366 链接 moon-voyage-trace.js:16
+																						367 文本 moon-voyage-trace.js:16
+																					368 text [Moon trace] {"event":"tick","wall":1792603817849,"elapsed":37.001,"time":35.605333333333334,"audio":35.61066666666666,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				369 container
+																					370 链接 moon-voyage-trace.js:16
+																						371 文本 moon-voyage-trace.js:16
+																					372 text [Moon trace] {"event":"tick","wall":1792603822866,"elapsed":42.018,"time":82.19999999999992,"audio":40.629333333333335,"duration":271.7266666666667,"waiting":false,"phase":"VOYAGE","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				373 container
+																					374 链接 moon-voyage-timeline.js:247
+																						375 文本 moon-voyage-timeline.js:247
+																					376 text [Moon][OrbitEnter]
+																					377 外框
+																						378 row    {t: 113.22}
+																							379 container
+																								380 文本 {
+																								381 文本 t
+																								382 文本 : 
+																								383 文本 113.22
+																								384 文本 }
+																				385 container
+																					386 链接 moon-voyage-trace.js:16
+																						387 文本 moon-voyage-trace.js:16
+																					388 text [Moon trace] {"event":"tick","wall":1792603827881,"elapsed":47.033,"time":132.34999999999974,"audio":45.64266666666667,"duration":271.7266666666667,"waiting":false,"phase":"ORBIT","terrain":"ready","terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				389 container
+																					390 链接 moon-voyage-trace.js:16
+																						391 文本 moon-voyage-trace.js:16
+																					392 text [Moon trace] {"event":"tick","wall":1792603832896,"elapsed":52.048,"time":182.52000000000066,"audio":50.65599999999999,"duration":271.7266666666667,"waiting":false,"phase":"ORBIT","terrain":"ready","selected":true,"terrainActive":false,"photo":"ready","photoHold":false,"photoShown":false}
+																				393 container
+																					394 链接 moon-terrain-sequence.js:78
+																						395 文本 moon-terrain-sequence.js:78
+																					396 text [Moon terrain] Handoff
+																					397 外框
+																						398 row    {time: 193.08000000000084, moonCenterNDCError: 8.67147529393832e-16, originalNDC: Array(3), tailNDC: Array(3)}
+																							399 container
+																								400 文本 {
+																								401 文本 time
+																								402 文本 : 
+																								403 文本 193.08000000000084
+																								404 文本 , 
+																								405 文本 moonCenterNDCError
+																								406 文本 : 
+																								407 文本 8.67147529393832e-16
+																								408 文本 , 
+																								409 文本 originalNDC
+																								410 文本 : 
+																								411 文本 Array(3)
+																								412 文本 , 
+																								413 文本 tailNDC
+																								414 文本 : 
+																								415 文本 Array(3)
+																								416 文本 }
+																				417 container
+																					418 链接 moon-voyage-trace.js:16
+																						419 文本 moon-voyage-trace.js:16
+																					420 text [Moon trace] {"event":"tick","wall":1792603837911,"elapsed":57.063,"time":232.05000000000155,"audio":55.67466666666667,"duration":271.7266666666667,"waiting":false,"phase":"TERRAIN","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":false,"photoShown":false}
+																				421 container
+																					422 链接 moon-voyage-trace.js:16
+																						423 文本 moon-voyage-trace.js:16
+																					424 text [Moon trace] {"event":"audio-seeking","wall":1792603841272,"elapsed":60.424,"time":265.38000000000176,"audio":59.034666666666666,"duration":271.7266666666667,"waiting":false,"phase":"TERRAIN","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":false,"photoShown":false}
+																				425 container
+																					426 链接 moon-voyage-trace.js:16
+																						427 文本 moon-voyage-trace.js:16
+																					428 text [Moon trace] {"event":"audio-seeked","wall":1792603841273,"elapsed":60.425,"time":265.38000000000176,"audio":265.38000000000176,"duration":271.7266666666667,"waiting":false,"phase":"TERRAIN","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":false,"photoShown":false}
+																				429 container
+																					430 链接 moon-voyage-trace.js:16
+																						431 文本 moon-voyage-trace.js:16
+																					432 text [Moon trace] {"event":"audio-canplay","wall":1792603841274,"elapsed":60.426,"time":265.38000000000176,"audio":265.38000000000176,"duration":271.7266666666667,"waiting":false,"phase":"TERRAIN","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":false,"photoShown":false}
+																			433 container
+																				434 container
+																					435 文本输入区 (settable) Description: Console prompt, Value: getStorageSync
+																					436 container
+																						437 文本 getStorageSync
+														438 container
+															439 弹出式按钮 More Tools
+															440 标签页组
+																441 标签 (selected) Description: Console, Value: 1
+																442 标签 (settable, integer) Description: Task, Value: 0
+															443 按钮 Close drawer
+															444 container Console panel
+													445 container getStorageSync, suggestion
+						446 container
+							447 container wx-earth (Git) - main*, Checkout Branch/Tag...
+								448 按钮 wx-earth (Git) - main*, Checkout Branch/Tag...
+									449 文本 
+									450 文本  main*
+							451 container wx-earth (Git) - Push 7 commits to origin/main
+								452 按钮 wx-earth (Git) - Push 7 commits to origin/main
+									453 文本 
+									454 文本  0↓ 7↑
+							455 container 没有问题
+								456 按钮 没有问题
+									457 文本 
+									458 文本  0 
+									459 文本 
+									460 文本  0
+							461 container 进度和简要通知
+							462 container 已为屏幕阅读器优化
+								463 按钮 已为屏幕阅读器优化
+							464 container undefined
+	465 关闭按钮
+	466 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	467 最小化按钮
+468 menu bar
+	469 微信开发者工具
+	470 项目
+	471 文件
+	472 编辑
+	473 工具
+	474 跳转
+	475 选择
+	476 界面
+	477 设置
+	478 插件
+	479 帮助
+
+The focused UI element is 24 HTML 内容 Webview: pages/gl/index, URL: 127.0.0.1:48356/__pageframe__/pages/gl/index

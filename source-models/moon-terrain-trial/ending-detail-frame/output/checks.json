@@ -1,0 +1,19 @@
+{
+  "approvedFilesUnchanged": 40,
+  "cameraActorsAndTimeIdentical": true,
+  "skyEarthStarsIdentical": true,
+  "webglErrors": 0,
+  "frameAndControlsVisible": true,
+  "deepShadowMaxChannelDifference": 2.0,
+  "nearTerrainMeanAbsoluteChannelDifference": 11.383,
+  "newMaterialBytes": 7330939,
+  "generatedMicrotexture": {
+    "file": "assets/regolith-detail-generated.png",
+    "type": "AI-generated visual material; not a NASA scan or measured PBR height field",
+    "pixels": [
+      1254,
+      1254
+    ]
+  },
+  "scope": "single final frame; no mini-program integration or dynamic material validation"
+}

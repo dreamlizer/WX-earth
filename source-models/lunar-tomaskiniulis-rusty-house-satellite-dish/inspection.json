@@ -1,0 +1,23 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-122/929f056abe02416da19d7b1aa805d235.glb",
+  "uid": "929f056abe02416da19d7b1aa805d235",
+  "sketchfab": "https://sketchfab.com/3d-models/none-929f056abe02416da19d7b1aa805d235",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-tomaskiniulis-rusty-house-satellite-dish/model.glb",
+  "bytes": 3247032,
+  "sha256": "045a0634d919f1eb4ef06d0e12dca7b938be66af19a002fb88a00780303a9fb2",
+  "triangles_est": 3174,
+  "vertices_est": 3307,
+  "meshes": 2,
+  "materials": 1,
+  "images": 3,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [],
+  "generator": "Sketchfab-12.67.0",
+  "extras": {
+    "author": "TomasKiniulis (https://sketchfab.com/TomasKiniulis)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/rusty-house-satellite-dish-929f056abe02416da19d7b1aa805d235",
+    "title": "Rusty House Satellite Dish"
+  }
+}

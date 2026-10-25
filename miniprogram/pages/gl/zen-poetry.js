@@ -1,5 +1,6 @@
 import { ZenChineseLyrics } from './zen-chinese-lyrics.js';
 import { ZenSongOpening } from './zen-song-opening.js';
+import { GoWestSong } from './go-west-song.js';
 
 // 禅定模式 - 诗词管理模块
 // 职责：诗词的加载、播放、特殊彩蛋文本处理
@@ -10,7 +11,8 @@ import { computeStartNearCenter, computeMove } from './poetry-motion.js';
 
 const ENGLISH_ONLY_TRACK_LABELS = {
   102: 'How Deep Is Your Love',
-  103: 'Out of Darkness'
+  103: 'Out of Darkness',
+  104: 'Go West'
 };
 
 export async function preloadPoetryCloud(page) {
@@ -65,6 +67,14 @@ export async function playPoetry(page, preset, startIdx, opts) {
       return; 
     }
     const p = Number(preset) || 1;
+    page.__goWestSong?.stop();
+    page.__goWestSong = null;
+    if (p === 104) {
+      page.__getPoetryMgr?.()?.resetImmediate();
+      page.__zenSongOpening?.stop();
+      page.__goWestSong = new GoWestSong({page});
+      return;
+    }
     
     // Lazy Load
     const map = page?.__poetryPresets;
@@ -128,6 +138,8 @@ export async function playPoetry(page, preset, startIdx, opts) {
 }
 
 export function stopPoetry(page) {
+  page?.__goWestSong?.stop();
+  if (page) page.__goWestSong = null;
   try { page?.__getPoetryMgr?.().stop(); } catch(_){ }
 }
 
@@ -137,6 +149,7 @@ export function resolvePresetForLang(page, current, isEn) {
     const audioTrack = preset >= 101 ? preset - 100 : preset;
     if (audioTrack === 2) return 102;
     if (audioTrack === 3) return 103;
+    if (audioTrack === 4) return 104;
     return isEn ? 101 : 1;
   } catch(_){ return isEn ? 101 : 1; }
 }
@@ -151,7 +164,7 @@ export function resolveNextPreset(page, current, isEn) {
 }
 
 export function getPresetIdsForLang(isEn) {
-  return [isEn ? 101 : 1, 102, 103];
+  return [isEn ? 101 : 1, 102, 103, 104];
 }
 
 export function resolvePresetLabel(labels, preset, isEn) {

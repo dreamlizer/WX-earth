@@ -1,0 +1,24 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-056/e107c4ea7d3c48449f453707fda3c6ec.glb",
+  "uid": "e107c4ea7d3c48449f453707fda3c6ec",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-habitat-polar-hab-briligg/polar_hab.glb",
+  "bytes": 4446016,
+  "sha256": "1e901f373c3f86dd542af8204b0d3005e5d696821d9b35cf0b862030b3c0654d",
+  "triangles_est": 90654,
+  "vertices_est": 133339,
+  "meshes": 26,
+  "materials": 11,
+  "images": 0,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [
+    "KHR_materials_pbrSpecularGlossiness"
+  ],
+  "generator": "Sketchfab-12.66.0",
+  "extras": {
+    "author": "briligg (https://sketchfab.com/briligg)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/polar-hab-e107c4ea7d3c48449f453707fda3c6ec",
+    "title": "Polar Hab"
+  }
+}

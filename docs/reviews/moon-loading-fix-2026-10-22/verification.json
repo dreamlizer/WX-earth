@@ -1,0 +1,35 @@
+{
+  "runtimeChanged": true,
+  "uploaded": false,
+  "published": false,
+  "projectTests": {
+    "passed": 49,
+    "total": 49
+  },
+  "preservedPreviewFiles": 108,
+  "previewFilesChanged": 0,
+  "devtools": {
+    "compileErrors": 0,
+    "cache": "warm, 10 validated terrain cache hits; no simulator data/file cache cleared",
+    "terrainReadyMs": 8003,
+    "terrainGpuWarmupMs": 630,
+    "photoReadySeconds": 0.199,
+    "entry": "existing page handler invoked through native DevTools console; homepage click path not accepted",
+    "normalPlayback": "natural original-speed playback, no speed change or seek",
+    "audioCanplaySeconds": 7.588,
+    "audioPlaySeconds": 7.591,
+    "handoffTime": 193.024,
+    "handoffMoonCenterNDCError": 4.96673210470977e-16,
+    "photoShownTime": 267.072,
+    "naturalAudioEnded": true,
+    "photoHoldAfterAudioEnd": true,
+    "traceSamples": 44,
+    "controlsTapped": true,
+    "returnButtonClicked": true,
+    "returnToEarthVerified": true,
+    "errorsAfterReturn": 0,
+    "warningsAfterReturn": 9,
+    "warningsNote": "includes existing exit diagnostics logged with console.warn; not claimed warning-free"
+  },
+  "devicePerformanceMeasured": false
+}

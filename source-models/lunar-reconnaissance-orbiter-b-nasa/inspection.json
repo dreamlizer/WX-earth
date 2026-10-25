@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 8,
+  "meshes": 7,
+  "materials": 7,
+  "images": 10,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 8142,
+  "vertices_est": 7492,
+  "extensions_used": [
+    "KHR_draco_mesh_compression",
+    "EXT_texture_webp"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Reconnaissance%20Orbiter%20%28B%29/Lunar%20Reconnaissance%20Orbiter%20%28B%29.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Reconnaissance%20Orbiter%20%28B%29/Lunar%20Reconnaissance%20Orbiter%20%28B%29.glb",
+  "nasa_folder": "Lunar Reconnaissance Orbiter (B)",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-reconnaissance-orbiter-b-nasa/Lunar Reconnaissance Orbiter (B).glb",
+  "bytes": 2902744,
+  "sha256": "c868a65e36ed293476be3d05e7e60968778c5cf4b2a7aba8859fcc20242a0612"
+}

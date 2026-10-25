@@ -1,0 +1,8 @@
+{
+  "miniprogram/pages/gl/app-engine.js": "c8464674a89fe13dc1f6e87223cbbe5d2deddc38cae5dfa9151f16e4771dbdba",
+  "miniprogram/pages/gl/moon-voyage-manager.js": "bb6ec310464ff15cfbf4cf7037d78098641be0d7455c1297110c904f8cec8600",
+  "miniprogram/pages/gl/moon-voyage-lifecycle.js": "53b467d2d9bb1aa4ce1de2446b61b6161a3aab1a868fb179638a8373ff9f456e",
+  "miniprogram/pages/gl/moon-voyage-timeline.js": "4d54b3440e1ad6988ba7c8d03d58393da38c5c4e3b2803d770b77fbc160d86c3",
+  "miniprogram/pages/gl/moon-voyage-audio.js": "581076ca1fb75595b7c3c5901924f881193145e651641411d0c61d1fd1c7a4d3",
+  "miniprogram/pages/gl/scene-updater.js": "22d34514f526c6cac55d19bcf78ab0e2ae8a9e5787ca7852f77602ddb6669fe9"
+}

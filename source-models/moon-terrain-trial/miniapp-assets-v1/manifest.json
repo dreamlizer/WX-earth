@@ -1,0 +1,127 @@
+{
+  "version": "ae1950a881d16a6a",
+  "files": [
+    {
+      "name": "terrain.glb",
+      "source": "source-models/moon-terrain-trial/preview/assets/terrain.glb",
+      "sourceSHA256": "59396764dafa20fbd62382cc2696efceba168fb8bf78302788b551b7b072c078",
+      "bytes": 1773400,
+      "sha256": "59396764dafa20fbd62382cc2696efceba168fb8bf78302788b551b7b072c078",
+      "role": "linear",
+      "quality": null,
+      "md5": "8ab369b1bfd00827fc2ba8d643fe9631"
+    },
+    {
+      "name": "base-color.jpg",
+      "source": "source-models/moon-terrain-trial/preview/assets/albedo.jpg",
+      "sourceSHA256": "55867428bd8b47e13bfb00dc47f4200d45ec7d04c40e7bdf5f45bfee8b8a466a",
+      "bytes": 872344,
+      "sha256": "5cf04b3ab165311456facab423f0722c294b9145cca4ffc5cc53f002bbb8cd08",
+      "role": "srgb",
+      "quality": 92,
+      "width": 2048,
+      "height": 2048,
+      "md5": "bd26db87a4ad681a6be66924ace8ef6d"
+    },
+    {
+      "name": "base-normal.jpg",
+      "source": "source-models/moon-terrain-trial/airborne-comparison/assets/normal-object.jpg",
+      "sourceSHA256": "643776b83f8eea98475b2055de9045f4460d0660d77b1de0fe042408ff6f3d2c",
+      "bytes": 1697547,
+      "sha256": "24cc4459b4d4d1ae8e1358c61bfe66d7c5e882269b6e3ede87e78d7589f04e64",
+      "role": "linear",
+      "quality": 90,
+      "width": 2048,
+      "height": 2048,
+      "md5": "8459006ac14dab177c34470777a78dbc"
+    },
+    {
+      "name": "base-rough.jpg",
+      "source": "source-models/moon-terrain-trial/preview/assets/roughness.jpg",
+      "sourceSHA256": "07b1685b328a9856749d4593c225ac0970e312c5ee395ce25ce94dfd0711df5e",
+      "bytes": 329161,
+      "sha256": "b1987f43606e6caa1f70e707dd24653504b57a29e481a4de1902e3f47cb874f0",
+      "role": "linear",
+      "quality": 92,
+      "width": 1024,
+      "height": 1024,
+      "md5": "8c5394a946c7006191dbc973bdde6486"
+    },
+    {
+      "name": "base-ao.jpg",
+      "source": "source-models/moon-terrain-trial/preview/assets/ao.jpg",
+      "sourceSHA256": "cf5a5050e5348096f73365aba29d6d50364228b132d9bcb7c615b25e065613eb",
+      "bytes": 141457,
+      "sha256": "c0bb043d79613c78e5933a9db735d6e910660aca7f8eabd8c0008e22df15528a",
+      "role": "linear",
+      "quality": 95,
+      "width": 1024,
+      "height": 1024,
+      "md5": "5aca0d0e4f6a7a7497e900d03132286b"
+    },
+    {
+      "name": "near-color.jpg",
+      "source": "source-models/moon-terrain-trial/ending-detail-frame/assets/albedo.jpg",
+      "sourceSHA256": "a1cc091ab01da5c3e946e7b527bee5d0374bc5047e644d745d7bf5d6c47a0740",
+      "bytes": 483365,
+      "sha256": "13f246bd591c28016d2723c288f01c9c0561ee214c57b24a3c743239cb4036f6",
+      "role": "srgb",
+      "quality": 97,
+      "width": 1311,
+      "height": 1148,
+      "md5": "d0361fccbab2fe6a44591cec64370918"
+    },
+    {
+      "name": "near-normal.jpg",
+      "source": "source-models/moon-terrain-trial/ending-detail-frame/assets/normal-object.jpg",
+      "sourceSHA256": "239918cb98c09a3763e974f8102f0d0d2c2b4c2ae86dbfde9d3bf6bead1e8f54",
+      "bytes": 1431391,
+      "sha256": "02917d65b43b0175d48a6b40020eb3f1a84c7b2abed9c2fb40128248f7c4a621",
+      "role": "linear",
+      "quality": 98,
+      "width": 1311,
+      "height": 1148,
+      "md5": "7fca9568ab70e8c88fc32f433cb1d725"
+    },
+    {
+      "name": "near-rough.jpg",
+      "source": "source-models/moon-terrain-trial/ending-detail-frame/assets/roughness.jpg",
+      "sourceSHA256": "a24bf4180779a84c703cdecd219d74415b616d83a1010d82be8d4df3c558c487",
+      "bytes": 418346,
+      "sha256": "0f5502734743535299b8b522eeeae779ac8b2624d199e589f7931ec6f1626ee4",
+      "role": "linear",
+      "quality": 97,
+      "width": 1311,
+      "height": 1148,
+      "md5": "a57cf805a03321a7bb0dece5629755ed"
+    },
+    {
+      "name": "near-ao.jpg",
+      "source": "source-models/moon-terrain-trial/ending-detail-frame/assets/ao.jpg",
+      "sourceSHA256": "27d31f55064d923f77fe7f4387725a09d078495b29d111fd9a19d5dc2117d784",
+      "bytes": 114876,
+      "sha256": "388950db73f4243aaba95c90fbe0c25e51d921c9c1adc28413ff02bfcc7816d0",
+      "role": "linear",
+      "quality": 97,
+      "width": 1311,
+      "height": 1148,
+      "md5": "4d37c81d6f5b5c08a074357491dc8afc"
+    },
+    {
+      "name": "grain.jpg",
+      "source": "source-models/moon-terrain-trial/ending-detail-frame/assets/regolith-detail-generated.png",
+      "sourceSHA256": "ded2b48dbbcb2511b718d6572c4e619387ae7bc1648b0777696d3fcae63f5a90",
+      "bytes": 1831728,
+      "sha256": "48c3f6fb19b3549ecdda366ff223c0b42d47f247ac754f55a53a489e36791dd6",
+      "role": "srgb",
+      "quality": 94,
+      "width": 2048,
+      "height": 2048,
+      "md5": "4777678ead48513c61091481a341f380"
+    }
+  ],
+  "totalBytes": 9093615,
+  "sourceBytes": 13065006,
+  "terrainUnchanged": true,
+  "nearCropUnchanged": true
+}

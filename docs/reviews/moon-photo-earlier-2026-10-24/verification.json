@@ -1,0 +1,19 @@
+{
+  "shutterBefore": 266.94,
+  "shutterNow": 261.94,
+  "revealBefore": 267.07,
+  "revealNow": 262.07,
+  "originalAudioEndUnchanged": 271.7266666666667,
+  "devtoolsActualReveal": 262.07800000000157,
+  "secondsBeforeNaturalAudioEnd": 9.645999908447266,
+  "heldAfterEnd": true,
+  "runtimeErrors": 0,
+  "projectTests": {
+    "passed": 49,
+    "total": 49
+  },
+  "verificationScope": "Accelerated middle via existing 10x control; resumed at 241.043s and played normally to natural song end. Existing page entry invoked from native DevTools console. Not phone acceptance.",
+  "oldPreviewsPreserved": 108,
+  "uploaded": false,
+  "published": false
+}

@@ -3,9 +3,9 @@ const DATA = require('../../assets/models/gundam/model.js');
 const FLIGHT = [
   [0, 5, .3, 3], [2, 2, .45, -10], [4, 1.8, .65, -19],
   [6, 1.2, .85, -31], [8, -3, 1.5, -48],
-  [11, -15, 2.8, -79], [14, -40, 5, -120]
+  [11, -9, 2.8, -86], [14, -18, 4.5, -190]
 ];
-const FLIGHT_END = 14;
+const FLIGHT_END = 12.7;
 const flightEase = x => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
 // Timed Hermite segments keep both position and velocity continuous through
 // a readable forward overtake, then an accelerating sweep to the front left.
@@ -25,15 +25,15 @@ function flightTrack(e) {
 
 function orientGundam(frame, track, bank) {
   frame.rotateZ(-.3 * bank);
-  frame.rotateY(Math.atan2(-track.velocity[0], -track.velocity[2]) + .7 * bank);
+  frame.rotateY(Math.atan2(-track.velocity[0], -track.velocity[2]) + .8 * bank);
   frame.rotateZ(-.82 * bank);
 }
 
 const flightBank = e => flightEase((e - 4.8) / 3.2);
 // Exhaust length comes from backward flow, not several seconds of flight
 // history. Old wisps move away from their emission point and die individually.
-const WAKE_LIFE = .85, WAKE_START = 1.6, WAKE_END = 11.9, WAKE_SEGMENTS = 48;
-function buildExhaustSheet(T, segments, plume) {
+const WAKE_LIFE = .85, WAKE_START = 1.6, WAKE_END = 12.3, WAKE_SEGMENTS = 48;
+export function buildExhaustSheet(T, segments, plume) {
   const geometry = new T.BufferGeometry(), count = segments + 1;
   geometry.addAttribute('position', new T.BufferAttribute(new Float32Array(count * 6), 3));
   geometry.addAttribute('uv', new T.BufferAttribute(new Float32Array(count * 4), 2));
@@ -101,7 +101,7 @@ function buildGundamWake(T, raw, scale) {
     point: new T.Vector3(), direction: new T.Vector3(), tangent: new T.Vector3(), side: new T.Vector3(), view: new T.Vector3() };
 }
 
-function writeExhaustSheet(wake, sheet, elapsed) {
+export function writeExhaustSheet(wake, sheet, elapsed) {
   const { point, tangent, side, view } = wake, { centers, widths, segments } = sheet;
   const attrs = sheet.mesh.geometry.attributes;
   for (let i = 0; i <= segments; i++) {
@@ -234,7 +234,8 @@ export class VoyageGundam {
     // Lift the leading shoulder into a diagonal instead of flattening the
     // silhouette across the frame. Ease into the bank with the curved flight.
     orientGundam(this.model, track, bank);
-    this.materials[0].opacity = flightEase(FLIGHT_END - e);
+    // Remain visible as the two pursuers enter; retire only as a distant speck.
+    this.materials[0].opacity = flightEase((FLIGHT_END - e) / .45);
     this.model.visible = true;
   }
   reset() {

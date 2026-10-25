@@ -1,0 +1,54 @@
+[
+  {
+    "unit": "unit01",
+    "source": "eva-unit-01-lefort/evangelion_unit_01.glb",
+    "sourceVertices": 35599,
+    "triangles": 60522,
+    "reduction": 1.0,
+    "headVertices": 5481,
+    "joints": [
+      {
+        "side": -1,
+        "armVertices": 3632,
+        "legVertices": 3908,
+        "elbowDegrees": -48,
+        "kneeDegrees": 19
+      },
+      {
+        "side": 1,
+        "armVertices": 3625,
+        "legVertices": 3913,
+        "elbowDegrees": -27,
+        "kneeDegrees": 46
+      }
+    ],
+    "movedVertices": 26413,
+    "method": "offline spatial joint weights and static pose bake; no runtime rig"
+  },
+  {
+    "unit": "unit02",
+    "source": "eva-unit-02-ryanwill679/eva_02.glb",
+    "sourceVertices": 456553,
+    "triangles": 56743,
+    "reduction": 0.16,
+    "headVertices": 41990,
+    "joints": [
+      {
+        "side": -1,
+        "armVertices": 11543,
+        "legVertices": 28578,
+        "elbowDegrees": -27,
+        "kneeDegrees": 52
+      },
+      {
+        "side": 1,
+        "armVertices": 13012,
+        "legVertices": 28595,
+        "elbowDegrees": -48,
+        "kneeDegrees": 24
+      }
+    ],
+    "movedVertices": 179966,
+    "method": "offline spatial joint weights and static pose bake; no runtime rig"
+  }
+]

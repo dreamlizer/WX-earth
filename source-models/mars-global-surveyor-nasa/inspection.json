@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 2,
+  "meshes": 1,
+  "materials": 1,
+  "images": 0,
+  "animations": 2,
+  "skins": 0,
+  "triangles_est": 19314,
+  "vertices_est": 10835,
+  "extensions_used": [
+    "KHR_draco_mesh_compression",
+    "KHR_materials_specular"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Global%20Surveyor/Mars%20Global%20Surveyor%20%28MOI%29.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Global%20Surveyor/Mars%20Global%20Surveyor%20%28MOI%29.glb",
+  "nasa_folder": "Mars Global Surveyor",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/mars-global-surveyor-nasa/Mars Global Surveyor (MOI).glb",
+  "bytes": 53352,
+  "sha256": "3d42b71c174e96273e4c484f420dfed25eaf0531392b4a9a50d852234c7ea88c"
+}

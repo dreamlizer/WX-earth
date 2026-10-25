@@ -5,7 +5,7 @@ const flowBox={module:{exports:{}}};vm.runInNewContext(fs.readFileSync('miniprog
 const gundamFile=path.resolve('miniprogram/pages/gl/moon-voyage-gundam.js');
 const gundamBox={module:{exports:{}},console,require:require('module').createRequire(gundamFile),release:require('../miniprogram/pages/gl/moon-voyage-robot.js').release};
 vm.runInNewContext(fs.readFileSync(gundamFile,'utf8').replace(/^import .*;$/m,'').replace(/export /g,'')+'\nmodule.exports={VoyageGundam}',gundamBox);
-const box={VoyageGundam:gundamBox.module.exports.VoyageGundam,VoyageStarship:require('../miniprogram/pages/gl/moon-voyage-starship.js').VoyageStarship,shadeCraft:require('../miniprogram/pages/gl/moon-voyage-craft-light.js').shadeCraft,VoyageRobot:require('../miniprogram/pages/gl/moon-voyage-robot.js').VoyageRobot,...flowBox.module.exports,require:require('module').createRequire(filename),module:{exports:{}},console};
+const box={setTimeout,clearTimeout,VoyageEvaPursuit:require('./eva-pursuit-runtime.cjs').VoyageEvaPursuit,VoyageGundam:gundamBox.module.exports.VoyageGundam,VoyageStarship:require('../miniprogram/pages/gl/moon-voyage-starship.js').VoyageStarship,shadeCraft:require('../miniprogram/pages/gl/moon-voyage-craft-light.js').shadeCraft,VoyageRobot:require('../miniprogram/pages/gl/moon-voyage-robot.js').VoyageRobot,...flowBox.module.exports,require:require('module').createRequire(filename),module:{exports:{}},console};
 vm.runInNewContext(fs.readFileSync(filename,'utf8').replace(/^import .*;$/gm,'').replace(/export /g,'')+'\nmodule.exports={VoyageEncounters,buildVoyager}',box);
 const {VoyageEncounters,buildVoyager}=box.module.exports;
 const b=fs.readFileSync('miniprogram/voyager-assets/geometry.bin');const buffer=b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength);
@@ -70,11 +70,11 @@ assert(fx.moonStart>=86&&fx.moonStart<97,'Moon gates third departure');tick(112.
 fx.reset();assert.equal(fx.moonStart,null);fx.dispose();fx.dispose();console.log('Voyager geometry, three phases, Moon gate, camera preservation and cleanup PASS');
 // Exercise the actual WeChat loading contract, not only a constructed mesh.
 (async()=>{
- const NativeLoader=T.TextureLoader;T.TextureLoader=class {setCrossOrigin(){return this;} load(url,done){assert(/^\/(voyager|robot|starship|gundam)-assets\//.test(url),'Canvas image paths must be absolute within the package');queueMicrotask(()=>done(new T.Texture()));}};
+ const NativeLoader=T.TextureLoader;T.TextureLoader=class {setCrossOrigin(){return this;} load(url,done){assert(/^\/(voyager|robot|starship|gundam|eva01|eva02)-assets\//.test(url),'Canvas image paths must be absolute within the package');queueMicrotask(()=>done(new T.Texture()));}};
  let subpackage=false;
  box.require=(name,success)=>{assert.equal(name,'../../voyager-assets/ready.js');subpackage=true;success(true);};
  box.wx={getFileSystemManager(){return {readFile({filePath,success}){assert(subpackage);assert.equal(filePath,'voyager-assets/geometry.bin');success({data:buffer});}};}};
- const loaded=new VoyageEncounters();loaded.setContext({THREE:T,scene,camera,readGundamBuffer:()=>{const b=fs.readFileSync("miniprogram/gundam-assets/geometry.bin");return Promise.resolve(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));},readStarshipBuffer:()=>{const b=fs.readFileSync('miniprogram/starship-assets/starship.glb');return Promise.resolve(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));},readRobotBuffer:()=>{const b=fs.readFileSync('miniprogram/robot-assets/robot.glb');return Promise.resolve(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));}});await loaded.preload();await loaded.robot.preload();await loaded.starship.preload();await loaded.gundam.preload();assert(loaded.starship.model);assert(loaded.robot.model,'Robot model loaded');assert(loaded.model,'WeChat subpackage and binary loading');
+ const loaded=new VoyageEncounters();loaded.setContext({THREE:T,scene,camera,readEvaBuffer:unit=>Promise.resolve(require('./eva-pursuit-runtime.cjs').buffer(unit==='unit01'?'eva01-assets':'eva02-assets')),readGundamBuffer:()=>{const b=fs.readFileSync("miniprogram/gundam-assets/geometry.bin");return Promise.resolve(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));},readStarshipBuffer:()=>{const b=fs.readFileSync('miniprogram/starship-assets/starship.glb');return Promise.resolve(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));},readRobotBuffer:()=>{const b=fs.readFileSync('miniprogram/robot-assets/robot.glb');return Promise.resolve(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));}});await loaded.preload();await loaded.robot.preload();await loaded.starship.preload();await loaded.gundam.preload();await loaded.eva.preload();assert.equal(loaded.eva.actors.length,2,'Both actual EVA packages load through the encounter controller');assert(loaded.starship.model);assert(loaded.robot.model,'Robot model loaded');assert(loaded.model,'WeChat subpackage and binary loading');
  const timelineBox={console,module:{exports:{}}};
  const source=['config.js','moon-voyage-easing.js','moon-voyage-lighting.js','moon-voyage-timeline.js'].map(f=>fs.readFileSync('miniprogram/pages/gl/'+f,'utf8').replace(/^import[\s\S]*?;\s*$/gm,'').replace(/export /g,'')).join('\n');
  vm.runInNewContext(source+'\nmodule.exports=updateTimeline;',timelineBox);
@@ -138,7 +138,7 @@ fx.reset();assert.equal(fx.moonStart,null);fx.dispose();fx.dispose();console.log
    assert(camera.position.equals(camP)&&camera.quaternion.equals(camQ), 'Flyby cannot alter original camera');
  }
  const flyby=[];
- for(const t of [77.8,78.8,79.8,81.8,84.8,87.8,89.8,91.6]) {
+ for(const t of [77.8,78.8,79.8,81.8,84.8,87.8,89.8,90.4]) {
    loaded.update({t,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});
    assert(loaded.gundam.model.visible);
    flyby.push(camera.worldToLocal(loaded.gundam.model.position.clone()));
@@ -178,7 +178,7 @@ fx.reset();assert.equal(fx.moonStart,null);fx.dispose();fx.dispose();console.log
 
  assert(!loaded.eve,'EVE remains absent from Moon encounters; its new package belongs to zen only');
  loaded.update({t:102,node1Time:38,node2Time:78,node3Time:113,moonMesh:moon});assert(loaded.starship.model.scale.x<loaded.starship.baseScale*.9,'Visible retreat starts earlier and lasts longer');
- loaded.dispose();await loaded.preload();await loaded.robot.preload();await loaded.starship.preload();await loaded.gundam.preload();assert(loaded.robot.model&&loaded.starship.model&&loaded.gundam.model,'All replacement crafts reload after exit and re-entry');loaded.dispose();T.TextureLoader=NativeLoader;
+ loaded.dispose();await loaded.preload();await loaded.robot.preload();await loaded.starship.preload();await loaded.gundam.preload();await loaded.eva.preload();assert.equal(loaded.eva.actors.length,2);assert(loaded.robot.model&&loaded.starship.model&&loaded.gundam.model,'All replacement crafts reload after exit and re-entry');loaded.dispose();T.TextureLoader=NativeLoader;
  console.log('WeChat subpackage API and async asset loading PASS');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 const flow=flowBox.module.exports.createStarFlow(T);

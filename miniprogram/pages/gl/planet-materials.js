@@ -6,7 +6,7 @@ export const PLANET_PARAMS = Object.freeze({
   dayFloor: 0.12, dayFill: 1.10, dayDirect: 1.40, oceanTint: 0.12,
   terrainNormalStrength: 2.0,
   nightGain: 1.45, atmosphereRadius: 1.023, atmosphereGain: 0.82,
-  moonNormalScale: 1.0, moonRoughness: 0.96
+  moonNormalScale: 1.0, moonRoughness: 0.9
 });
 
 const vertex = `

@@ -27,6 +27,15 @@ const mergeCompanionRobotCfg = (baseCfg, tuneCfg) => {
 };
 
 export const updateTimeline = (mgr, t, dtSec = 0.0) => {
+  if(mgr._terrain?.select(t)&&mgr._terrain.active) {
+    mgr._terrain.time=t;
+    if(mgr.page&&Date.now()>=(mgr._moonUiNextUpdate||0)) {
+      mgr._moonUiNextUpdate=Date.now()+250;
+      const seconds=Math.max(0,Math.floor(t));
+      mgr.page.setData({moonTimerText:String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0'),moonPhaseText:t<228?'月面接近':t<239?'坑缘同坐':'同望地球'});
+    }
+    return;
+  }
   const TARGET_ROT_Y = mgr._voyageTargetRotY;
 
   const tl = (APP_CFG?.moonVoyage?.timeline || {});
@@ -247,8 +256,10 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
     const sideR = Number(earthNearCfg?.sideR ?? -1.2) || 0;
     const upR = Number(earthNearCfg?.upR ?? 0.65) || 0;
     const azOffsetDeg = Number(earthNearCfg?.azOffsetDeg ?? 0) || 0;
+    const blendTime=Math.max(0,Math.min(1,(t-191)/2));
+    const orbitTime=mgr._terrain?.selected&&t>=191?191+2*(blendTime+blendTime*blendTime-blendTime*blendTime*blendTime):t;
     const res = mgr._orbitSeq.tick({
-      t,
+      t:orbitTime,
       node3Time,
       camera: mgr.camera,
       moonWorld: moonWorldNow,
@@ -304,6 +315,7 @@ export const updateTimeline = (mgr, t, dtSec = 0.0) => {
         mgr.milkyWayMesh.visible = false;
       }
       mgr.phase = 'ORBIT';
+      if(mgr._terrain?.select(t)){mgr._terrain.enter(t);mgr.phase='TERRAIN';}
       if (mgr._moonDebug) {
         try {
           const now = Date.now();

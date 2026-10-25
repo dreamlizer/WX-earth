@@ -1,0 +1,134 @@
+--- before/miniprogram/pages/gl/moon-keepsake.js
++++ miniprogram/pages/gl/moon-keepsake.js
+@@ -88,7 +88,7 @@
+     finally{r.setRenderTarget(target);r.autoClear=autoClear;}
+     if(!this.shown&&state.opacity){
+       this.shown=true;this.mgr.phase='KEEPSAKE';
+-      this.mgr.page?.setData?.({moonKeepsakeVisible:true,moonKeepsakeControls:false,moonKeepsakeSaving:false});
++      this.mgr.page?.setData?.({moonKeepsakeVisible:true,moonKeepsakeControls:false});
+       traceMoon(this.mgr,'photo-shown');
+     }
+     return true;
+@@ -110,23 +110,11 @@
+     const visible=!this.mgr.page?.data?.moonKeepsakeControls;
+     clearTimeout(this.controlsTimer);this.mgr.page?.setData?.({moonKeepsakeControls:visible});
+     traceMoon(this.mgr,'photo-controls',{visible});
+-    if(visible)this.controlsTimer=setTimeout(()=>{if(!this.disposed&&!this.saving)this.hideControls();},4000);
+-  }
+-  async save(){
+-    if(this.saving||!this.shown||this.disposed||this.mgr._exiting)return;
+-    this.saving=true;clearTimeout(this.controlsTimer);this.mgr.page?.setData?.({moonKeepsakeSaving:true});
+-    try{
+-      const info=await new Promise((resolve,reject)=>wx.getImageInfo({src:PHOTO_PATH,success:resolve,fail:reject}));
+-      if(this.disposed||this.mgr._exiting)return;
+-      await new Promise((resolve,reject)=>wx.saveImageToPhotosAlbum({filePath:info.path,success:resolve,fail:reject}));
+-      if(!this.disposed){wx.showToast({title:'照片已保存',icon:'success'});traceMoon(this.mgr,'photo-saved');}
+-    }catch(error){
+-      if(!this.disposed){const message=String(error?.errMsg||error?.message||'');wx.showToast({title:/auth|deny|denied/i.test(message)?'需要允许保存到相册':/cancel/i.test(message)?'已取消保存':'暂时无法保存照片',icon:'none'});traceMoon(this.mgr,'photo-save-failed');}
+-    }finally{this.saving=false;if(!this.disposed)this.mgr.page?.setData?.({moonKeepsakeSaving:false});}
++    if(visible)this.controlsTimer=setTimeout(()=>{if(!this.disposed)this.hideControls();},4000);
+   }
+   release(){this.quad?.geometry.dispose();this.material?.dispose();this.target?.dispose();this.texture?.dispose();this.quad=null;this.material=null;this.target=null;this.texture=null;}
+   dispose(){
+     this.disposed=true;clearTimeout(this.controlsTimer);this.release();this.status='disposed';this.mgr._moonPhotoHold=null;
+-    this.mgr.page?.setData?.({moonKeepsakeVisible:false,moonKeepsakeControls:false,moonKeepsakeSaving:false});
++    this.mgr.page?.setData?.({moonKeepsakeVisible:false,moonKeepsakeControls:false});
+   }
+ }
+--- before/miniprogram/pages/gl/main.js
++++ miniprogram/pages/gl/main.js
+@@ -44,7 +44,6 @@
+ export function enterMoonVoyage() { engine.enterMoonVoyage(); }
+ export function exitMoonVoyage() { engine.exitMoonVoyage(); }
+ export function toggleMoonKeepsakeControls() { engine.toggleMoonKeepsakeControls(); }
+-export function saveMoonKeepsake() { return engine.saveMoonKeepsake(); }
+ export function setMoonVoyageSpeed(mult) { engine.setMoonVoyageSpeed(mult); }
+ export function isMoonVoyageActive() { return engine.isMoonVoyageActive(); }
+ export function enterSaturnPreview() { return engine.enterSaturnPreview(); }
+--- before/miniprogram/pages/gl/app-engine.js
++++ miniprogram/pages/gl/app-engine.js
+@@ -728,7 +728,6 @@
+   }
+ 
+   toggleMoonKeepsakeControls() { this.moonMgr?._terrain?.keepsake?.toggleControls(); }
+-  saveMoonKeepsake() { return this.moonMgr?._terrain?.keepsake?.save(); }
+   
+   setMoonVoyageSpeed(mult) {
+     if (this.moonMgr) this.moonMgr.setSpeed(mult);
+--- before/miniprogram/pages/gl/index.js
++++ miniprogram/pages/gl/index.js
+@@ -26,7 +26,7 @@
+ import { getSystemInfo } from './sys-info.js';
+ import { enterSaturnPreview, exitSaturnPreview, retrySaturnPreview, setSaturnPreviewView, setSaturnPreviewLook, startSaturnVoyage, toggleSaturnVoyagePause, stopSaturnVoyage, resetSaturnVoyageGaze } from './main.js';
+ import { SATURN_LOOKS, DEFAULT_SATURN_LOOK } from './saturn-preview-looks.js';
+-import { toggleMoonKeepsakeControls, saveMoonKeepsake } from './main.js';
++import { toggleMoonKeepsakeControls } from './main.js';
+ 
+ Page({
+   data: {
+@@ -37,7 +37,6 @@
+     moonToastOpacity: 0,
+     moonKeepsakeVisible: false,
+     moonKeepsakeControls: false,
+-    moonKeepsakeSaving: false,
+     saturnPreviewActive: false,
+     saturnPreviewLoading: false,
+     saturnPreviewError: '',
+@@ -113,7 +112,6 @@
+   },
+ 
+   onMoonKeepsakeTap() { toggleMoonKeepsakeControls(); },
+-  onMoonKeepsakeSave() { saveMoonKeepsake(); },
+   onMoonKeepsakeReturn() { exitMoonVoyage(); },
+ 
+   onEnterSaturnPreview() {
+--- before/miniprogram/pages/gl/index.wxml
++++ miniprogram/pages/gl/index.wxml
+@@ -232,7 +232,6 @@
+   <!-- 已移除：PC 端滚轮触发空间 -->
+   
+ </scroll-view>
+-<view wx:if="{{moonKeepsakeVisible && moonKeepsakeControls}}" class="moon-keepsake-action moon-keepsake-save" catchtap="onMoonKeepsakeSave" role="button">{{moonKeepsakeSaving ? '保存中…' : '保存照片'}}</view>
+ <view wx:if="{{moonKeepsakeVisible && moonKeepsakeControls}}" class="moon-keepsake-action moon-keepsake-return" catchtap="onMoonKeepsakeReturn" role="button">返回地球</view>
+ 
+ <!-- 底部缩放条：统一胶囊风格（受 showZoomBar 控制，可见才渲染） -->
+--- before/miniprogram/pages/gl/index.wxss
++++ miniprogram/pages/gl/index.wxss
+@@ -242,8 +242,7 @@
+ 
+ /* Use the existing 96rpx footer, which the native canvas cannot cover. */
+ .moon-keepsake-action {position:fixed;bottom:40rpx;width:190rpx;height:48rpx;z-index:3000;display:block;border:1rpx solid rgba(224,231,240,.32);border-radius:28rpx;background-color:rgba(15,21,29,.84);color:#e6e9ef;font-size:24rpx;line-height:48rpx;text-align:center;}
+-.moon-keepsake-save {left:22%;}
+-.moon-keepsake-return {right:22%;}
++.moon-keepsake-return {left:50%;margin-left:-95rpx;}
+ 
+ .moon-debug-hotspot {
+   position: fixed;
+--- before/tools/moon-keepsake.test.cjs
++++ tools/moon-keepsake.test.cjs
+@@ -7,21 +7,21 @@
+ for(const [width,height] of [[390,720],[390,844],[375,812],[540,960],[844,390]])for(let t=262.07;t<500;t+=.2){const state=motion.keepsakeAt(t),g=motion.keepsakeGeometry(state,width,height),c=Math.cos(g.angle),s=Math.sin(g.angle);for(const x of [-g.w/2,g.w/2])for(const y of [-g.h/2,g.h/2]){const px=width/2+g.x+x*c-y*s,py=height/2+g.y+x*s+y*c;assert.ok(px>=0&&px<=width&&py>=0&&py<=height,'photo clipped');}const original=previewBox.at(t+5);for(const key of Object.keys(state))assert.ok(Math.abs(state[key]-original[key])<1e-10,'approved motion shifts exactly 5 seconds: '+key);}
+ assert.equal(motion.PHOTO_SHUTTER,261.94);assert.equal(motion.keepsakeAt(262.069).opacity,0);assert.equal(motion.keepsakeAt(262.07).opacity,1);assert.equal(motion.PHOTO_END,271.7266666666667,'original song ending is unchanged');
+ let now=10000;const DateMock={now:()=>now};const clock=load('moon-playback-clock','moonPlaybackTime',{Date:DateMock}).moonPlaybackTime;
+-let timerNext=0;const timers=new Map(),trace=[],saved=[],toasts=[];
++let timerNext=0;const timers=new Map(),trace=[];
+ const page={data:{},setData(d){Object.assign(this.data,d);}};
+ const mgr={active:true,THREE:T,page,_terrain:{active:true},_speedMult:1,_accumTime:271.7,audioContext:{currentTime:0}};
+ let target={name:'previous'},draws=0;let viewport=new T.Vector4(0,0,390,720),scissor=viewport.clone(),scissorTest=true;const renderer={shadowMap:{needsUpdate:false},getActiveCubeFace:()=>0,getActiveMipmapLevel:()=>0,getViewport:v=>v.copy(viewport),setViewport:v=>viewport.copy(v),getScissor:v=>v.copy(scissor),setScissor:v=>scissor.copy(v),getScissorTest:()=>scissorTest,setScissorTest:v=>{scissorTest=v;},clear(){},autoClear:false,capabilities:{maxTextureSize:2048},getSize:v=>v.set(390,720),getDrawingBufferSize:v=>v.set(1170,2160),getRenderTarget:()=>target,setRenderTarget:v=>{target=v;},compile(){},render(){draws++;}};
+ const originalLoader=T.TextureLoader;T.TextureLoader=class{load(path,resolve){queueMicrotask(()=>resolve(new T.Texture({width:941,height:1672})));}};
+-const runtime=load('moon-keepsake','MoonKeepsake,PHOTO_PATH',{...motion,...gpu,moonPlaybackTime:clock,Date:DateMock,fixTexture(){},traceMoon:(m,event)=>trace.push(event),require:(name,resolve)=>resolve(),setTimeout:(fn,ms)=>{if(ms===16){queueMicrotask(fn);return;}timers.set(++timerNext,fn);return timerNext;},clearTimeout:id=>timers.delete(id),wx:{getImageInfo:o=>o.success({path:'/temporary/photo.jpg'}),saveImageToPhotosAlbum:o=>{saved.push(o.filePath);o.success({});},showToast:o=>toasts.push(o.title)}});
++const runtime=load('moon-keepsake','MoonKeepsake,PHOTO_PATH',{...motion,...gpu,moonPlaybackTime:clock,Date:DateMock,fixTexture(){},traceMoon:(m,event)=>trace.push(event),require:(name,resolve)=>resolve(),setTimeout:(fn,ms)=>{if(ms===16){queueMicrotask(fn);return;}timers.set(++timerNext,fn);return timerNext;},clearTimeout:id=>timers.delete(id),wx:{}});
+ (async()=>{
+  const photo=new runtime.MoonKeepsake(mgr,renderer);mgr._terrain.keepsake=photo;await photo.prepare();assert.equal(photo.status,'ready');assert.equal(draws,1,'prepare samples the photo in a hidden target');assert.equal(photo.shown,false);assert.equal(page.data.moonKeepsakeVisible,undefined,'warmup cannot show ending UI');
+  const old=target;assert.throws(()=>photo.render(270,()=>{throw Error('world failed');}),/world failed/);assert.equal(target,old);assert.equal(renderer.autoClear,false);
+  assert.equal(photo.render(261.939,()=>{}),false);photo.render(262.069,()=>{});assert.equal(photo.shown,false);photo.render(262.07,()=>{});assert.equal(draws,3);assert.equal(target,old);assert.equal(page.data.moonKeepsakeVisible,true);assert.equal(page.data.moonKeepsakeControls,false);assert.ok(photo.target.width<=2048&&photo.target.height<=2048);
+  photo.toggleControls();assert.equal(page.data.moonKeepsakeControls,true);[...timers.values()].forEach(fn=>fn());assert.equal(page.data.moonKeepsakeControls,false);
+  assert.equal(photo.holdAtEnd(),true);now+=5000;assert.ok(Math.abs(clock(mgr)-(motion.PHOTO_END+5))<1e-6);photo.setSuspended(true);const held=clock(mgr);now+=60000;assert.equal(clock(mgr),held);photo.setSuspended(false);now+=2000;assert.equal(clock(mgr),held+2);
+- await photo.save();assert.deepEqual(saved,['/temporary/photo.jpg']);assert.equal(page.data.moonKeepsakeSaving,false);assert.deepEqual(toasts,['照片已保存']);
++ assert.equal(typeof photo.save,'undefined','photo ending has no album saving feature');
+  photo.dispose();assert.equal(page.data.moonKeepsakeVisible,false);assert.equal(mgr._moonPhotoHold,null);assert.equal(photo.status,'disposed');assert.equal(photo.holdAtEnd(),false);
+  let late,loaded;const loaderStarted=new Promise(resolve=>{loaded=resolve;});T.TextureLoader=class{load(path,resolve){late=resolve;loaded();}};const stale=new runtime.MoonKeepsake(mgr,renderer),pending=stale.prepare();await loaderStarted;stale.dispose();let disposed=0;const texture=new T.Texture();texture.dispose=()=>disposed++;late(texture);await pending;assert.equal(disposed,1);assert.equal(stale.status,'disposed');
+  T.TextureLoader=originalLoader;
+- console.log('Moon keepsake: approved motion, portrait fit, render-state recovery, ended hold/background resume, hidden controls, album API and cancelled loads PASS');
++ console.log('Moon keepsake: approved motion, portrait fit, render-state recovery, ended hold/background resume, hidden return control and cancelled loads PASS');
+ })().catch(e=>{console.error(e);process.exitCode=1;});

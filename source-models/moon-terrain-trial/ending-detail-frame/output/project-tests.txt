@@ -1,0 +1,178 @@
+[Ambient] chandra unavailable Error: test failure
+    at /Users/a1234/Documents/Codex项目/wx-earth/tools/ambient-encounter.test.cjs:199:53
+Ambient spacecraft: random quiet scheduling, mode/interaction gates, native geometry and async disposal PASS
+app-engine lifecycle tests passed
+city-markers policy tests passed
+TAP version 13
+# Subtest: poetry loader does not call disabled poetrySetsV2 fallback
+ok 1 - poetry loader does not call disabled poetrySetsV2 fallback
+  ---
+  duration_ms: 0.98525
+  type: 'test'
+  ...
+# Subtest: poetry loader tries the uploaded cloud function before database fallback
+ok 2 - poetry loader tries the uploaded cloud function before database fallback
+  ---
+  duration_ms: 0.4565
+  type: 'test'
+  ...
+# Subtest: poetry loader keeps cloud poetry available in DevTools
+ok 3 - poetry loader keeps cloud poetry available in DevTools
+  ---
+  duration_ms: 0.17375
+  type: 'test'
+  ...
+# Subtest: special text loader has no missing DevTools helper or normal success log
+ok 4 - special text loader has no missing DevTools helper or normal success log
+  ---
+  duration_ms: 0.542042
+  type: 'test'
+  ...
+# Subtest: app launch initializes cloud for poetry and database APIs
+ok 5 - app launch initializes cloud for poetry and database APIs
+  ---
+  duration_ms: 0.486833
+  type: 'test'
+  ...
+# Subtest: moon button cloud url resolution is skipped in DevTools
+ok 6 - moon button cloud url resolution is skipped in DevTools
+  ---
+  duration_ms: 0.193125
+  type: 'test'
+  ...
+# Subtest: selection manager has no temporary SEL-DIAG console noise
+ok 7 - selection manager has no temporary SEL-DIAG console noise
+  ---
+  duration_ms: 0.388916
+  type: 'test'
+  ...
+# Subtest: moon background preload is skipped in WeChat DevTools
+ok 8 - moon background preload is skipped in WeChat DevTools
+  ---
+  duration_ms: 0.187583
+  type: 'test'
+  ...
+# Subtest: isDevtools recognizes environment, brand, and platform markers
+ok 9 - isDevtools recognizes environment, brand, and platform markers
+  ---
+  duration_ms: 0.634834
+  type: 'test'
+  ...
+# Subtest: optional cloud texture prefetch is skipped in DevTools and PC clients
+ok 10 - optional cloud texture prefetch is skipped in DevTools and PC clients
+  ---
+  duration_ms: 0.425208
+  type: 'test'
+  ...
+# Subtest: moon manager avoids deprecated getSystemInfoSync
+ok 11 - moon manager avoids deprecated getSystemInfoSync
+  ---
+  duration_ms: 0.341167
+  type: 'test'
+  ...
+# Subtest: texture refresh does not preload moon assets in DevTools and PC clients
+ok 12 - texture refresh does not preload moon assets in DevTools and PC clients
+  ---
+  duration_ms: 0.420375
+  type: 'test'
+  ...
+# Subtest: normal startup success logs stay quiet by default
+ok 13 - normal startup success logs stay quiet by default
+  ---
+  duration_ms: 0.567041
+  type: 'test'
+  ...
+# Subtest: pipeline diagnostics are behind the perf debug flag
+ok 14 - pipeline diagnostics are behind the perf debug flag
+  ---
+  duration_ms: 0.309917
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11.671416
+country-info-manager timezone tests passed
+TAP version 13
+# Subtest: makeBorder uses BufferGeometry attribute compatibility for threejs-miniprogram r108
+ok 1 - makeBorder uses BufferGeometry attribute compatibility for threejs-miniprogram r108
+  ---
+  duration_ms: 0.484333
+  type: 'test'
+  ...
+# Subtest: country search index is initialized before border rendering can fail
+ok 2 - country search index is initialized before border rendering can fail
+  ---
+  duration_ms: 0.083708
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3.917459
+flag-sprite policy tests passed
+Go West chorus: A/B/A, original-star gathering/restore, hollow glyphs, light ribbons, reverse vocals, mobile bounds and disposal PASS
+Go West EVE: local load, random plans, two turns, lower flight, audio/exit gates and disposal PASS
+Go West: call/response, paired Chinese, chorus anchors, clock, exclusions and missing audio PASS
+highlight-manager policy tests passed
+labels-layout policy tests passed
+labels-workset policy tests passed
+Moon atmosphere: isolated discovery, quiet arrival/ending, continuous fade and deterministic replay PASS
+Voyager geometry, three phases, Moon gate, camera preservation and cleanup PASS
+Forward star flow, acceleration, trails and fade PASS
+Persistent stars and gradual direction/density transition PASS
+(node:14510) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+WeChat subpackage API and async asset loading PASS
+(node:14514) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/a1234/Documents/Codex%E9%A1%B9%E7%9B%AE/wx-earth/miniprogram/pages/gl/vendor/gltf-loader.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/a1234/Documents/Codex项目/wx-earth/miniprogram/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Gundam accelerating full-body flight, flowing short-lived exhaust, package and async cleanup PASS
+Moon approach-to-orbit brightness and light-direction continuity PASS
+visible orbit samples [ 174.3, 231.4, 239.4 ]
+original Earth integration: exact original orbit and lighting restored, early visibility, fixed Earth, final framing, disposal PASS
+paper plane lifecycle and timing PASS
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+THREE.GLTFLoader: Duplicating UVs to support aoMap.
+Robot package loading, frozen body, native flames, fading and asynchronous cleanup PASS
+moon voyage lifecycle tests passed
+page lifecycle tests passed
+perf-monitor policy tests passed
+Planet visual: retained Earth object, opaque depth, themes/clouds/brightness, original Moon appearance with terrain normals only PASS
+poetry cache tests passed
+poetry overlap tests passed: vertical/horizontal, movement, unequal frames, no-space fallback, three tracks
+poetry timing tests passed
+render-loop tests passed
+runtime-diagnostics tests passed
+[Saturn preview] test asset failure
+Saturn preview: legacy Three geometry, subpackage loading, drag/pinch, re-entry, failure and disposal PASS
+scene-updater policy tests passed
+texture-health tests passed
+[texture] Earth preview package unavailable; keeping small local preview
+[texture] Earth preview package unavailable; keeping small local preview
+[texture] Scene art package unavailable; keeping placeholder
+[texture] Scene art package unavailable; keeping placeholder
+texture-source tests passed
+timezone-manager policy tests passed
+update-country-meta-imf-weo tests passed
+update-country-meta-worldbank tests passed
+Out of Darkness: cue-driven light, delayed visibility, repeats, pause/resume, other-mode restoration and disposal PASS
+zen English-only track tests passed
+zen lifecycle tests passed
+GPU title: continuous subpixel scale, smooth clock, foreground/disposal; zen arcs: constant speed; EVE/astronaut source geometry PASS
+Zen songs: both openings, original lyric motion, Chinese cue matching and delay, home encounters retained, zen encounters disabled PASS

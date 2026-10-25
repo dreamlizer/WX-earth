@@ -1,5 +1,7 @@
 
 import { MoonOrbitSequence } from './moon-orbit-sequence.js';
+import { MoonTerrainSequence } from './moon-terrain-sequence.js';
+import { setMoonPlaybackSpeed } from './moon-playback-clock.js';
 import { VoyageEncounters } from './moon-voyage-encounters.js';
 import { ZodiacSystem } from './moon-voyage-zodiac.js';
 import { detectEnvironment } from './platform-manager.js';
@@ -238,7 +240,7 @@ export class MoonVoyageManager {
   _syncEarthShaderUniforms() { syncEarthShaderUniforms(this.THREE, this.globeGroup, this.camera, this.scene, this._findEarthMesh(), this._moonDebug); }
   _restoreState() { restoreState(this); }
 
-  init(THREE, scene, globeGroup, camera, page, fader = null) {
+  init(THREE, scene, globeGroup, camera, page, fader = null, renderer = null) {
     this._disposed = false;
     ++this._lifecycleToken;
     this.THREE = THREE;
@@ -247,6 +249,8 @@ export class MoonVoyageManager {
     this.camera = camera;
     this.page = page;
     this.fader = fader;
+    this._terrain?.dispose();
+    this._terrain = new MoonTerrainSequence(this,renderer);
 
     this._isDevtools = false;
     // PC 微信客户端会忽略 texture.flipY，需要像地球那样对月球/机器人贴图做纹理矩阵翻转。
@@ -280,9 +284,7 @@ export class MoonVoyageManager {
   }
 
   setSpeed(mult) {
-    const v = Number(mult);
-    if (!isFinite(v)) return;
-    this._speedMult = Math.max(0.1, Math.min(20.0, v));
+    setMoonPlaybackSpeed(this, mult);
   }
 
   enter() {
@@ -297,6 +299,7 @@ export class MoonVoyageManager {
     if (this._disposed) return;
     const wasEntering = this._entering;
     this._disposed = true;
+    this._terrain?.dispose();
     ++this._lifecycleToken;
     ++this._exitFadeToken;
     this.active = false;

@@ -4,6 +4,7 @@ import { renderWithBloom } from './bloom-manager.js';
 import { INTERACTION_DEBUG_LOG, PERF_HIDE_MARKERS_ON_DRAG, LOD_CITIES_START_APPEAR } from './label-constants.js';
 import { updateLabels } from './labels.js';
 import { updateCityMarkers, setCityMarkersVisible } from './city-markers.js';
+import { goWestOpeningSpin } from './go-west-opening-motion.js';
 
 export function getLabelUpdateIntervalMs({ isDragging, idle, isFlying, hasInertia } = {}) {
   if (isDragging) return 96;
@@ -63,6 +64,10 @@ export function createSceneUpdater(ctx) {
     if (moonActive) {
        songVisual?.reset();
        try { starCtl?.tick?.(now, dtSec); } catch(_){ }
+       if(ctx.renderMoonTerrain?.()) {
+         try { runtimeDiagnostics?.flush?.(now); } catch(_){}
+         return;
+       }
        // Still render the scene
        let composer = refs.composer();
        let bloomPass = refs.bloomPass();
@@ -112,8 +117,17 @@ export function createSceneUpdater(ctx) {
     lighting.updateDirLight(zenActive);
     const songFrame = songVisual?.prepare(page.__zenSongOpening,
       !!isSongVisualEnabled?.(),!!page.__zenPoetryPaused,now);
-    const rotationConfig = songFrame ? {...LIGHT_CFG,zen:{...LIGHT_CFG.zen,
-      autoRotate:{...LIGHT_CFG.zen.autoRotate,degPerSec:songFrame.rotationSpeed}}} : LIGHT_CFG;
+    let rotationConfig = songFrame ? {...LIGHT_CFG,zen:{...LIGHT_CFG.zen,
+      autoRotate:{...LIGHT_CFG.zen.autoRotate,degPerSec:songFrame.rotationSpeed===0?0:LIGHT_CFG.zen.autoRotate.degPerSec+
+        (songFrame.rotationSpeed-LIGHT_CFG.zen.autoRotate.degPerSec)*songFrame.darken}}} : LIGHT_CFG;
+    const goWest=zenActive&&page.data.goWestActive&&page.__goWestSong?.frame;
+    if(goWest){
+      const spin=goWestOpeningSpin(goWest.time,LIGHT_CFG.zen?.autoRotate?.degPerSec ?? 3,
+        page.__zenSongOpening?.firstLyricMs ?? 36020);
+      if(spin.active)rotationConfig={...LIGHT_CFG,zen:{...LIGHT_CFG.zen,autoRotate:{
+        ...LIGHT_CFG.zen?.autoRotate,enabled:true,startDelayMs:0,
+        degPerSec:page.__goWestSong.getAudio?.()?.paused?0:spin.speed}}};
+    }
 
     // 6. Rotation & Inertia
     if (!touch.isDragging && !touch.pinch) {
@@ -171,6 +185,9 @@ export function createSceneUpdater(ctx) {
     
     try { refs.poetry3d()?.update?.(now); } catch(_){}
     try { highlight.updatePerFrame(now); } catch(_){ }
+
+    // Keep mirror glints in the same frame as the final globe/camera transforms.
+    ctx.beforeRender?.();
 
     // 9. Rendering (Bloom)
     let composer = refs.composer();

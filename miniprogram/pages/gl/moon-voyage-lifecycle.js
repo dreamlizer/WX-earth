@@ -1,5 +1,7 @@
 
 import { APP_CFG } from './config.js';
+import { traceMoon } from './moon-voyage-trace.js';
+import { moonPlaybackTime } from './moon-playback-clock.js';
 import { 
   rebuildMilkyWay, 
   rebuildStarDust, 
@@ -34,6 +36,7 @@ export const ASSETS = {
 };
 
 export const restoreState = (mgr) => {
+  mgr._terrain?.dispose();
   if (mgr.timer) {
     try { clearInterval(mgr.timer); } catch (_) {}
     mgr.timer = null;
@@ -268,7 +271,7 @@ const bindMoonDebugHooks = (mgr) => {
   if (!mgr.page) return;
   mgr.page.__moonVoyageMgr = mgr;
   mgr.page.debugSpeedUp = () => {
-    mgr._speedMult = 10.0;
+    mgr.setSpeed(10.0);
     wx.showToast({ title: '10x Speed', icon: 'none' });
   };
 };
@@ -291,9 +294,14 @@ const startTimeline = (mgr) => {
     mgr._lastTickTime = now;
     if (dt > 0.1) dt = 0.1;
     const dtScaled = dt * mgr._speedMult;
-    mgr._accumTime += dtScaled;
+    const playbackTime=moonPlaybackTime(mgr,now);
+    mgr._accumTime=playbackTime===null?mgr._accumTime+dtScaled:playbackTime;
     
     updateTimeline(mgr, mgr._accumTime, dtScaled);
+    if (now >= (mgr._moonTraceNext || 0)) {
+      mgr._moonTraceNext = now + 5000;
+      traceMoon(mgr, 'tick');
+    }
   }, TICK_RATE);
 };
 
@@ -313,6 +321,9 @@ const startVoyage = (mgr, lifecycleToken = mgr._lifecycleToken) => {
     try { resetVoyageRuntimeState(mgr); } catch (_) {}
 
     playAudio(mgr, ASSETS);
+    traceMoon(mgr, 'start');
+    // Only explicit voyage entry starts this optional tail download; launch never waits on it.
+    mgr._terrain?.prepare();
 
     // 启动时初始化 Zodiac System (Phase 1)
   try { mgr._zodiacSys?.init?.(); } catch(e) { console.error('[Zodiac] Init failed', e); }
@@ -425,6 +436,7 @@ export const enterVoyage = (mgr) => {
 };
 
 export const exitVoyage = (mgr) => {
+  traceMoon(mgr, 'exit-request', {stack: new Error().stack});
   if (mgr._disposed) return;
   const shouldRestore =
     !!mgr.active ||
@@ -439,6 +451,8 @@ export const exitVoyage = (mgr) => {
   if (!shouldRestore) return;
   if (mgr._exiting) return;
   mgr._exiting = true;
+  mgr._terrain?.keepsake?.hideControls();
+  mgr.page?.setData?.({moonKeepsakeVisible:false,moonKeepsakeControls:false});
   const token = ++mgr._exitFadeToken;
 
   console.log('[Moon] Aborting mission');

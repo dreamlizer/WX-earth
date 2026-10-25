@@ -1,0 +1,63 @@
+{
+  "start": 193,
+  "end": 271.7266666666667,
+  "width": 540,
+  "height": 960,
+  "moonRadius": 650,
+  "blendEdge": 12,
+  "keyframes": [
+    193,
+    205,
+    216,
+    222,
+    226,
+    230,
+    234,
+    242,
+    250,
+    255,
+    263,
+    271.7266666666667
+  ],
+  "phases": [
+    [
+      193,
+      "远景接近"
+    ],
+    [
+      205,
+      "下降 · 展开环形山"
+    ],
+    [
+      216,
+      "跨过大坑 · 三人仍很小"
+    ],
+    [
+      222,
+      "缓慢靠近三人"
+    ],
+    [
+      226,
+      "看清背影 · 望向画外"
+    ],
+    [
+      230,
+      "顺着他们的视线"
+    ],
+    [
+      234,
+      "远地球 · 持续缓慢前行"
+    ],
+    [
+      255,
+      "三人同望 · 镜头持续前行至曲终"
+    ]
+  ],
+  "audio": {
+    "file": "../descent-to-earth-193/assets/moon-tail-193.wav",
+    "sourceStart": 193,
+    "sha1": "b6907476df6166a35745ebfeebab0d20f550fe4f",
+    "clock": "sourceStart + HTMLAudioElement.currentTime (exact decoded PCM tail)",
+    "sourceFile": "../descent-to-earth-193/assets/Zen-moon.mp3"
+  }
+}

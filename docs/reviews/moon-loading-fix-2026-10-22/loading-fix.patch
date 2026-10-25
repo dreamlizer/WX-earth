@@ -1,0 +1,292 @@
+--- before/miniprogram/pages/gl/moon-voyage-assets.js
++++ miniprogram/pages/gl/moon-voyage-assets.js
+@@ -114,11 +114,16 @@
+   const companionTune = (APP_CFG?.moonVoyage?.timeline?.companionRobot) || {};
+   const companionCfg = mergeCompanionRobotCfg(companionBase, companionTune);
+   const lifecycleToken = mgrState._lifecycleToken;
++  // Optional encounters own their cancellation/fallback. They must not hold the
++  // launch gate when the Moon and original music are already available.
++  Promise.resolve().then(() => {
++    if (mgrState._isLifecycleCurrent && !mgrState._isLifecycleCurrent(lifecycleToken)) return;
++    return mgrState._companionFx?.preload?.(companionCfg);
++  }).catch(() => null);
+   const preloadPromise = Promise.all([
+     Promise.all([ensureMoonVisualPackage(), ensureMoonColorPackage()])
+       .then(() => '/moon-color-assets/2k_moon.jpg'),
+-    downloadFile(ASSETS.AUDIO, mgrState, lifecycleToken),
+-    Promise.resolve().then(() => mgrState._companionFx?.preload?.(companionCfg)).catch(() => null)
++    downloadFile(ASSETS.AUDIO, mgrState, lifecycleToken)
+   ]).then(([texPath, audioPath]) => {
+     if (typeof mgrState._isLifecycleCurrent === 'function' &&
+         !mgrState._isLifecycleCurrent(lifecycleToken)) return false;
+--- before/miniprogram/pages/gl/moon-voyage-encounters.js
++++ miniprogram/pages/gl/moon-voyage-encounters.js
+@@ -78,16 +78,25 @@
+     if(!this.starship)this.starship=new VoyageStarship({THREE:this.THREE,scene:this.scene,readBuffer:this.readStarshipBuffer});
+     if(this.robot)this.robot.preload();if(this.starship)this.starship.preload();
+     if(this.model)return Promise.resolve();if(this.pending)return this.pending;
++    if(this.attempted)return Promise.resolve();this.attempted=true;
+     const generation=this.generation||0,T=this.THREE,textures=[];
++    const current=()=>generation===(this.generation||0);
++    let timer,cancel;
++    const deadline=new Promise((resolve,reject)=>{
++      cancel=(timedOut=false)=>{clearTimeout(timer);if(current())this.generation=generation+1;const error=Error(timedOut?'Voyager load timeout (30s)':'Voyager load cancelled');error.cancelled=!timedOut;reject(error);};
++      timer=setTimeout(()=>cancel(true),30000);this._cancelVoyagerLoad=cancel;
++    });
+     const read=this.readBuffer||(()=>new Promise((resolve,reject)=>wx.getFileSystemManager().readFile({filePath:ROOT+'geometry.bin',success:r=>resolve(r.data),fail:reject})));
+     const ready=this.readBuffer?Promise.resolve():new Promise((resolve,reject)=>require('../../voyager-assets/ready.js',resolve,reject));
+-    this.pending=ready.then(()=>Promise.all([read(),...Array.from({length:4},(_,i)=>new Promise((resolve,reject)=>new T.TextureLoader().load('/'+ROOT+'texture-'+i+'.png',tex=>{tex.flipY=false;tex.encoding=T.sRGBEncoding;textures.push(tex);resolve(tex);},undefined,reject)))])).then(([buffer,...maps])=>{
++    const work=ready.then(()=>{if(!current())throw Error('Voyager load cancelled');return Promise.all([read(),...Array.from({length:4},(_,i)=>new Promise((resolve,reject)=>new T.TextureLoader().load('/'+ROOT+'texture-'+i+'.png',tex=>{if(!current()){tex.dispose();reject(Error('Voyager load cancelled'));return;}tex.flipY=false;tex.encoding=T.sRGBEncoding;textures.push(tex);resolve(tex);},undefined,reject)))]);}).then(([buffer,...maps])=>{
+       if(generation!==(this.generation||0)){maps.forEach(t=>t.dispose());return;}
+       Object.assign(this,buildVoyager(T,buffer,maps));this.textures=maps;this.model.visible=false;this.scene.add(this.model);
+       this.flow=createStarFlow(T);this.scene.add(this.flow.group);
+       const pixels=new Uint8Array(64*64*4);for(let y=0;y<64;y++)for(let x=0;x<64;x++){const dx=Math.abs(x-31.5)/31.5,dy=Math.abs(y-31.5)/31.5,v=Math.exp(-Math.min(dx*dx*180+dy*dy*5,dy*dy*180+dx*dx*5));const k=(y*64+x)*4;pixels[k]=pixels[k+1]=pixels[k+2]=255;pixels[k+3]=255*v;}
+       const map=new T.DataTexture(pixels,64,64,T.RGBAFormat);map.needsUpdate=true;this.glint=new T.Sprite(new T.SpriteMaterial({map,transparent:true,depthWrite:false,depthTest:false}));this.glint.renderOrder=20;this.glint.visible=false;this.scene.add(this.glint);
+-    }).catch(e=>{textures.forEach(t=>t.dispose());console.warn('[Moon] Voyager unavailable',e);}).then(()=>{if(generation===(this.generation||0))this.pending=null;});return this.pending;
++    });
++    const pending=Promise.race([work,deadline]).catch(e=>{if(current())this.generation=generation+1;textures.forEach(t=>t.dispose());if(!e.cancelled)console.warn('[Moon] Voyager unavailable; keeping voyage running',e);}).then(()=>{clearTimeout(timer);if(this._cancelVoyagerLoad===cancel)this._cancelVoyagerLoad=null;if(this.pending===pending)this.pending=null;});
++    this.pending=pending;return pending;
+   }
+   update({t,node1Time,node2Time,node3Time,moonMesh,globeGroup,dtSec=0}) {
+     const T=this.THREE,cam=this.camera;
+@@ -99,7 +108,7 @@
+       if(this.gundam&&this.gundam.model){this.eva.actors.forEach(a=>shadeCraft(T,a.materials,cam));this.eva.update(t,cam);}
+       else this.eva.reset();
+     }
+-    if(!this.model){if(!this.pending&&!this.attempted){this.attempted=true;this.preload();}return;}
++    if(!this.model){if(!this.pending&&!this.attempted)this.preload();return;}
+     this.model.visible=false;this.model.scale.setScalar(this.baseScale);this.glint.visible=false;if(this.robot)this.robot.reset();if(this.starship)this.starship.reset();
+     const e1=t-(node1Time-28),e2=t-(node1Time+9);
+     // Shorten the robot encounter by 2.5 seconds; its action clock is independent
+@@ -191,5 +200,5 @@
+     }
+   }
+   reset(){if(this.eva)this.eva.reset();if(this.gundam)this.gundam.reset();if(this.starship)this.starship.reset();if(this.robot)this.robot.reset();this.landing=null;this.shipEntry=null;this.earthRay=null;this.moonStart=null;this.travel=0;if(this.model)this.model.visible=false;if(this.flow)this.flow.group.visible=false;if(this.glint)this.glint.visible=false;}
+-  dispose(){if(this.eva){this.eva.dispose();this.eva=null;}if(this.gundam){this.gundam.dispose();this.gundam=null;}if(this.starship){this.starship.dispose();this.starship=null;}if(this.robot){this.robot.dispose();this.robot=null;}this.generation=(this.generation||0)+1;this.pending=null;this.attempted=false;this.reset();disposeStarFlow(this.flow);this.flow=null;if(this.model){this.model.traverse(o=>{if(o.geometry)o.geometry.dispose();});this.materials.forEach(m=>m.dispose());this.textures.forEach(t=>t.dispose());}for(const key of ['model','stars','glint']){const o=this[key];if(o){if(key==='key')this.scene.remove(o.target);if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}if(o.parent)o.parent.remove(o);this[key]=null;}}}
+-}
++  dispose(){this._cancelVoyagerLoad?.();this._cancelVoyagerLoad=null;if(this.eva){this.eva.dispose();this.eva=null;}if(this.gundam){this.gundam.dispose();this.gundam=null;}if(this.starship){this.starship.dispose();this.starship=null;}if(this.robot){this.robot.dispose();this.robot=null;}this.generation=(this.generation||0)+1;this.pending=null;this.attempted=false;this.reset();disposeStarFlow(this.flow);this.flow=null;if(this.model){this.model.traverse(o=>{if(o.geometry)o.geometry.dispose();});this.materials.forEach(m=>m.dispose());this.textures.forEach(t=>t.dispose());}for(const key of ['model','stars','glint']){const o=this[key];if(o){if(key==='key')this.scene.remove(o.target);if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}if(o.parent)o.parent.remove(o);this[key]=null;}}}
++}
+--- before/miniprogram/pages/gl/moon-terrain-sequence.js
++++ miniprogram/pages/gl/moon-terrain-sequence.js
+@@ -4,6 +4,7 @@
+ import {TERRAIN_CONFIG} from './moon-terrain-config.js';
+ import {moonPlaybackTime} from './moon-playback-clock.js';
+ import {MoonKeepsake} from './moon-keepsake.js';
++import {withMoonRenderTarget,warmMoonTextures} from './moon-gpu-warmup.js';
+ 
+ const smooth=(a,b,t)=>{const u=Math.max(0,Math.min(1,(t-a)/(b-a)));return u*u*(3-2*u);};
+ // Match the accepted r160 ACES fit locally; r108 uses a different scalar approximation.
+@@ -40,10 +41,27 @@
+       this.outputMix={value:1};const materials=new Set();view.scene.traverse(o=>{if(o.isMesh)for(const m of [].concat(o.material))materials.add(m);});
+       for(const mat of materials){const previous=mat.onBeforeCompile;if(renderer.outputEncoding===mgr.THREE.sRGBEncoding)mat.defines={...mat.defines,TAIL_NATIVE_SRGB:1};mat.onBeforeCompile=(shader,...args)=>{previous.call(mat,shader,...args);shader.uniforms.tailOutputMix=this.outputMix;shader.fragmentShader='uniform float tailOutputMix;\n'+lunarToneMapping+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>','#if defined(TONE_MAPPING)\n gl_FragColor.rgb=mix(toneMapping(gl_FragColor.rgb),lunarACES(gl_FragColor.rgb,toneMappingExposure),tailOutputMix);\n#endif');shader.fragmentShader=shader.fragmentShader.replace('#include <encodings_fragment>','#include <encodings_fragment>\n#ifndef TAIL_NATIVE_SRGB\n gl_FragColor.rgb=mix(gl_FragColor.rgb,LinearTosRGB(gl_FragColor).rgb,tailOutputMix);\n#endif');};mat.needsUpdate=true;}
+       const existingPrograms=new Set(renderer.info.programs);
++      // Build the handoff material variant now, rather than recompiling at 193s.
++      const moon=mgr.moonMesh.material,body=view.body.material,compiled=body.onBeforeCompile,originalMoon=moon.onBeforeCompile;
++      body.normalMap=moon.normalMap;body.normalScale.copy(moon.normalScale);body.color.copy(moon.color);
++      body.onBeforeCompile=(shader,...args)=>{compiled.call(body,shader,...args);originalMoon.call(moon,shader,...args);};body.needsUpdate=true;
+       this.withRenderer(()=>{renderer.compile(view.scene,view.camera);});
++      const warmStarted=Date.now(),yieldFrame=()=>new Promise(resolve=>setTimeout(resolve,16));
++      await warmMoonTextures({THREE:mgr.THREE,renderer,textures:[...build.textures,body.normalMap].filter(Boolean),isCurrent:current,yieldFrame});
++      const probe=new mgr.THREE.WebGLRenderTarget(64,64),culling=new Map(),shadowUpdate=renderer.shadowMap.needsUpdate;
++      view.scene.traverse(o=>{if(o.isMesh||o.isPoints){culling.set(o,o.frustumCulled);o.frustumCulled=false;}});
++      try{
++        // Exercise near crew/shadows and far Moon, including their geometry and depth programs.
++        for(const time of [271.7266667,193]){
++          if(!current())return;
++          this.withRenderer(()=>withMoonRenderTarget(renderer,probe,()=>{view.pose(time);renderer.shadowMap.needsUpdate=true;renderer.render(view.scene,view.camera);}));
++          await yieldFrame();
++        }
++      }finally{culling.forEach((flag,o)=>{o.frustumCulled=flag;});renderer.shadowMap.needsUpdate=shadowUpdate;probe.dispose();}
++      if(!current())return;
+       if(renderer.info.programs.some(program=>!existingPrograms.has(program)&&program.program&&!gl.getProgramParameter(program.program,gl.LINK_STATUS)))throw Error('Terrain shader failed to link');
+-      this.status='ready';this.readyMs=Date.now()-this.startedAt;
+-      console.log('[Moon terrain] Ready', {milliseconds:this.readyMs,downloads:this.assets.stats.downloads,cacheHits:this.assets.stats.cacheHits});
++      this.gpuWarmupMs=Date.now()-warmStarted;this.status='ready';this.readyMs=Date.now()-this.startedAt;
++      console.log('[Moon terrain] Ready', {milliseconds:this.readyMs,gpuWarmupMs:this.gpuWarmupMs,downloads:this.assets.stats.downloads,cacheHits:this.assets.stats.cacheHits});
+     }).catch(error=>{if(current()){this.status='failed';this.error=String(error?.message||error);this.releaseScene(build);console.warn('[Moon terrain] Keeping original tail:',this.error);}}).finally(()=>{if(generation===this.generation)this.pending=null;else this.releaseScene(build);});
+   }
+   select(time) {
+@@ -72,9 +90,6 @@
+     this.initialMoonRotation=rigid.clone().multiply(mgr.moonMesh.quaternion);
+     v.body.material.color.copy(mgr.moonMesh.material.color);v.body.material.normalMap=mgr.moonMesh.material.normalMap;
+     v.body.material.normalScale.copy(mgr.moonMesh.material.normalScale);
+-    const compiled=v.body.material.onBeforeCompile,originalMoon=mgr.moonMesh.material.onBeforeCompile;
+-    v.body.material.onBeforeCompile=(shader,...args)=>{compiled.call(v.body.material,shader,...args);originalMoon.call(mgr.moonMesh.material,shader,...args);};
+-    v.body.material.needsUpdate=true;
+     console.log('[Moon terrain] Handoff',this.handoff);
+   }
+   pose(time) {
+--- before/miniprogram/pages/gl/moon-keepsake.js
++++ miniprogram/pages/gl/moon-keepsake.js
+@@ -2,6 +2,7 @@
+ import {keepsakeAt,keepsakeGeometry,PHOTO_END,PHOTO_SHUTTER} from './moon-keepsake-motion.js';
+ import {moonPlaybackTime} from './moon-playback-clock.js';
+ import {traceMoon} from './moon-voyage-trace.js';
++import {withMoonRenderTarget} from './moon-gpu-warmup.js';
+ 
+ export const PHOTO_PATH='/moon-photo-assets/keepsake.jpg';
+ let packagePromise=null;
+@@ -56,12 +57,19 @@
+       this.uniforms={worldMap:value(this.target.texture),photoMap:value(texture),photoUV:value(texture.matrix),viewport:value(new T.Vector2()),frameSize:value(new T.Vector2()),imageSize:value(new T.Vector2()),offset:value(new T.Vector2()),angle:value(0),border:value(0),bottom:value(0),shutter:value(0),photoVisible:value(0),backgroundDim:value(0),blur:value(0),fit:value(1)};
+       this.material=new T.ShaderMaterial({uniforms:this.uniforms,vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:fragment,depthTest:false,depthWrite:false});
+       this.material.toneMapped=false;this.quad=new T.Mesh(new T.PlaneBufferGeometry(2,2),this.material);this.quad.frustumCulled=false;this.scene.add(this.quad);
+-      this.renderer.compile(this.scene,this.camera);this.renderer.initTexture?.(texture);
++      // r108 uploads samplers on a real draw. Allocate the final-size background
++      // target now and sample both textures into a different, hidden target.
++      this.updateFrame(PHOTO_END);
++      withMoonRenderTarget(this.renderer,this.target,()=>this.renderer.clear());
++      await new Promise(resolve=>setTimeout(resolve,16));if(!current())return;
++      const probe=new T.WebGLRenderTarget(16,16,{depthBuffer:false,stencilBuffer:false});
++      try{withMoonRenderTarget(this.renderer,probe,()=>this.renderer.render(this.scene,this.camera));}
++      finally{probe.dispose();}
++      if(!current())return;
+       this.status='ready';traceMoon(this.mgr,'photo-ready');
+     }catch(error){if(current()){this.status='failed';console.warn('[Moon photo] Keeping previous ending:',error?.message||error);traceMoon(this.mgr,'photo-failed');}this.release();}
+   }
+-  render(time,renderWorld){
+-    if(this.status!=='ready'||this.disposed||time<PHOTO_SHUTTER)return false;
++  updateFrame(time){
+     const r=this.renderer,T=this.mgr.THREE,size=r.getSize(new T.Vector2()),pixels=r.getDrawingBufferSize(new T.Vector2());
+     const cap=Math.min(2048,r.capabilities.maxTextureSize),scale=Math.min(1,cap/Math.max(pixels.x,pixels.y));
+     const tw=Math.max(1,Math.round(pixels.x*scale)),th=Math.max(1,Math.round(pixels.y*scale));
+@@ -70,6 +78,11 @@
+     u.viewport.value.copy(size);u.frameSize.value.set(g.w,g.h);u.imageSize.value.set(g.iw,g.ih);u.offset.value.set(g.x,-g.y);
+     for(const key of ['shutter','backgroundDim','blur'])u[key].value=state[key];
+     u.photoVisible.value=state.opacity;u.angle.value=g.angle;u.border.value=g.border;u.bottom.value=g.bottom;u.fit.value=g.fit;
++    return state;
++  }
++  render(time,renderWorld){
++    if(this.status!=='ready'||this.disposed||time<PHOTO_SHUTTER)return false;
++    const r=this.renderer,state=this.updateFrame(time);
+     const target=r.getRenderTarget(),autoClear=r.autoClear;
+     try{r.autoClear=true;r.setRenderTarget(this.target);renderWorld();r.setRenderTarget(target);r.render(this.scene,this.camera);}
+     finally{r.setRenderTarget(target);r.autoClear=autoClear;}
+--- before/tools/moon-keepsake.test.cjs
++++ tools/moon-keepsake.test.cjs
+@@ -1,6 +1,7 @@
+ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+ const T=require('../miniprogram/node_modules/threejs-miniprogram').createScopedThreejs({width:390,height:720,createImage:()=>({})});
+ const load=(name,names,extra={})=>{const s=fs.readFileSync('miniprogram/pages/gl/'+name+'.js','utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'');const box={module:{exports:{}},console,Promise,setTimeout,clearTimeout,...extra};vm.runInNewContext(s+'\nmodule.exports={'+names+'};',box);return box.module.exports;};
++const gpu=load('moon-gpu-warmup','withMoonRenderTarget,warmMoonTextures');
+ const motion=load('moon-keepsake-motion','keepsakeAt,keepsakeGeometry,PHOTO_END,PHOTO_SHUTTER');
+ const previewCode=fs.readFileSync('source-models/moon-terrain-trial/crew-keepsake-motion/keepsake-motion.js','utf8').replace(/^export /gm,'');const previewBox={};vm.runInNewContext(previewCode+'\nthis.at=keepsakeAt;',previewBox);
+ for(const [width,height] of [[390,720],[390,844],[375,812],[540,960],[844,390]])for(let t=267.07;t<500;t+=.2){const state=motion.keepsakeAt(t),g=motion.keepsakeGeometry(state,width,height),c=Math.cos(g.angle),s=Math.sin(g.angle);for(const x of [-g.w/2,g.w/2])for(const y of [-g.h/2,g.h/2]){const px=width/2+g.x+x*c-y*s,py=height/2+g.y+x*s+y*c;assert.ok(px>=0&&px<=width&&py>=0&&py<=height,'photo clipped');}assert.equal(JSON.stringify(state),JSON.stringify(previewBox.at(t),(k,v)=>k==='time'?undefined:v),'native motion must match approved preview');}
+@@ -8,13 +9,13 @@
+ let timerNext=0;const timers=new Map(),trace=[],saved=[],toasts=[];
+ const page={data:{},setData(d){Object.assign(this.data,d);}};
+ const mgr={active:true,THREE:T,page,_terrain:{active:true},_speedMult:1,_accumTime:271.7,audioContext:{currentTime:0}};
+-let target={name:'previous'},draws=0;const renderer={autoClear:false,capabilities:{maxTextureSize:2048},getSize:v=>v.set(390,720),getDrawingBufferSize:v=>v.set(1170,2160),getRenderTarget:()=>target,setRenderTarget:v=>{target=v;},compile(){},render(){draws++;}};
++let target={name:'previous'},draws=0;let viewport=new T.Vector4(0,0,390,720),scissor=viewport.clone(),scissorTest=true;const renderer={shadowMap:{needsUpdate:false},getActiveCubeFace:()=>0,getActiveMipmapLevel:()=>0,getViewport:v=>v.copy(viewport),setViewport:v=>viewport.copy(v),getScissor:v=>v.copy(scissor),setScissor:v=>scissor.copy(v),getScissorTest:()=>scissorTest,setScissorTest:v=>{scissorTest=v;},clear(){},autoClear:false,capabilities:{maxTextureSize:2048},getSize:v=>v.set(390,720),getDrawingBufferSize:v=>v.set(1170,2160),getRenderTarget:()=>target,setRenderTarget:v=>{target=v;},compile(){},render(){draws++;}};
+ const originalLoader=T.TextureLoader;T.TextureLoader=class{load(path,resolve){queueMicrotask(()=>resolve(new T.Texture({width:941,height:1672})));}};
+-const runtime=load('moon-keepsake','MoonKeepsake,PHOTO_PATH',{...motion,moonPlaybackTime:clock,Date:DateMock,fixTexture(){},traceMoon:(m,event)=>trace.push(event),require:(name,resolve)=>resolve(),setTimeout:fn=>{timers.set(++timerNext,fn);return timerNext;},clearTimeout:id=>timers.delete(id),wx:{getImageInfo:o=>o.success({path:'/temporary/photo.jpg'}),saveImageToPhotosAlbum:o=>{saved.push(o.filePath);o.success({});},showToast:o=>toasts.push(o.title)}});
++const runtime=load('moon-keepsake','MoonKeepsake,PHOTO_PATH',{...motion,...gpu,moonPlaybackTime:clock,Date:DateMock,fixTexture(){},traceMoon:(m,event)=>trace.push(event),require:(name,resolve)=>resolve(),setTimeout:(fn,ms)=>{if(ms===16){queueMicrotask(fn);return;}timers.set(++timerNext,fn);return timerNext;},clearTimeout:id=>timers.delete(id),wx:{getImageInfo:o=>o.success({path:'/temporary/photo.jpg'}),saveImageToPhotosAlbum:o=>{saved.push(o.filePath);o.success({});},showToast:o=>toasts.push(o.title)}});
+ (async()=>{
+- const photo=new runtime.MoonKeepsake(mgr,renderer);mgr._terrain.keepsake=photo;await photo.prepare();assert.equal(photo.status,'ready');
++ const photo=new runtime.MoonKeepsake(mgr,renderer);mgr._terrain.keepsake=photo;await photo.prepare();assert.equal(photo.status,'ready');assert.equal(draws,1,'prepare samples the photo in a hidden target');assert.equal(photo.shown,false);assert.equal(page.data.moonKeepsakeVisible,undefined,'warmup cannot show ending UI');
+  const old=target;assert.throws(()=>photo.render(270,()=>{throw Error('world failed');}),/world failed/);assert.equal(target,old);assert.equal(renderer.autoClear,false);
+- assert.equal(photo.render(266,()=>{}),false);photo.render(270,()=>{});assert.equal(draws,1);assert.equal(target,old);assert.equal(page.data.moonKeepsakeVisible,true);assert.equal(page.data.moonKeepsakeControls,false);assert.ok(photo.target.width<=2048&&photo.target.height<=2048);
++ assert.equal(photo.render(266,()=>{}),false);photo.render(270,()=>{});assert.equal(draws,2);assert.equal(target,old);assert.equal(page.data.moonKeepsakeVisible,true);assert.equal(page.data.moonKeepsakeControls,false);assert.ok(photo.target.width<=2048&&photo.target.height<=2048);
+  photo.toggleControls();assert.equal(page.data.moonKeepsakeControls,true);[...timers.values()].forEach(fn=>fn());assert.equal(page.data.moonKeepsakeControls,false);
+  assert.equal(photo.holdAtEnd(),true);now+=5000;assert.ok(Math.abs(clock(mgr)-(motion.PHOTO_END+5))<1e-6);photo.setSuspended(true);const held=clock(mgr);now+=60000;assert.equal(clock(mgr),held);photo.setSuspended(false);now+=2000;assert.equal(clock(mgr),held+2);
+  await photo.save();assert.deepEqual(saved,['/temporary/photo.jpg']);assert.equal(page.data.moonKeepsakeSaving,false);assert.deepEqual(toasts,['照片已保存']);
+--- before/tools/moon-encounters.test.cjs
++++ tools/moon-encounters.test.cjs
+@@ -5,7 +5,7 @@
+ const gundamFile=path.resolve('miniprogram/pages/gl/moon-voyage-gundam.js');
+ const gundamBox={module:{exports:{}},console,require:require('module').createRequire(gundamFile),release:require('../miniprogram/pages/gl/moon-voyage-robot.js').release};
+ vm.runInNewContext(fs.readFileSync(gundamFile,'utf8').replace(/^import .*;$/m,'').replace(/export /g,'')+'\nmodule.exports={VoyageGundam}',gundamBox);
+-const box={VoyageEvaPursuit:require('./eva-pursuit-runtime.cjs').VoyageEvaPursuit,VoyageGundam:gundamBox.module.exports.VoyageGundam,VoyageStarship:require('../miniprogram/pages/gl/moon-voyage-starship.js').VoyageStarship,shadeCraft:require('../miniprogram/pages/gl/moon-voyage-craft-light.js').shadeCraft,VoyageRobot:require('../miniprogram/pages/gl/moon-voyage-robot.js').VoyageRobot,...flowBox.module.exports,require:require('module').createRequire(filename),module:{exports:{}},console};
++const box={setTimeout,clearTimeout,VoyageEvaPursuit:require('./eva-pursuit-runtime.cjs').VoyageEvaPursuit,VoyageGundam:gundamBox.module.exports.VoyageGundam,VoyageStarship:require('../miniprogram/pages/gl/moon-voyage-starship.js').VoyageStarship,shadeCraft:require('../miniprogram/pages/gl/moon-voyage-craft-light.js').shadeCraft,VoyageRobot:require('../miniprogram/pages/gl/moon-voyage-robot.js').VoyageRobot,...flowBox.module.exports,require:require('module').createRequire(filename),module:{exports:{}},console};
+ vm.runInNewContext(fs.readFileSync(filename,'utf8').replace(/^import .*;$/gm,'').replace(/export /g,'')+'\nmodule.exports={VoyageEncounters,buildVoyager}',box);
+ const {VoyageEncounters,buildVoyager}=box.module.exports;
+ const b=fs.readFileSync('miniprogram/voyager-assets/geometry.bin');const buffer=b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength);
+--- /dev/null
++++ miniprogram/pages/gl/moon-gpu-warmup.js
+@@ -0,0 +1,32 @@
++// Every offscreen draw restores the shared renderer before yielding a frame.
++export function withMoonRenderTarget(renderer, target, draw) {
++  const previous=renderer.getRenderTarget(),autoClear=renderer.autoClear;
++  const face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel();
++  const viewport=renderer.getViewport(target.viewport.clone()),scissor=renderer.getScissor(target.scissor.clone()),scissorTest=renderer.getScissorTest();
++  const shadowUpdate=renderer.shadowMap.needsUpdate;
++  try {
++    renderer.autoClear=true;renderer.setRenderTarget(target);renderer.setScissorTest(false);
++    return draw();
++  } finally {
++    renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.setRenderTarget(previous,face,mip);
++    renderer.autoClear=autoClear;renderer.shadowMap.needsUpdate=shadowUpdate;
++  }
++}
++
++// r108 has no initTexture(). A real sampler draw uploads one image per frame.
++export async function warmMoonTextures({THREE:T,renderer,textures,isCurrent,yieldFrame}) {
++  const target=new T.WebGLRenderTarget(16,16,{depthBuffer:false,stencilBuffer:false});
++  const material=new T.ShaderMaterial({uniforms:{image:{value:null}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:'uniform sampler2D image;varying vec2 vUv;void main(){gl_FragColor=texture2D(image,vUv);}',depthTest:false,depthWrite:false});
++  material.toneMapped=false;
++  const scene=new T.Scene(),camera=new T.Camera(),geometry=new T.PlaneBufferGeometry(2,2),quad=new T.Mesh(geometry,material);
++  quad.frustumCulled=false;scene.add(quad);
++  try {
++    for(const texture of new Set(textures)) {
++      if(!isCurrent())throw Error('Cancelled Moon GPU warmup');
++      material.uniforms.image.value=texture;
++      withMoonRenderTarget(renderer,target,()=>renderer.render(scene,camera));
++      await yieldFrame();
++    }
++    if(!isCurrent())throw Error('Cancelled Moon GPU warmup');
++  } finally {geometry.dispose();material.dispose();target.dispose();}
++}
+--- /dev/null
++++ tools/moon-loading-warmup.test.cjs
+@@ -0,0 +1,52 @@
++const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
++const T=require('../miniprogram/node_modules/threejs-miniprogram').createScopedThreejs({width:390,height:720,createImage:()=>({})});
++const load=(name,names,extra={})=>{const s=fs.readFileSync('miniprogram/pages/gl/'+name+'.js','utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'');const box={module:{exports:{}},console,Promise,setTimeout,clearTimeout,...extra};vm.runInNewContext(s+'\nmodule.exports={'+names+'};',box);return box.module.exports;};
++const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{resolve,promise};};
++const tick=()=>new Promise(r=>setImmediate(r));
++const gpu=load('moon-gpu-warmup','withMoonRenderTarget,warmMoonTextures');
++function rendererFixture(){
++ let target=null,face=2,mip=1,scissorTest=true;const viewport=new T.Vector4(3,4,390,720),scissor=new T.Vector4(5,6,380,710);
++ const draws=[],programs=[],gl={MAX_TEXTURE_IMAGE_UNITS:1,MAX_TEXTURE_SIZE:2,LINK_STATUS:3,getParameter:k=>k===1?16:4096,getProgramParameter:()=>true};
++ return {draws,info:{programs},capabilities:{maxTextureSize:2048},autoClear:false,shadowMap:{enabled:false,type:7,autoUpdate:true,needsUpdate:false},toneMappingExposure:.9,physicallyCorrectLights:false,
++  getContext:()=>gl,getActiveCubeFace:()=>face,getActiveMipmapLevel:()=>mip,getRenderTarget:()=>target,
++  getViewport:v=>v.copy(viewport),setViewport:v=>viewport.copy(v),getScissor:v=>v.copy(scissor),setScissor:v=>scissor.copy(v),getScissorTest:()=>scissorTest,setScissorTest:v=>{scissorTest=v;},
++  setRenderTarget(t,f,l){target=t;face=f;mip=l;},getSize:v=>v.set(390,720),getDrawingBufferSize:v=>v.set(1170,2160),clear(){},
++  render(scene){assert.ok(target,'warmup must never draw to the visible canvas');draws.push({target,scene,shadow:this.shadowMap.needsUpdate});},compile(){},
++  snapshot(){return JSON.stringify({target:target?.uuid||null,face,mip,scissorTest,viewport:viewport.toArray(),scissor:scissor.toArray(),clear:this.autoClear,shadow:this.shadowMap,physical:this.physicallyCorrectLights,exposure:this.toneMappingExposure});}
++ };
++}
++(async()=>{
++ // Required Moon packages/music gate launch; a permanently stalled optional model does not.
++ const packages=[deferred(),deferred()],audio=deferred(),optional=deferred();let optionalCalls=0,downloads=0,moons=0;
++ const assets=load('moon-voyage-assets','preloadAssets',{APP_CFG:{},ensureMoonVisualPackage:()=>packages[0].promise,ensureMoonColorPackage:()=>packages[1].promise,createMoon(){moons++;},wx:{cloud:{downloadFile(o){downloads++;audio.promise.then(()=>o.success({statusCode:200,tempFilePath:'/audio'}));}}}});
++ const mgr={_lifecycleToken:1,_isLifecycleCurrent:n=>n===mgr._lifecycleToken,_companionFx:{preload(){optionalCalls++;return optional.promise;}}};
++ let launched=false;const first=assets.preloadAssets(mgr,{TEXTURE:'cloud://moon',AUDIO:'cloud://audio'}).then(r=>{launched=true;return r;}),second=assets.preloadAssets(mgr,{TEXTURE:'cloud://moon',AUDIO:'cloud://audio'});
++ packages.forEach(p=>p.resolve());await tick();assert.equal(launched,false,'music is required');audio.resolve();assert.equal(await first,true);await second;assert.equal(moons,1);assert.equal(downloads,1);assert.equal(optionalCalls,1);assert.equal(mgr.loaded,true);
++ await assets.preloadAssets(mgr,{TEXTURE:'cloud://moon',AUDIO:'cloud://audio'});assert.equal(downloads,1,'warm replay reuses required resources');
++ const stale={_lifecycleToken:2,_isLifecycleCurrent:()=>false};assert.equal(await assets.preloadAssets(stale,{}),false);
++ // Voyager has a bounded budget; partial and late textures are released without touching other encounters.
++ const callbacks=[],timers=new Map();let next=0,otherDisposed=0;
++ class Optional{preload(){return Promise.resolve();}dispose(){otherDisposed++;}reset(){}}
++ const NativeLoader=T.TextureLoader;T.TextureLoader=class{load(path,done){callbacks.push(done);}};
++ const encounters=load('moon-voyage-encounters','VoyageEncounters',{require:()=>({}),VoyageGundam:Optional,VoyageEvaPursuit:Optional,VoyageRobot:Optional,VoyageStarship:Optional,disposeStarFlow(){},setTimeout:(fn,ms)=>{assert.equal(ms,30000);timers.set(++next,fn);return next;},clearTimeout:id=>timers.delete(id)});
++ const fx=new encounters.VoyageEncounters();fx.THREE=T;fx.readBuffer=()=>new Promise(()=>{});fx.scene=new T.Scene();
++ const pending=fx.preload();await tick();assert.equal(callbacks.length,4);assert.equal(timers.size,1);let freed=0;const tex=()=>{const t=new T.Texture();t.dispose=()=>freed++;return t;};callbacks[0](tex());[...timers.values()][0]();await pending;assert.equal(freed,1);assert.equal(otherDisposed,0);assert.equal(timers.size,0);callbacks.slice(1).forEach(cb=>cb(tex()));await tick();assert.equal(freed,4);assert.equal(fx.model,undefined);await fx.preload();assert.equal(callbacks.length,4,'no repeated timeout retries during the same voyage');
++ fx.dispose();assert.equal(otherDisposed,4);const again=fx.preload();await tick();fx.dispose();await again;assert.equal(timers.size,0,'exit cancels the optional budget');callbacks.slice(4).forEach(cb=>cb(tex()));await tick();assert.equal(freed,8);assert.equal(fx.model,undefined);T.TextureLoader=NativeLoader;
++ // Renderer state is restored even when the GPU pass throws or the generation exits between frames.
++ const r=rendererFixture(),initial=r.snapshot(),target=new T.WebGLRenderTarget(16,16);
++ assert.throws(()=>gpu.withMoonRenderTarget(r,target,()=>{r.shadowMap.needsUpdate=true;r.setViewport(new T.Vector4(0,0,16,16));throw Error('GPU failed');}),/GPU failed/);assert.equal(r.snapshot(),initial);target.dispose();
++ const a=new T.Texture(),b=new T.Texture();let yields=0;
++ await gpu.warmMoonTextures({THREE:T,renderer:r,textures:[a,a,b],isCurrent:()=>true,yieldFrame:async()=>{yields++;assert.equal(r.snapshot(),initial);}});assert.equal(yields,2);assert.equal(r.draws.length,2);
++ let alive=true;await assert.rejects(gpu.warmMoonTextures({THREE:T,renderer:r,textures:[a,b],isCurrent:()=>alive,yieldFrame:async()=>{alive=false;}}),/Cancelled/);assert.equal(r.draws.length,3);assert.equal(r.snapshot(),initial);
++ // Real sequence readiness includes offscreen geometry/shadow draws and the final Moon shader variant.
++ const scene=new T.Scene(),body=new T.Mesh(new T.SphereBufferGeometry(1,8,6),new T.MeshStandardMaterial()),crew=new T.Mesh(new T.BoxBufferGeometry(),new T.MeshStandardMaterial());scene.add(body,crew);
++ const camera=new T.PerspectiveCamera(45,390/720,.1,2000);camera.position.z=1000;camera.updateMatrixWorld();const stars=new T.Points(new T.BufferGeometry(),new T.ShaderMaterial({uniforms:{}}));scene.add(stars);const poses=[];
++ const view={scene,body,camera,stars,pose(t){poses.push(t);crew.visible=t>250;},setAnchor(){}};
++ let originalHookCalled=0;const moon=new T.Mesh(new T.SphereBufferGeometry(1),new T.MeshStandardMaterial({normalMap:new T.Texture()}));moon.material.onBeforeCompile=()=>originalHookCalled++;
++ const mainScene=new T.Scene();mainScene.add(new T.DirectionalLight(),new T.AmbientLight());const worldCamera=new T.PerspectiveCamera(45,390/720,.1,2000);worldCamera.position.z=10;worldCamera.updateMatrixWorld();
++ const mgr2={active:true,THREE:T,moonMesh:moon,scene:mainScene,camera:worldCamera};let compiledVersion;
++ r.compile=()=>{assert.equal(body.material.normalMap,moon.material.normalMap);body.material.onBeforeCompile({uniforms:{},fragmentShader:''});compiledVersion=body.material.version;};
++ const seqModule=load('moon-terrain-sequence','MoonTerrainSequence',{...gpu,MoonTerrainAssets:class{constructor(){this.stats={downloads:0,cacheHits:10};}load(){return Promise.resolve({});}cancel(){}},MoonKeepsake:class{prepare(){}dispose(){}},buildTerrainScene:async opts=>{opts.onScene(scene);opts.ownedTextures.add(a);return view;},ensureSceneArtPackage:()=>Promise.resolve(),TERRAIN_CONFIG:{anchor:{rigidRotation:[0,0,0,1],moonCenter:[0,0,0]}},setTimeout:fn=>{queueMicrotask(fn);}});
++ const sequence=new seqModule.MoonTerrainSequence(mgr2,r);sequence.prepare();assert.equal(sequence.status,'loading');await sequence.pending;assert.equal(sequence.status,'ready');assert.equal(originalHookCalled,1);assert.deepEqual(poses,[271.7266667,193]);assert.equal(r.draws.filter(d=>d.scene===scene).length,2);assert.ok(r.draws.filter(d=>d.scene===scene).every(d=>d.shadow));assert.equal(r.snapshot(),initial);assert.equal(crew.frustumCulled,true);sequence.enter(193);assert.equal(body.material.version,compiledVersion,'193s must reuse the already warmed material');sequence.dispose();
++ console.log('Moon loading: required-only launch, optional timeout/cancel/late disposal, offscreen state recovery and fully warmed readiness PASS');
++})().catch(error=>{console.error(error);process.exitCode=1;});

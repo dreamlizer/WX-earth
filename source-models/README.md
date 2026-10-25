@@ -55,9 +55,19 @@
 
 NASA Robonaut R2 与 Valkyrie R5 的下载包和转换 GLB 仍保留在 `nasa-robonaut-r2/`、`nasa-valkyrie-r5/`，但因工程姿态/转换效果不适合展示而撤出网页。RX-93 Nu Gundam 的文件保留在 `nu-gundam-ryanwill679/`，但因展开浮游炮遮挡人体主体、轮廓不适合网页展示而撤出。Exia 与 Strike Freedom 的上传者标注 `CC BY 4.0`，RX-78-2、沙漠 Zaku 与 RONIN / 04 标注 `CC0`，Unicorn Gundam 为 `CC BY-NC 4.0` 且仅限非商业使用；高达角色、机体设计、名称和商标权利不由这些许可授予，公开或商业使用前需另行确认。
 
+## 2026-10-21：EVA-02 与月面环形山摆件
+
+- `eva-unit-02-ryanwill679/`：Ryanwill679 的 2 号机站姿 GLB，约 35.5 万三角面、36 张内嵌贴图。来自 Objaverse 公开镜像。2026-10-22 已用飞姿副本接入 `miniprogram/eva02-assets/`，源站姿文件仍留在这里。
+- Sketchfab 上 a111ur 的 Unit-02 Beast Mode 标记为不可下载，Objaverse 也没有镜像，本轮未取得文件。
+- 环形山中远景参考摆件（只收集，未接入）：Lunokhod-2、Pragyan、briligg 月球车、玩具月球车、Polar Hab 营地、NASA Habitat Demonstration Unit、Viking Lander、已有 Apollo 登月舱。另有一批 NASA 轨道器和火星车文件留在 source-models，不是这次月坑摆件的首选。
+
+## 2026-10-21：lefort 初号机源文件
+
+`eva-unit-01-lefort/` 保存 lefort 的 Evangelion Unit-01 GLB。约 60,522 三角面、3 张内嵌贴图、无骨骼。来自 Objaverse 对 Sketchfab 可下载模型的公开镜像，原页 CC BY 4.0。2026-10-22 已烘焙飞姿并接入 `miniprogram/eva01-assets/`，源 GLB 仍留在这里。
+
 ## 2026-10-03：高达接入与伊娃移除
 
-RX-78-2 已转换为 gundam-assets 分包。2026-10-06更新：77.8–97.8秒调度、约79.5–80秒实际从右侧入画；4.3机体尺度、约85°前倾保留，近景放慢并逐渐侧倾展示胸部，沿连续弧线飞向左前方，全身在画内约6秒，最后淡出在画外。源文件保留，构建脚本 tools/model-build/prepare-gundam.py；已接入选定的C固定飞行姿势：源工程的头、肩肘和髋膝分组离线摆姿并烘焙为静态几何，默认构建源为rx78-flight-poses-2026-10-06/bank.glb；运行时维持整体飞行控制，没有新增关节动画。EVE 已按用户要求从正式绕月移除，源文件继续保留，旧运行资产移入 archives/removed-eve-2026-10-03/。
+RX-78-2 已转换为 gundam-assets 分包。2026-10-06 当时的调度和 4.3 尺度已被后续追逐段覆盖，现役时刻以 `docs/HANDOFF-MOON-VOYAGE.md` 顶部为准，不要再用本段结尾时间。源文件保留，构建脚本 tools/model-build/prepare-gundam.py；已接入选定的C固定飞行姿势：源工程的头、肩肘和髋膝分组离线摆姿并烘焙为静态几何，默认构建源为rx78-flight-poses-2026-10-06/bank.glb；运行时维持整体飞行控制，没有新增关节动画。EVE 已按用户要求从正式绕月移除，源文件继续保留，旧运行资产移入 archives/removed-eve-2026-10-03/。
 
 ## 2026-10-07：正式 MV 四类模型索引
 
@@ -67,5 +77,7 @@ RX-78-2 已转换为 gundam-assets 分包。2026-10-06更新：77.8–97.8秒调
 | 黄色机器人 Mech Drone | `mech-encounter-candidates/mech-drone/` | `tools/model-build/prepare-mech-drone.py` |
 | RX-78-2 高达 | `rx78-2-anonmalyfound/` 与 `rx78-flight-poses-2026-10-06/bank.glb` | `tools/model-build/prepare-gundam.py` |
 | Luminaris Starship | `mech-encounter-candidates/luminaris-starship/` | `tools/model-build/prepare-starship.mjs`、`tools/model-build/prepare-starship-textures.py` |
+| 初号机 | `eva-unit-01-lefort/`，飞姿在 `eva-pursuit-flight-2026-10-22/` | `tools/model-build/prepare-eva.py`、`tools/model-build/build-eva-flight-poses.py` |
+| 二号机 | `eva-unit-02-ryanwill679/`，飞姿在 `eva-pursuit-flight-2026-10-22/` | 同上 |
 
-四类运行资源分别位于 `miniprogram/voyager-assets/`、`miniprogram/robot-assets/`、`miniprogram/gundam-assets/` 和 `miniprogram/starship-assets/`；署名与许可见各分包内说明文件。其余候选状态仍按上文历史记录。
+运行资源还包含 `miniprogram/eva01-assets/` 和 `miniprogram/eva02-assets/`。旅行者号、机器人、高达、星舰仍在各自原分包；署名与许可见各分包内说明文件。环形山参考摆件仍未接入运行包。

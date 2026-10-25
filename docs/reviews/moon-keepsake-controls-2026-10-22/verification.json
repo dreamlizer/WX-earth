@@ -1,0 +1,24 @@
+{
+  "scope": [
+    "miniprogram/pages/gl/index.wxml",
+    "miniprogram/pages/gl/index.wxss"
+  ],
+  "oldMoonButtonRemovedDuringPhoto": true,
+  "photoCameraAudioChanged": false,
+  "controlsVisibleAfterTap": true,
+  "nativeSaveClickOpenedPermissionDialog": true,
+  "albumPermissionGranted": false,
+  "denialMessageVerified": true,
+  "returnClickVerified": true,
+  "returnedEarthVisible": true,
+  "testsPassed": 47,
+  "preservedFiles": 108,
+  "uploaded": false,
+  "published": false,
+  "surface": "WeChat DevTools Stable 2.02.2608070 iPhone 12/13 Pro 75%",
+  "limitations": [
+    "No physical-device album write verified.",
+    "This round used the existing page debug handlers to enter and accelerate the ending; it is not a new full natural-speed user-path run.",
+    "Simulator homepage zen button clicks did not trigger the expected mode switch during diagnosis; no homepage logic was changed in this patch."
+  ]
+}

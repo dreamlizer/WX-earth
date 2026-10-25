@@ -1,0 +1,14 @@
+{
+  "BRegion": [
+    558,
+    0,
+    1098,
+    960
+  ],
+  "BPixelIdentical": true,
+  "hold17And20PixelIdentical": true,
+  "baselineSHA256": {
+    "comparison.png": "4c425316855c5ac2801cefe18643135d36d267688f29f893262e83dd3d19cfc5",
+    "viewer.js": "1d618f30d03f73ff7da3529a953b22d16a8e0d10fd700c5c9408ceb84516fcbb"
+  }
+}

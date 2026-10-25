@@ -1,0 +1,27 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 88,
+  "meshes": 68,
+  "materials": 47,
+  "images": 44,
+  "animations": 23,
+  "skins": 1,
+  "triangles_est": 199521,
+  "vertices_est": 138783,
+  "extensions_used": [
+    "KHR_draco_mesh_compression",
+    "KHR_materials_clearcoat",
+    "KHR_materials_transmission",
+    "KHR_materials_specular",
+    "KHR_materials_ior",
+    "EXT_texture_webp"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%202020%20Perseverance%20Rover/Mars%202020%20Perseverance%20Rover.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%202020%20Perseverance%20Rover/Mars%202020%20Perseverance%20Rover.glb",
+  "nasa_folder": "Mars 2020 Perseverance Rover",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/mars-2020-perseverance-rover-nasa/Mars 2020 Perseverance Rover.glb",
+  "bytes": 4987176,
+  "sha256": "10db7c03a5e63a5a3b3e7baa6243aa4918ba045fa8ff0a731d0217491adc727f"
+}

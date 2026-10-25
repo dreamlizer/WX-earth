@@ -1,0 +1,23 @@
+{
+  "runtimeChanged": false,
+  "uploaded": false,
+  "published": false,
+  "testFiles": 48,
+  "findings": [
+    {
+      "id": "optional-voyager-launch-gate",
+      "file": "miniprogram/pages/gl/moon-voyage-assets.js",
+      "line": 117,
+      "verifiedBy": "real module VM controlled deferred dependencies"
+    },
+    {
+      "id": "first-draw-gpu-work",
+      "files": [
+        "miniprogram/pages/gl/moon-terrain-sequence.js",
+        "miniprogram/pages/gl/moon-keepsake.js"
+      ],
+      "verifiedBy": "bundled Three r108 implementation and runtime call sites",
+      "measuredDeviceStutter": false
+    }
+  ]
+}

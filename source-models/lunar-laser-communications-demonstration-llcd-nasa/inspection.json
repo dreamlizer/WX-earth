@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null,
+  "nodes": 2,
+  "meshes": 1,
+  "materials": 32,
+  "images": 0,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 182818,
+  "vertices_est": 548454,
+  "extensions_used": [
+    "KHR_draco_mesh_compression"
+  ],
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Laser%20Communications%20Demonstration%20%28LLCD%29/Lunar%20Laser%20Communications%20Demonstration%20%28LLCD%29.glb",
+  "final_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Laser%20Communications%20Demonstration%20%28LLCD%29/Lunar%20Laser%20Communications%20Demonstration%20%28LLCD%29.glb",
+  "nasa_folder": "Lunar Laser Communications Demonstration (LLCD)",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-laser-communications-demonstration-llcd-nasa/Lunar Laser Communications Demonstration (LLCD).glb",
+  "bytes": 1048648,
+  "sha256": "22631256b05e0804392225a38f6e5e2932b3edf590c5bb46d184b63e3f294f84"
+}

@@ -1,0 +1,24 @@
+{
+  "reportedUploadMainPackageKB": 2193,
+  "serverLimitKB": 2048,
+  "changedFiles": [
+    "project.config.json"
+  ],
+  "devtoolsDependencyAnalysis": {
+    "beforeMainPackage": "2.50MB",
+    "afterMainPackage": "2.31MB",
+    "beforeFiles": 334,
+    "afterFiles": 329,
+    "note": "Dependency source analysis, not the final server upload size"
+  },
+  "projectTests": {
+    "passed": 49,
+    "total": 49
+  },
+  "compileErrors": 0,
+  "versionPrepared": "2.0.1",
+  "uploaded": false,
+  "published": false,
+  "approvalBlocked": true,
+  "approvalReason": "Upload overwrites the existing experience version; earlier explicit no-upload instruction has not been explicitly revoked."
+}

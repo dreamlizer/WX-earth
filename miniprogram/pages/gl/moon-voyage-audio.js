@@ -1,6 +1,7 @@
 
 import { APP_CFG } from './config.js';
-import { startMoonLyrics } from './moon-voyage-lyrics.js';
+import { startMoonLyrics, stopMoonLyrics } from './moon-voyage-lyrics.js';
+import { traceMoon } from './moon-voyage-trace.js';
 
 export const playAudio = (mgrState, ASSETS) => {
   if (mgrState.audioContext) mgrState.audioContext.destroy();
@@ -12,6 +13,10 @@ export const playAudio = (mgrState, ASSETS) => {
     mgrState.audioContext === ctx
   );
   const ctx = wx.createInnerAudioContext();
+  mgrState._moonPlaybackClock=null;
+  mgrState._moonPlaybackSeek=null;
+  mgrState._moonPhotoHold=null;
+  mgrState._moonAudioWaiting=true;
   ctx.src = mgrState.audioPath || ASSETS.AUDIO;
   ctx.autoplay = true;
   ctx.loop = false;
@@ -23,17 +28,35 @@ export const playAudio = (mgrState, ASSETS) => {
   
   ctx.onPlay(() => {
     if (!isCurrent()) return;
+    mgrState._moonAudioWaiting=false;
+    traceMoon(mgrState,'audio-play');
     console.log('[Moon] Audio playing');
     let baseTimeMs = Date.now();
     try { baseTimeMs = baseTimeMs - Math.max(0, Number(ctx.currentTime || 0) * 1000); } catch(_){ }
     try { startMoonLyrics(mgrState, baseTimeMs); } catch(_){ }
   });
+  ctx.onWaiting?.(()=>{if(isCurrent()){mgrState._moonAudioWaiting=true;traceMoon(mgrState,'audio-waiting');}});
+  ctx.onCanplay?.(()=>{if(isCurrent()){mgrState._moonAudioWaiting=false;traceMoon(mgrState,'audio-canplay');}});
+  ctx.onPause?.(()=>{if(isCurrent()){mgrState._moonAudioWaiting=true;traceMoon(mgrState,'audio-pause');}});
+  ctx.onSeeking?.(()=>{if(isCurrent()){stopMoonLyrics(mgrState);traceMoon(mgrState,'audio-seeking');}});
+  ctx.onSeeked?.(()=>{
+    if(!isCurrent())return;
+    traceMoon(mgrState,'audio-seeked');
+    startMoonLyrics(mgrState,Date.now()-Math.max(0,Number(ctx.currentTime)||0)*1000);
+  });
   ctx.onError((res) => {
     if (!isCurrent()) return;
+    traceMoon(mgrState,'audio-error',{error:res.errCode});
     console.error('[Moon] Audio error', res);
   });
   ctx.onEnded(() => {
      if (!isCurrent()) return;
+     traceMoon(mgrState,'audio-ended');
+     if(mgrState._terrain?.keepsake?.holdAtEnd()){
+       stopMoonLyrics(mgrState);
+       console.log('[Moon] Audio ended, keeping the floating photo');
+       return;
+     }
      console.log('[Moon] Audio ended, triggering exit');
      if (typeof mgrState.exit === 'function') mgrState.exit();
   });

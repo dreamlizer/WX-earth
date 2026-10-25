@@ -1,0 +1,29 @@
+{
+  "referenceTime": 255,
+  "reference": "WeChat DevTools actual framebuffer and scene pose",
+  "earthQuaternionAtReference": [
+    -0.008975811442246958,
+    0.9574316898108903,
+    0.2786863099281043,
+    -0.07468557299420525
+  ],
+  "sunDirection": [
+    0.9254386809795844,
+    0.30283037718639455,
+    0.22772134375133235
+  ],
+  "sunInEarthView": [
+    0.9243389912987644,
+    0.3155345414827806,
+    0.21455857544277623
+  ],
+  "earthInEarthView": [
+    -0.00857036114036712,
+    0.963825124140023,
+    0.25579008821874993,
+    -0.07442519570304693
+  ],
+  "cloudOpacity": 0.58,
+  "earthAngularSpeed": 0.009,
+  "cloudAngularSpeed": 0.00035
+}

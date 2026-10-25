@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('miniprogram/pages/gl/moon-voyage-audio.js','utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'');
+const contexts=[];let stopped=0,holds=0,exits=0;
+const box={module:{exports:{}},APP_CFG:{},Date,console,traceMoon(){},startMoonLyrics(){},stopMoonLyrics(){stopped++;},wx:{createInnerAudioContext(){const c={currentTime:0,destroy(){},onPlay(fn){this.play=fn;},onError(){},onEnded(fn){this.end=fn;}};contexts.push(c);return c;}}};
+vm.runInNewContext(source+'\nmodule.exports={playAudio};',box);
+const mgr={_moonPhotoHold:{time:300},_terrain:{keepsake:{holdAtEnd(){holds++;return true;}}},exit(){exits++;}};
+box.module.exports.playAudio(mgr,{AUDIO:'original-song'});assert.equal(mgr._moonPhotoHold,null,'a new voyage clears the old photo clock');assert.equal(contexts[0].src,'original-song');assert.equal(contexts[0].loop,false);
+contexts[0].end();assert.equal(holds,1);assert.equal(stopped,1);assert.equal(exits,0,'natural ending must keep the ready photo instead of returning home');
+mgr.audioContext=null;contexts[0].end();assert.equal(holds,1,'destroyed player cannot change the new voyage');
+mgr._terrain.keepsake.holdAtEnd=()=>false;box.module.exports.playAudio(mgr,{AUDIO:'original-song'});contexts[1].end();assert.equal(exits,1,'unavailable photo retains the original ending rather than trapping the user');
+console.log('Moon keepsake audio: original song, one player, natural-end hold, stale callbacks and original fallback PASS');

@@ -1,0 +1,24 @@
+{
+  "lyricLeadSeconds": 1.2,
+  "platforms": "all",
+  "testFilesPassed": 49,
+  "sourceSha256": {
+    "miniprogram/pages/gl/go-west-song.js": "cf4013161935e23a7919d7d235beaf5eb0019f13dee1ed314330d2c4e9606a21",
+    "miniprogram/pages/gl/app-engine.js": "4096fc6aaaef0dbcafa41c4192c9d119c93327c2ce65196a448bc85250ab7cdf",
+    "miniprogram/pages/gl/zen-opening-art.js": "6d1da3a39f4fa49c7d95fea0aebe10ae21d8d5e74e695d11d0de95904700027f",
+    "miniprogram/pages/gl/go-west-opening.js": "46bc66f3350a292a0d36e832bc73ec4f862623bd852e06cb2dc4ea0211cf2911",
+    "miniprogram/assets/data/go-west-cues.js": "7e8399cdee560f114cbac7c740702b46667dc6b3a8b384b6ec3ec2bbfa7131c4",
+    "miniprogram/assets/data/go-west-text.js": "70db6593daf0d7bea5f9681cdea008735f2de5f8c465b0fbe1f6359381c02cfb",
+    "miniprogram/pages/gl/zen-visual-clock.js": "dbf6e919cf351e2e7e2ef307e144a3be627d6b36ad47921ccb5c6b31edb66a2b",
+    "miniprogram/pages/gl/config.js": "3743b520f3c1a30bffd6e6cc9347e7ab5862ed35a41045bd1a3ce7278a6a2f1a"
+  },
+  "uploaded": true,
+  "published": false,
+  "uploadStatus": "代码上传成功",
+  "version": "2.0.2",
+  "uploadMethod": "computer use / WeChat DevTools",
+  "uploadConfirmedAtLocal": "2026-10-23 12:21 Asia/Shanghai",
+  "devtoolsErrors": 0,
+  "devtoolsWarnings": 4,
+  "phoneSyncAccepted": false
+}

@@ -1,0 +1,429 @@
+Window: "wx-earth", App: 微信开发者工具.
+0 标准窗口 wx-earth, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&projectname=wx-earth&projectid=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&theme=dark&skeletonPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F45d96a16732744f89acf418bfabca55a%2Fpageskeleton.html&appid=wx6f41ba1a7d7bc51e&windowMode=fullMode&openSource=cli&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=34598&userDataPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608070&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608070
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 标题 代码上传成功, Value: 3
+						13 文本 代码上传成功
+					14 text SourceMap 文件 以下 18 文件没有被打包上传： miniprogram/assets/data/County_meta.json (packOptions.ignore)
+					15 文本 miniprogram/assets/data/countries.geojson (packOptions.ignore)
+					16 文本 miniprogram/assets/data/country_data.json (packOptions.ignore)
+					17 文本 miniprogram/assets/flags/README.md (packOptions.ignore)
+					18 文本 miniprogram/assets/models/paper-airplane.json (packOptions.ignore)
+					19 文本 miniprogram/astronaut-assets/AUTHOR.md (packOptions.ignore)
+					20 文本 miniprogram/astronaut-assets/SOURCE.md (packOptions.ignore)
+					21 文本 miniprogram/chandra-assets/AUTHOR.md (packOptions.ignore)
+					22 文本 miniprogram/eva01-assets/AUTHOR.md (packOptions.ignore)
+					23 文本 miniprogram/eva02-assets/AUTHOR.md (packOptions.ignore)
+					24 文本 miniprogram/eve-assets/AUTHOR.md (packOptions.ignore)
+					25 文本 miniprogram/eve-assets/SOURCE.md (packOptions.ignore)
+					26 文本 miniprogram/gundam-assets/AUTHOR.md (packOptions.ignore)
+					27 文本 miniprogram/juno-assets/AUTHOR.md (packOptions.ignore)
+					28 文本 miniprogram/libs/troika-three-text.min.js.txt (packOptions.ignore)
+					29 文本 miniprogram/magellan-assets/AUTHOR.md (packOptions.ignore)
+					30 文本 miniprogram/pages/gl/country_data.json (packOptions.ignore)
+					31 文本 miniprogram/pages/gl/tz-lookup.js (packOptions.ignore)
+					32 未加标签的图片 /g61UOSqj3WOpc6-d50XK-EB6nvs56GHX5tgv5SGQ4fXw7MCZcmlJsVRDXpMMOFvFtcz5jj-tR58g1rmjmAzgvA
+					33 文本 使用多端框架，可快速生成App
+					34 link Description: 去了解, Value: file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&projectname=wx-earth&projectid=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&theme=dark&skeletonPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F45d96a16732744f89acf418bfabca55a%2Fpageskeleton.html&appid=wx6f41ba1a7d7bc51e&windowMode=fullMode&openSource=cli&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=34598&userDataPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608070&appVersionType=0#
+				35 container
+					36 container
+						37 text 预览 编辑
+					38 container
+						39 text 普通编译
+					40 container
+						41 container
+							42 text 12 : 21
+						43 container
+							44 标题 行星物语, Value: 3
+								45 文本 行星物语
+							46 链接
+							47 链接
+						48 HTML 内容 Webview: pages/gl/index, URL: 127.0.0.1:50855/__pageframe__/pages/gl/index
+							49 container
+								50 文本 中
+								51 文本 2026/10/23 08:21:32
+								52 文本 ⚙
+								53 container 禅定
+									54 文本 禅
+								55 container
+									56 文本 定
+								57 图像
+								58 container
+									59 文本 绘图区域
+									60 图像
+						61 HTML 内容 小程序逻辑层, URL: 127.0.0.1:50855/appservice/s0/_sessionId/simulator-app-session-s0/mainframe?load
+							62 container
+								63 HTML 内容 小程序逻辑层, URL: 127.0.0.1:50855/appservice/instanceframe?s=1792729147794&autoload#id_1
+								64 HTML 内容 127.0.0.1:50855/appservice/appContext?contextName=app&id=ifr-1_2#id_1
+								65 HTML 内容 127.0.0.1:50855/appservice/app_xrframe_renderContext?contextName=app_xrframe_render&id=ifr-1_3&empty=true#id_1
+								66 HTML 内容 小程序逻辑层, URL: 127.0.0.1:50855/appservice/instanceframe?s=1792729147794#id_2
+								67 HTML 内容 127.0.0.1:50855/appservice/app_sub_debugContext?contextName=app_sub_debug&id=ifr-1_4&empty=true#id_1
+						68 container
+							69 链接
+							70 链接
+					71 container
+						72 文本 iPhone 12/13 (Pro) 75% 16
+					73 container
+						74 文本 页面路径
+					75 文本 pages/gl/index
+					76 链接 复制
+				77 container
+					78 container
+						79 container
+							80 文本 代码依赖分析 — wx-earth
+							81 工具栏
+								82 按钮 Toggle Primary Side Bar (⌘K ⌘B)
+									83 文本 
+								84 按钮 切换面板 (⌘J)
+									85 文本 
+								86 按钮 Toggle Secondary Side Bar (⌥⌘B)
+									87 文本 
+						88 container
+							89 container
+								90 标签页组 活动视图切换器
+									91 标签 (settable, integer) 资源管理器 (⌘K ⇧⌘E), Value: 0
+										92 container 资源管理器 (⌘K ⇧⌘E)
+											93 文本 
+									94 标签 (settable, integer) Search (⇧⌘F), Value: 0
+										95 container Search (⇧⌘F)
+											96 文本 
+									97 标签 (settable, integer) Description: 源代码管理 (⌃⇧G) - 1677 个挂起的更改, Value: 0
+										98 文本 
+									99 标签 (selected) 代码依赖分析, Value: 1
+										100 container 代码依赖分析
+									101 弹出式按钮 其他视图
+										102 文本 
+								103 container
+									104 标题 代码依赖分析, Value: 2
+										105 文本 代码依赖分析
+									106 内容列表 代码依赖分析操作
+							107 container
+								108 container
+									109 container
+										110 container
+											111 标签页组
+												112 标签 (selected) Description: 代码依赖分析, Value: 1
+													113 文本 代码依赖分析
+													114 内容列表 Tab actions
+														115 按钮 关闭 (⌘W)
+															116 文本 
+											117 工具栏 Editor actions
+												118 按钮 向右拆分编辑器 (⌘\) [⌥] 向下拆分编辑器
+													119 文本 
+												120 弹出式按钮 更多操作...
+													121 文本 
+								122 container
+									123 标签页组 活动视图切换器
+										124 标签 (settable, integer) Description: 构建 - Logs: 100, Value: 0
+											125 container 构建 - Logs: 100
+												126 文本 构建
+											127 container 构建 - Logs: 100
+												128 文本 100
+										129 标签 (settable, integer) Description: 调试器 - Errors: 0, Warnings: 4, Value: 0
+											130 文本 调试器
+											131 文本 4
+										132 标签 (settable, integer) Description: 问题 (⌘K ⇧⌘M) - 总计 0 个问题, Value: 0
+											133 文本 问题
+										134 标签 (settable, integer) Description: 输出, Value: 0
+											135 文本 输出
+										136 标签 (settable, integer) Description: 调试控制台 (⇧⌘Y), Value: 0
+											137 文本 调试控制台
+										138 标签 (settable, integer) 终端 (⌃`), Value: 0
+											139 container 终端 (⌃`)
+												140 文本 终端
+										141 标签 (selected) 代码质量, Value: 1
+											142 container 代码质量
+												143 文本 代码质量
+									144 工具栏 代码质量操作
+									145 工具栏
+										146 按钮 最大化面板大小
+											147 文本 
+										148 按钮 关闭面板
+											149 文本 
+									150 container
+										151 container
+											152 文本 代码质量
+											153 文本 重新扫描
+											154 文本 2026/10/23 12:20
+											155 文本 主包
+											156 container
+												157 text 3 项
+											158 文本 主包大小
+											159 文本 主包尺寸（不包含插件）应小于 1.5 M
+											160 文本 查看教程
+											161 文本 未通过
+											162 文本 JS文件
+											163 文本 主包内不应存在主包未使用的JS文件
+											164 文本 查看教程
+											165 文本 已通过
+											166 文本 组件
+											167 文本 主包内不应存在主包未使用的组件
+											168 文本 查看教程
+											169 文本 已通过
+											170 文本 代码包
+											171 container
+												172 text 3 项
+											173 文本 图片和音频资源
+											174 文本 图片和音频资源大小应不超过 200 K
+											175 文本 查看教程
+											176 文本 未通过
+											177 文本 组件
+											178 文本 启用组件按需注入
+											179 文本 查看教程
+											180 文本 已通过
+											181 文本 插件
+											182 文本 不建议引用过大插件（大小超过 200 K）
+											183 文本 查看教程
+											184 文本 已通过
+											185 文本 代码压缩
+											186 container
+												187 text 3 项
+											188 文本 无使用或无依赖文件
+											189 container
+												190 text 3 项
+											191 文本 敏感信息
+											192 container
+												193 text 1 项
+						194 container
+							195 container wx-earth (Git) - main*, Checkout Branch/Tag...
+								196 按钮 wx-earth (Git) - main*, Checkout Branch/Tag...
+									197 文本 
+									198 文本  main*
+							199 container wx-earth (Git) - Push 7 commits to origin/main
+								200 按钮 wx-earth (Git) - Push 7 commits to origin/main
+									201 文本 
+									202 文本  0↓ 7↑
+							203 container 没有问题
+								204 按钮 没有问题
+									205 文本 
+									206 文本  0 
+									207 文本 
+									208 文本  0
+							209 container 进度和简要通知
+							210 container 已为屏幕阅读器优化
+								211 按钮 已为屏幕阅读器优化
+							212 container undefined
+					213 HTML 内容 127.0.0.1:34598/__vseditorapp__/editor-webview/index-no-csp.html?id=71fd7dea-87e3-4389-93ae-ea85662c8131&origin=ae3da806-f88f-4032-be6c-24e5f340b396&swVersion=4&extensionId=wechat.miniprogram.miniprogram-code-analyse&platform=electron&vscode-resource-base-authority=vscode-resource.vscode-cdn.net&parentOrigin=file%3A%2F%2F&purpose=webviewView
+						214 container 代码依赖分析
+							215 HTML 内容 Analysis of Miniprogram, URL: 127.0.0.1:34598/__vseditorapp__/editor-webview/index-no-csp.html?id=71fd7dea-87e3-4389-93ae-ea85662c8131&origin=ae3da806-f88f-4032-be6c-24e5f340b396&swVersion=4&extensionId=wechat.miniprogram.miniprogram-code-analyse&platform=electron&vscode-resource-base-authority=vscode-resource.vscode-cdn.net&parentOrigin=file%3A%2F%2F&purpose=webviewView
+								216 container
+									217 弹出式按钮 无依赖文件
+										218 (selected) 无依赖文件
+									219 文本栏 (settable) 搜索
+									220 container
+										221 text 25 个结果
+									222 container
+										223 文本 大小
+									224 container
+										225 图像
+										226 text moon-voyage-companion.js pages/gl 12KB
+									227 container
+										228 图像
+										229 text moon-voyage-companion-render.js pages/gl 8KB
+									230 container
+										231 图像
+										232 text paper-airplane.js assets/models 8KB
+									233 container
+										234 图像
+										235 text moon-voyage-companion-motion.js pages/gl 8KB
+									236 container
+										237 图像
+										238 text moon-voyage-companion-assets.js pages/gl 6KB
+									239 container
+										240 图像
+										241 text pinyin.js pages/gl 3KB
+									242 container
+										243 图像
+										244 text poetry_sets.json assets/data 3KB
+									245 container
+										246 图像
+										247 text poetry-presets.js pages/gl 3KB
+									248 container
+										249 图像
+										250 text build-report.json juno-assets 3KB
+									251 container
+										252 图像
+										253 text moon-voyage-paper-plane.js pages/gl 3KB
+									254 container
+										255 图像
+										256 text moon-voyage-companion-layout.js pages/gl 2KB
+									257 container
+										258 图像
+										259 text build-report.json chandra-assets 2KB
+									260 container
+										261 图像
+										262 text build-report.json magellan-assets 2KB
+									263 container
+										264 图像
+										265 text build-report.json astronaut-assets 2KB
+									266 container
+										267 图像
+										268 text build-report.json eve-assets 2KB
+									269 container
+										270 图像
+										271 text index.wxss components/cloudTipModal 2KB
+									272 container
+										273 图像
+										274 text package-lock.json . 619B
+									275 container
+										276 图像
+										277 text index.wxml components/cloudTipModal 456B
+									278 container
+										279 图像
+										280 text index.js components/cloudTipModal 440B
+									281 container
+										282 图像
+										283 text build-report.json gundam-assets 358B
+									284 container
+										285 图像
+										286 text build-report.json eva02-assets 247B
+									287 container
+										288 图像
+										289 text build-report.json eva01-assets 244B
+									290 container
+										291 图像
+										292 text package.json . 175B
+									293 container
+										294 图像
+										295 text envList.js . 88B
+									296 container
+										297 图像
+										298 text index.json components/cloudTipModal 51B
+					299 HTML 内容 127.0.0.1:34598/__vseditorapp__/editor-webview/index-no-csp.html?id=8479c2ba-0264-47aa-83a8-a7464cecd5f8&origin=6656c139-8098-47f1-acb0-4e93650dbf9b&swVersion=4&extensionId=wechat.miniprogram.miniprogram-code-analyse&platform=electron&vscode-resource-base-authority=vscode-resource.vscode-cdn.net&parentOrigin=file%3A%2F%2F
+						300 container 代码依赖分析
+							301 HTML 内容 Analysis of Miniprogram, URL: 127.0.0.1:34598/__vseditorapp__/editor-webview/index-no-csp.html?id=8479c2ba-0264-47aa-83a8-a7464cecd5f8&origin=6656c139-8098-47f1-acb0-4e93650dbf9b&swVersion=4&extensionId=wechat.miniprogram.miniprogram-code-analyse&platform=electron&vscode-resource-base-authority=vscode-resource.vscode-cdn.net&parentOrigin=file%3A%2F%2F
+								302 container
+									303 text 代码总体积 11.22MB 文件数 329 无依赖代码文件数
+									304 container
+										305 text 25  ( 65KB )
+									306 按钮 刷新
+									307 按钮 导出
+									308 内容列表
+										309 container
+											310 text 代码包  / 
+									311 container
+										312 text 代码包 11.22MB
+									313 container
+										314 text 主包 2.31MB
+									315 container
+										316 text 分包(earth-look-assets/) 1.96MB
+									317 container
+										318 text 分包(moon-look-assets/) 1.60MB
+									319 container
+										320 text 分包(moon-color-assets/) 1.01MB
+									321 container
+										322 text 分包(saturn-assets/) 856KB
+									323 container
+										324 text 分包(robot-assets/) 767KB
+									325 container
+										326 text 分包(voyager-assets/) 531KB
+									327 container
+										328 text 分包(moon-photo-assets/) 456KB
+									329 container
+										330 text 分包(juno-assets/) 454KB
+									331 container
+										332 text 分包(scene-art-assets/) 374KB
+									333 container
+										334 text 分包(eva02-assets/) 340KB
+									335 container
+										336 text 分包(starship-assets/) 224KB
+									337 container
+										338 text 分包(magellan-assets/) 167KB
+									339 container
+										340 text 分包(eva01-assets/) 93KB
+									341 container
+										342 text 分包(gundam-assets/) 89KB
+									343 container
+										344 text 分包(chandra-assets/) 57KB
+									345 container
+										346 text 分包(astronaut-assets/) 33KB
+									347 container
+										348 text pages 1.23MB
+									349 container
+										350 text assets 514KB
+									351 container
+										352 text miniprogram_npm 584KB
+									353 container
+										354 text cloud-density.jpg 845KB
+									355 container
+										356 text earth-normal.jpg 421KB
+									357 container
+										358 text earth-default.jpg 386KB
+									359 container
+										360 text earth-day.jpg 356KB
+									361 container
+										362 text moon-normal.jpg 1.19MB
+									363 container
+										364 text moon-color.jpg 427KB
+									365 container
+										366 text 2k_moon.jpg 1.01MB
+									367 container
+										368 text saturn.jpg 496KB
+									369 container
+										370 text saturn-clouds-v1.jpg 360KB
+									371 container
+										372 text texture-3.png 579KB
+									373 container
+										374 text texture-5.png 189KB
+									375 container
+										376 text texture-0.png 374KB
+									377 container
+										378 text texture-2.png 158KB
+									379 container
+										380 text keepsake.jpg 456KB
+									381 container
+										382 text color-3.jpg 454KB
+									383 container
+										384 text textures 193KB
+									385 container
+										386 text basecolor.jpg 340KB
+									387 container
+										388 text roughness.jpg 224KB
+									389 container
+										390 text color-1.jpg 167KB
+									391 container
+										392 text gl 1.23MB
+									393 container
+										394 text data 326KB
+									395 container
+										396 text flags 110KB
+									397 container
+										398 text threejs-miniprogram 584KB
+									399 container
+										400 text vendor 89KB
+									401 container
+										402 text index.wxss 409KB
+									403 container
+										404 text countries.json.js 365KB
+									405 container
+										406 text country_data.js 408KB
+									407 container
+										408 text index.js 585KB
+									409 container
+										410 text gltf-loader.js 449KB
+	411 关闭按钮
+	412 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	413 最小化按钮
+414 menu bar
+	415 微信开发者工具
+	416 项目
+	417 文件
+	418 编辑
+	419 工具
+	420 跳转
+	421 选择
+	422 界面
+	423 设置
+	424 插件
+	425 帮助
+
+The focused UI element is 1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&projectname=wx-earth&projectid=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&theme=dark&skeletonPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F45d96a16732744f89acf418bfabca55a%2Fpageskeleton.html&appid=wx6f41ba1a7d7bc51e&windowMode=fullMode&openSource=cli&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=34598&userDataPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608070&appVersionType=0

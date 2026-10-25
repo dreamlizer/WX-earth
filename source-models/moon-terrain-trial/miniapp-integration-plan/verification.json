@@ -1,0 +1,9 @@
+{
+  "assetRowsVerified": 10,
+  "preservedSourceHashesVerified": 138,
+  "originalMediaBytes": 13065006,
+  "newMediaCompressed": false,
+  "miniProgramIntegrationExecuted": false,
+  "uploadOrDeploymentExecuted": false,
+  "validation": "Inventory sums, source byte sizes and hashes, preservation snapshots, plan trailing whitespace checked. Documentation-only change; project JS tests not rerun."
+}

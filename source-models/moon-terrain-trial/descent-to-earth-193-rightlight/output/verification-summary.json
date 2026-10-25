@@ -1,0 +1,64 @@
+{
+  "earthPoseErrorDegrees": 2.9575586669421963e-06,
+  "finalSunInEarthView": [
+    0.9243389912987643,
+    0.31553454148278065,
+    0.2145585754427762
+  ],
+  "minRadiusClearance": 75.75822420417671,
+  "minNearHeightAboveOriginalPeak": 39.57329999999999,
+  "maxHeadingStepDegrees": 0.5318680851594558,
+  "maxTurnTime": 200.65,
+  "holdError": 0,
+  "earthVisibilityEvents": [
+    {
+      "time": 223.81666666666666,
+      "visible": true,
+      "blocked": false,
+      "earthNDC": [
+        1.1378180811740592,
+        0.6466797985209927,
+        0.9999926314161957
+      ]
+    }
+  ],
+  "earthPositionUnchanged": true,
+  "webglError": 0,
+  "errors": [],
+  "audio": {
+    "duration": 78.726667,
+    "sourceEnd": 271.726667,
+    "sourceStart": 193,
+    "volume": 0.8,
+    "muted": true,
+    "readyState": 4,
+    "networkState": 1
+  },
+  "playback": {
+    "completed": 1,
+    "frames": 4726,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 3.3333333249174757e-07,
+    "stalls": 0,
+    "muted": true,
+    "nativeEnded": true
+  },
+  "projectTestsPassed": 41,
+  "sourceSHA256": {
+    "scene.js": "fac17e1ad1ee91e3feb4075810bb4a3c7b01403fa05db93eafd998b5b3805839",
+    "camera-path.js": "a35bb7d8a29a4696996cacfc18448fb8d1039c1f38c01803a31f2c67db374a88",
+    "viewer.js": "96a924799d4c956c580c1fbad8d1c53615d57175939866cb3f1a5094f79dc9db",
+    "orbit-anchor.json": "09b165713e1c984eff95f45faf6a861a86e6dc5b8c132d18ba09c765ec87daa0",
+    "earth-calibration.json": "842a9fe7aee0fcac2a920c236476a825e038ae19ff33691fa5eb2775dcddad55"
+  },
+  "farCapSquareShadow": "removed; body does not receive cap projection; geometric LOD and self-shadow reveal inspected at 193/200/205/210",
+  "platform": "Browser full motion; WeChat simulator Moon contrast and actual Earth pose reference; no device acceptance",
+  "controls": {
+    "replay": "193.07s playing observed",
+    "pause": "200.89s paused observed",
+    "slider": "246.00s paused observed",
+    "B": "232.00s paused observed",
+    "userMutePreference": "preserved"
+  }
+}

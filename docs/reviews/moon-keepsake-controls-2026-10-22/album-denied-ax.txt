@@ -1,0 +1,14 @@
+The following is a diff from the previous accessibility tree for Window: "wx-earth" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 48-58, 314-321
+~								36 text 保存照片 返回地球
++						460 container
++							461 文本 需要允许保存到相册
++																				462 container
++																					463 链接 moon-voyage-trace.js:16
++																						464 文本 moon-voyage-trace.js:16
++																					465 text [Moon trace] {"event":"photo-save-failed","wall":1792634220113,"elapsed":171.369,"time":395.2816666666667,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
++																				466 container
++																					467 链接 moon-voyage-trace.js:16
++																						468 文本 moon-voyage-trace.js:16
++																					469 text [Moon trace] {"event":"tick","wall":1792634220117,"elapsed":171.373,"time":395.31466666666665,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
+The focused UI element is 1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&projectname=wx-earth&projectid=%2FUsers%2Fa1234%2FDocuments%2FCodex%E9%A1%B9%E7%9B%AE%2Fwx-earth&theme=dark&skeletonPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F45d96a16732744f89acf418bfabca55a%2Fpageskeleton.html&appid=wx6f41ba1a7d7bc51e&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=34598&userDataPath=%2FUsers%2Fa1234%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608070&appVersionType=0

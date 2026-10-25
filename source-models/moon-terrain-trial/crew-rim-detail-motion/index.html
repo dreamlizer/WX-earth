@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>高清近景 · 193秒至曲终</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}body{background:#080b11;color:#e5e8ef;font:12px system-ui}
+main{height:100vh;height:100dvh;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px;padding:8px;max-width:1600px;margin:auto}
+#stage{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}canvas{display:block;object-fit:contain;max-width:100%;max-height:100%;background:#000;aspect-ratio:9/16}
+aside{min-width:0;width:100%;max-width:680px;justify-self:center;max-height:42vh;overflow:auto;scrollbar-width:thin}.caption{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}h1{font-size:13px;font-weight:500;margin:0;white-space:nowrap}output{font-size:11px;color:#aabbd0;font-variant-numeric:tabular-nums;white-space:nowrap}
+nav{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:7px 0}button,a{font:inherit;color:#e5e8ef;background:#17202b;border:1px solid #344153;border-radius:15px;padding:7px 10px;cursor:pointer;text-decoration:none;white-space:nowrap}button:disabled{opacity:.4;cursor:wait}.mute{margin-left:auto;white-space:nowrap}input[type=range]{display:block;width:100%;height:23px;margin:0;accent-color:#b7cce6}input[type=checkbox]{vertical-align:middle}
+p{margin:3px 0;color:#96a2b5;line-height:1.5}#phase{color:#bccde0}#status{font-size:10px}details{margin-top:5px;font-size:11px;color:#8291a6}summary{cursor:pointer}details nav{flex-wrap:wrap}#report{font-size:10px}
+@media(min-width:900px){main{grid-template-columns:minmax(0,1fr) 330px;grid-template-rows:minmax(0,1fr);gap:24px;padding:16px}aside{align-self:center;max-height:100%}.caption{display:block}h1{font-size:16px;margin-bottom:8px}output{display:block}nav{flex-wrap:wrap;margin:14px 0}p{margin:8px 0}#status{font-size:11px}}
+@media(max-height:520px) and (max-width:899px){main{grid-template-columns:minmax(0,1fr) minmax(240px,40%);grid-template-rows:minmax(0,1fr)}aside{align-self:center;max-height:100%}.caption{display:block}h1{font-size:12px}nav{flex-wrap:wrap}.mute{margin-left:0}}
+</style>
+<script type="importmap">{"imports":{"three":"/mech-encounter-candidates/preview/vendor/three.module.js"}}</script>
+<main>
+ <section id="stage" aria-label="完整竖幅预览"><canvas id="render" width="540" height="960" aria-label="坑缘高脊三人与远地球独立动态预览"></canvas></section>
+ <aside id="controls">
+  <div class="caption"><h1>三人同望 · 高清近景</h1><output id="clock">193.00 / 271.73 秒</output></div>
+  <nav><button id="play" disabled>播放（含原音乐）</button><button id="replay" disabled>重播193秒</button><button id="near" disabled>近景起点</button><button id="end" disabled>结束帧</button><button id="baseline" disabled aria-pressed="false">原材质对照</button><label class="mute"><input id="mute" type="checkbox">静音</label></nav>
+  <input id="time" aria-label="原曲时间" type="range" min="193" max="271.726667" step="0.01" value="193" disabled>
+  <p id="phase">第二圈 · 远景接近</p><p id="status" role="status">正在加载已有月面与原音乐…</p>
+  <details><summary>说明与关键帧</summary><p>先看大坑，再靠近坑缘上方的三人，随后看见地球。镜头持续缓慢运动。</p><p>人物、镜头、音乐沿用已确认动态版。近景逐渐显现高清细节；原材质对照不改变当前时间。</p><p>拖动滑条会暂停。「近景起点」从228秒播放，可看靠近时的材质变化。旧版保留，尚未接入小程序。</p><nav><button id="capture" disabled>保存关键帧与检查数据</button><a href="./output/contact-sheet.png" target="_blank">关键帧联系图</a><a href="./README.md" target="_blank">源码与验证说明</a></nav><div id="report"></div></details>
+  <audio id="audio" preload="auto" src="../descent-to-earth-193/assets/moon-tail-193.wav"></audio>
+ </aside>
+</main><script type="module" src="./viewer.js"></script>
+</html>

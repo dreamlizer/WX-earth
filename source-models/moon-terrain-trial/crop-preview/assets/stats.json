@@ -1,0 +1,16 @@
+{
+  "vertices": 196608,
+  "triangles": 391426,
+  "decimation": false,
+  "texture_pixels": [
+    3072,
+    4096
+  ],
+  "source_image_crop": [
+    4096,
+    3072,
+    7168,
+    7168
+  ],
+  "source_area_fraction": 0.1875
+}

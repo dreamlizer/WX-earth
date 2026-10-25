@@ -1,0 +1,14 @@
+{
+  "source": "source-models/moon-terrain-trial/ending-keepsake-photo/photo-v2-anime.png",
+  "sourceBytes": 1874604,
+  "sourceSHA256": "9264bcd0c084725e4b9118e6fd5d45c7ab180dade892007399414df5f1582be7",
+  "target": "miniprogram/moon-photo-assets/keepsake.jpg",
+  "targetBytes": 466626,
+  "targetSHA256": "4d4ed2220d3ca092f32e8ffdccefb221321aa956c2502290346ce279294b1b70",
+  "dimensions": [
+    941,
+    1672
+  ],
+  "jpegQuality": 96,
+  "chromaSubsampling": "4:4:4"
+}

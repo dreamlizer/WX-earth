@@ -1,0 +1,16 @@
+{
+  "testFiles": 48,
+  "allPassed": true,
+  "diffCheckPassed": true,
+  "audioDurationObserved": 258.9257083333333,
+  "preset": 104,
+  "silentPreview": false,
+  "seekObserved": 255.25,
+  "tailPlaybackFrom": 249,
+  "naturalReplayObserved": true,
+  "fullSongNaturalPlayback": false,
+  "realDevicePerformanceVerified": false,
+  "uploadedOrPublished": false,
+  "videoExported": false,
+  "exitToNormalObserved": true
+}

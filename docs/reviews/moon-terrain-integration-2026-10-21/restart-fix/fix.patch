@@ -1,0 +1,115 @@
+--- before/moon-voyage-manager.js
++++ miniprogram/pages/gl/moon-voyage-manager.js
+@@ -1,6 +1,7 @@
+ 
+ import { MoonOrbitSequence } from './moon-orbit-sequence.js';
+ import { MoonTerrainSequence } from './moon-terrain-sequence.js';
++import { setMoonPlaybackSpeed } from './moon-playback-clock.js';
+ import { VoyageEncounters } from './moon-voyage-encounters.js';
+ import { ZodiacSystem } from './moon-voyage-zodiac.js';
+ import { detectEnvironment } from './platform-manager.js';
+@@ -283,9 +284,7 @@
+   }
+ 
+   setSpeed(mult) {
+-    const v = Number(mult);
+-    if (!isFinite(v)) return;
+-    this._speedMult = Math.max(0.1, Math.min(20.0, v));
++    setMoonPlaybackSpeed(this, mult);
+   }
+ 
+   enter() {
+--- before/moon-voyage-lifecycle.js
++++ miniprogram/pages/gl/moon-voyage-lifecycle.js
+@@ -1,5 +1,6 @@
+ 
+ import { APP_CFG } from './config.js';
++import { traceMoon } from './moon-voyage-trace.js';
+ import { moonPlaybackTime } from './moon-playback-clock.js';
+ import { 
+   rebuildMilkyWay, 
+@@ -270,7 +271,7 @@
+   if (!mgr.page) return;
+   mgr.page.__moonVoyageMgr = mgr;
+   mgr.page.debugSpeedUp = () => {
+-    mgr._speedMult = 10.0;
++    mgr.setSpeed(10.0);
+     wx.showToast({ title: '10x Speed', icon: 'none' });
+   };
+ };
+@@ -573,4 +574,3 @@
+ 
+   }, fadeInMs + 100); // 多给 100ms 缓冲
+ };
+-import { traceMoon } from './moon-voyage-trace.js';
+--- before/moon-playback-clock.js
++++ miniprogram/pages/gl/moon-playback-clock.js
+@@ -1,10 +1,37 @@
++// Fast-forward is a visual review gesture. On release, seek the same player to
++// the reviewed position before giving its native samples ownership again.
++export function setMoonPlaybackSpeed(mgr, value) {
++  const speed = Math.max(.1, Math.min(20, Number(value)));
++  if (!Number.isFinite(speed) || speed === mgr._speedMult) return;
++  if (speed === 1 && mgr._speedMult !== 1 && mgr.audioContext) {
++    const duration = Number(mgr.audioContext.duration);
++    const target = Math.max(0, Math.min(mgr._accumTime,
++      duration > 0 ? Math.max(0, duration - .05) : Infinity));
++    mgr._moonPlaybackSeek = target;
++    mgr._moonPlaybackClock = null;
++    try { mgr.audioContext.seek(target); }
++    catch (error) { mgr._moonPlaybackSeek = null; console.warn('[Moon] Review seek failed', error); return; }
++  }
++  mgr._speedMult = speed;
++}
++
+ // Smooth native audio samples for per-frame camera motion, including waiting and resume.
+ export function moonPlaybackTime(mgr,now=Date.now()) {
+   if(!mgr.audioContext||mgr._speedMult!==1)return null;
+   const raw=Number(mgr.audioContext.currentTime);
+   if(!Number.isFinite(raw)||raw<0)return null;
++  if (mgr._moonPlaybackSeek != null) {
++    const target = mgr._moonPlaybackSeek;
++    // seek() completes asynchronously; the old native sample is still readable.
++    if (raw < target - .1 || raw > target + 2) return target;
++    mgr._moonPlaybackSeek = null;
++    mgr._moonPlaybackClock = null;
++  }
+   let c=mgr._moonPlaybackClock;
+   if(!c){c=mgr._moonPlaybackClock={sample:raw,sampleAt:now,output:raw,updatedAt:now};return raw;}
++  // This voyage has no backwards seek. Native zero/stale samples (including at
++  // ended) must not replay the departure or clamp an active tail to its first frame.
++  if (raw < c.sample - .5) { c.updatedAt = now; return c.output; }
+   if(raw!==c.sample){c.sample=raw;c.sampleAt=now;}
+   const dt=Math.max(0,(now-c.updatedAt)/1000);c.updatedAt=now;
+   if(mgr._moonAudioWaiting){c.output=raw;c.sampleAt=now;return c.output;}
+--- before/moon-voyage-audio.js
++++ miniprogram/pages/gl/moon-voyage-audio.js
+@@ -1,6 +1,6 @@
+ 
+ import { APP_CFG } from './config.js';
+-import { startMoonLyrics } from './moon-voyage-lyrics.js';
++import { startMoonLyrics, stopMoonLyrics } from './moon-voyage-lyrics.js';
+ import { traceMoon } from './moon-voyage-trace.js';
+ 
+ export const playAudio = (mgrState, ASSETS) => {
+@@ -14,6 +14,7 @@
+   );
+   const ctx = wx.createInnerAudioContext();
+   mgrState._moonPlaybackClock=null;
++  mgrState._moonPlaybackSeek=null;
+   mgrState._moonAudioWaiting=true;
+   ctx.src = mgrState.audioPath || ASSETS.AUDIO;
+   ctx.autoplay = true;
+@@ -36,6 +37,12 @@
+   ctx.onWaiting?.(()=>{if(isCurrent()){mgrState._moonAudioWaiting=true;traceMoon(mgrState,'audio-waiting');}});
+   ctx.onCanplay?.(()=>{if(isCurrent()){mgrState._moonAudioWaiting=false;traceMoon(mgrState,'audio-canplay');}});
+   ctx.onPause?.(()=>{if(isCurrent()){mgrState._moonAudioWaiting=true;traceMoon(mgrState,'audio-pause');}});
++  ctx.onSeeking?.(()=>{if(isCurrent()){stopMoonLyrics(mgrState);traceMoon(mgrState,'audio-seeking');}});
++  ctx.onSeeked?.(()=>{
++    if(!isCurrent())return;
++    traceMoon(mgrState,'audio-seeked');
++    startMoonLyrics(mgrState,Date.now()-Math.max(0,Number(ctx.currentTime)||0)*1000);
++  });
+   ctx.onError((res) => {
+     if (!isCurrent()) return;
+     traceMoon(mgrState,'audio-error',{error:res.errCode});

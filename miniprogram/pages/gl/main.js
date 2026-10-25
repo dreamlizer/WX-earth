@@ -43,6 +43,7 @@ export function refreshTextures() { engine.refreshTextures(); }
 
 export function enterMoonVoyage() { engine.enterMoonVoyage(); }
 export function exitMoonVoyage() { engine.exitMoonVoyage(); }
+export function toggleMoonKeepsakeControls() { engine.toggleMoonKeepsakeControls(); }
 export function setMoonVoyageSpeed(mult) { engine.setMoonVoyageSpeed(mult); }
 export function isMoonVoyageActive() { return engine.isMoonVoyageActive(); }
 export function enterSaturnPreview() { return engine.enterSaturnPreview(); }

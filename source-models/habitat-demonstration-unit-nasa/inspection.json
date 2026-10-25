@@ -1,0 +1,23 @@
+{
+  "source_url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Habitat Demonstration Unit/Habitat Demonstration Unit (part 1).glb",
+  "nasa_folder": "Habitat Demonstration Unit",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/habitat-demonstration-unit-nasa/Habitat Demonstration Unit (part 1).glb",
+  "bytes": 516748,
+  "sha256": "3106557bea24c9ba012556ddbecf3740c39276dc369cf359b77225de97458cfe",
+  "triangles_est": 2264,
+  "vertices_est": 1922,
+  "meshes": 1,
+  "materials": 1,
+  "images": 2,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [
+    "KHR_draco_mesh_compression",
+    "KHR_materials_transmission",
+    "KHR_materials_specular",
+    "KHR_materials_ior",
+    "EXT_texture_webp"
+  ],
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "extras": null
+}

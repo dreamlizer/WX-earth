@@ -1,0 +1,19 @@
+{
+  "surface": "WeChat DevTools Stable 2.02.2608070, iPhone 12/13 Pro simulator",
+  "deviceAcceptance": false,
+  "uploaded": false,
+  "published": false,
+  "fullOriginalSpeedPlayback": true,
+  "audioDurationSeconds": 271.7266666666667,
+  "sampledClockMonotonic": true,
+  "maxNativeClockSampleDifferenceSeconds": 0.005333333333339851,
+  "naturalEndHeldPhoto": true,
+  "lastHeldPhotoTime": 286.58566666666667,
+  "originalPreviewFilesUnchanged": 108,
+  "projectTestsPassed": 46,
+  "pending": [
+    "Physical-device album write and cross-device safe area not verified.",
+    "Current simulator homepage zen click issue is documented in the controls follow-up; no homepage logic was changed."
+  ],
+  "controlsFollowup": "../moon-keepsake-controls-2026-10-22/verification.json"
+}

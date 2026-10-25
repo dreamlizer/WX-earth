@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "generator": "Sketchfab-13.66.0",
+  "extras": {
+    "author": "Ryanwill679 (https://sketchfab.com/Ryanwill679)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/eva-02-8ebab4116b9c42a5bd0582ee61823c9f",
+    "title": "EVA 02"
+  },
+  "nodes": 25,
+  "meshes": 21,
+  "materials": 16,
+  "images": 36,
+  "animations": 0,
+  "skins": 0,
+  "triangles_est": 354705,
+  "vertices_est": 456553,
+  "extensions_used": [],
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-150/8ebab4116b9c42a5bd0582ee61823c9f.glb",
+  "final_url": "https://us.aws.cdn.hf.co/xet-bridge-us/63977bb96bdef8095268ded0/00a5fff851824387d94fb3814b9e5839af5f4f0d8f55f9eeb9b5c1c7c94a2221?response-content-type=model%2Fgltf-binary&response-content-disposition=inline%3B+filename*%3DUTF-8%27%278ebab4116b9c42a5bd0582ee61823c9f.glb%3B+filename%3D%228ebab4116b9c42a5bd0582ee61823c9f.glb%22%3B&user_id=public&X-Xet-Cas-Uid=public&xip=dUMiaxerFRM&Expires=1792521668&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly91cy5hd3MuY2RuLmhmLmNvL3hldC1icmlkZ2UtdXMvNjM5NzdiYjk2YmRlZjgwOTUyNjhkZWQwLzAwYTVmZmY4NTE4MjQzODdkOTRmYjM4MTRiOWU1ODM5YWY1ZjRmMGQ4ZjU1ZjllZWI5YjVjMWM3Yzk0YTIyMjFcXD9yZXNwb25zZS1jb250ZW50LXR5cGU9bW9kZWwlMkZnbHRmLWJpbmFyeSZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWlubGluZSUzQitmaWxlbmFtZSUyQSUzRFVURi04JTI3JTI3OGViYWI0MTE2YjljNDJhNWJkMDU4MmVlNjE4MjNjOWYuZ2xiJTNCK2ZpbGVuYW1lJTNEJTIyOGViYWI0MTE2YjljNDJhNWJkMDU4MmVlNjE4MjNjOWYuZ2xiJTIyJTNCJnVzZXJfaWQ9cHVibGljJlgtWGV0LUNhcy1VaWQ9cHVibGljJnhpcD1kVU1pYXhlckZSTSIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiRXBvY2hUaW1lIjoxNzkyNTIxNjY4fX19XX0_&Signature=MEYCIQDwjAxxgE%7E4SgXukfmi0A%7EfjSJEn93t2Y5SPQhEEyH%7E-QIhAJjLexjKLWazqa1AmHi6DVoPegEBRvAFfruBBdpvPzay&Key-Pair-Id=01KXEF4KZ1B6FV465MAWR4M21F&Hash-Algorithm=SHA256",
+  "uid": "8ebab4116b9c42a5bd0582ee61823c9f",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/eva-unit-02-ryanwill679/eva_02.glb",
+  "bytes": 43934112,
+  "sha256": "0d3cf8b223c724fad8dd19dd5fcd0be456baa10aabba827a916c48694f71fad0"
+}

@@ -1,0 +1,22 @@
+{
+  "audio": {
+    "duration": 78.726667,
+    "sourceEnd": 271.726667,
+    "sourceStart": 193,
+    "volume": 0.8,
+    "muted": true,
+    "readyState": 4,
+    "networkState": 1
+  },
+  "playback": {
+    "completed": 1,
+    "frames": 4726,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 3.3333333249174757e-07,
+    "stalls": 0,
+    "muted": true,
+    "nativeEnded": true
+  },
+  "note": "Initial playback was unmuted; final repeat was muted using the preview control. Original audio decoding and clock unchanged."
+}

@@ -1,0 +1,131 @@
+The following is a diff from the previous accessibility tree for Window: "wx-earth" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 36, 100, 107, 111, 115, 119, 123, 127, 131, 135, 139, 143, 147, 150, 153, 156, 159, 163, 166, 169, 173, 177, 180, 183, 186, 189, 192, 195, 198, 212, 322-369, 439, 460-461
++								470 文本 07:01
++								471 文本 同望地球
++								472 图像
++												473 文本 
++															474 文本 
++															475 文本 
++															476 文本 
++															477 文本 
++															478 文本 
++															479 文本 
++															480 文本 
++															481 文本 
++															482 文本 
++															483 文本 
++															484 文本 
++																485 文本 
++															486 文本 
++																487 文本 
++															488 文本 
++															489 文本 
++																490 文本 
++															491 文本 
++															492 文本 
++															493 文本 
++																494 文本 
++															495 文本 
++																496 文本 
++															497 文本 
++																498 文本 
++															499 文本 
++																500 文本 
++																501 文本 U
++											502 文本 5
+~																277 container 7 warnings
++																				503 container
++																					504 链接 moon-voyage-trace.js:16
++																						505 文本 moon-voyage-trace.js:16
++																					506 text [Moon trace] {"event":"tick","wall":1792634225133,"elapsed":176.389,"time":400.33066666666673,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
++																				507 container
++																					508 链接 moon-voyage-trace.js:16
++																						509 文本 moon-voyage-trace.js:16
++																					510 text [Moon trace] {"event":"tick","wall":1792634230150,"elapsed":181.406,"time":405.34766666666667,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
++																				511 container
++																					512 链接 moon-voyage-trace.js:16
++																						513 文本 moon-voyage-trace.js:16
++																					514 text [Moon trace] {"event":"tick","wall":1792634235166,"elapsed":186.422,"time":410.3636666666667,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
++																				515 container
++																					516 链接 moon-voyage-trace.js:16
++																						517 文本 moon-voyage-trace.js:16
++																					518 text [Moon trace] {"event":"tick","wall":1792634240181,"elapsed":191.437,"time":415.3786666666667,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
++																				519 container
++																					520 链接 moon-voyage-trace.js:16
++																						521 文本 moon-voyage-trace.js:16
++																					522 text [Moon trace] {"event":"tick","wall":1792634245198,"elapsed":196.454,"time":420.39566666666667,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true}
++																				523 container
++																					524 链接 moon-voyage-trace.js:16
++																						525 文本 moon-voyage-trace.js:16
++																					526 text [Moon trace] {"event":"exit-request","wall":1792634246627,"elapsed":197.883,"time":421.8136666666667,"audio":0,"duration":271.7266666666667,"waiting":false,"phase":"KEEPSAKE","terrain":"ready","selected":true,"terrainActive":true,"photo":"ready","photoHold":true,"photoShown":true,"stack":"Error\n    at exitVoyage (
++																					527 链接 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=5edd342…:27543:12)\n
++																						528 文本 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=
++																						529 文本 5edd342
++																						530 文本 …
++																						531 文本 :27543:12)\n
++																					532 文本     at MoonVoyageManager.exit (
++																					533 链接 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=5edd342…:28529:43)\n
++																						534 文本 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=
++																						535 文本 5edd342
++																						536 文本 …
++																						537 文本 :28529:43)\n
++																					538 文本     at AppEngine.exitMoonVoyage (
++																					539 链接 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=5edd342…:8342:38)\n
++																						540 文本 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=
++																						541 文本 5edd342
++																						542 文本 …
++																						543 文本 :8342:38)\n
++																					544 文本     at exitMoonVoyage (
++																					545 链接 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=5edd342…:20901:10)\n
++																						546 文本 weapp:///http://127.0.0.1:48356/appservice/getmainpackagebundle.js?t=wechat&s=&v=
++																						547 文本 5edd342
++																						548 文本 …
++																						549 文本 :20901:10)\n
++																					550 文本     at pi.onMoonKeepsakeReturn (
++																					551 链接 weapp:///pages/gl/index.js:156:30)\n
++																						552 文本 weapp:///pages/gl/index.js:156:30)\n
++																					553 文本     at o.safeCallback (
++																					554 链接 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:216245)\n
++																						555 文本 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:216245)\n
++																					556 文本     at 
++																					557 链接 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:416760\n
++																						558 文本 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:416760\n
++																					559 文本     at Fn (
++																					560 链接 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:356598)\n
++																						561 文本 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:356598)\n
++																					562 文本     at 
++																					563 链接 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:416668\n
++																						564 文本 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:416668\n
++																					565 文本     at ce (
++																					566 链接 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:304890
++																						567 文本 http://127.0.0.1:48356/__dev__/WASubContext.js?t=wechat&v=3.16.1:1:304890
++																					568 文本 )"}
++																				569 container
++																					570 链接 moon-voyage-lifecycle.js:458
++																						571 文本 moon-voyage-lifecycle.js:458
++																					572 text [Moon] Aborting mission
++																				573 container
++																					574 链接 moon-voyage-lifecycle.js:487
++																						575 文本 moon-voyage-lifecycle.js:487
++																					576 text [Moon] Exit Sequence: FadeIn=2000, Hold=1500, FadeOut=2000
++																				577 row Warning moon-voyage-lifecycle.js:494 [Moon] Starting Mask FadeIn. Duration: 2000
++																					578 container
++																						579 container Warning
++																						580 链接 moon-voyage-lifecycle.js:494
++																							581 文本 moon-voyage-lifecycle.js:494
++																						582 text [Moon] Starting Mask FadeIn. Duration: 2000
++																				583 container
++																					584 链接 moon-voyage-lifecycle.js:502
++																						585 文本 moon-voyage-lifecycle.js:502
++																					586 text [Moon] setData callback: Mask enabled
++																				587 row Warning moon-voyage-lifecycle.js:509 [Moon] Setting Opacity to 1
++																					588 container
++																						589 container Warning
++																						590 链接 moon-voyage-lifecycle.js:509
++																							591 文本 moon-voyage-lifecycle.js:509
++																						592 text [Moon] Setting Opacity to 1
++																				593 container
++																					594 链接 moon-voyage-lifecycle.js:511
++																						595 文本 moon-voyage-lifecycle.js:511
++																					596 text [Moon] setData callback: Opacity set to 1
+The focused UI element is 24 HTML 内容 Webview: pages/gl/index, URL: 127.0.0.1:48356/__pageframe__/pages/gl/index

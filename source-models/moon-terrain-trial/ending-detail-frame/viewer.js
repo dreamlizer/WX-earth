@@ -1,0 +1,14 @@
+import * as THREE from 'three';
+import {createScene} from './scene.js';
+const $=s=>document.querySelector(s),errors=[];
+window.addEventListener('error',e=>errors.push(e.message));window.addEventListener('unhandledrejection',e=>errors.push(String(e.reason)));
+try{
+ const [config,anchor]=await Promise.all(['./shot-config.json','./orbit-anchor.json'].map(p=>fetch(p).then(r=>r.json())));
+ const canvas=$('#render'),stage=$('#stage');const fit=()=>{const b=stage.getBoundingClientRect(),s=Math.min(b.width/config.width,b.height/config.height);canvas.style.width=config.width*s+'px';canvas.style.height=config.height*s+'px'};new ResizeObserver(fit).observe(stage);fit();
+ const view=await createScene(canvas,config,anchor);let enabled=true;
+ function show(value){enabled=value;view.detail.setEnabled(value);view.render(config.end);$('#enhanced').setAttribute('aria-pressed',String(value));$('#baseline').setAttribute('aria-pressed',String(!value));$('#status').textContent=value?'加强版 · 已加载原图局部与近景细颗粒':'原版对照 · 关闭全部新增材质细节'}
+ $('#enhanced').onclick=()=>show(true);$('#baseline').onclick=()=>show(false);
+ async function save(name,data){const res=await fetch('/capture/'+name,{method:'POST',body:data});if(!res.ok)throw Error('保存失败 '+name)}
+ $('#save').onclick=async()=>{const selected=enabled;document.querySelectorAll('button').forEach(b=>b.disabled=true);try{const states=[];for(const value of [false,true]){show(value);await save(value?'enhanced.png':'baseline.png',await new Promise(r=>canvas.toBlob(r,'image/png')));states.push({enhanced:value,time:config.end,camera:view.camera.position.toArray(),quaternion:view.camera.quaternion.toArray(),fov:view.camera.fov,crew:view.crew.userData.seats,webglError:view.renderer.getContext().getError()});}const ray=new THREE.Raycaster(),surfaceSamples=[];for(const px of [340,440,520])for(const py of [730,820,930]){ray.setFromCamera(new THREE.Vector2(px/540*2-1,1-py/960*2),view.camera);const h=ray.intersectObject(view.terrain,true)[0];if(h)surfaceSamples.push({pixel:[px,py],world:h.point.toArray(),distance:h.distance,normal:h.face.normal.toArray()});}const cr=canvas.getBoundingClientRect(),ar=$('aside').getBoundingClientRect();await save('validation.json',new Blob([JSON.stringify({states,errors,surfaceSamples,layout:{viewport:[innerWidth,innerHeight],frameVisible:cr.top>=0&&cr.bottom<=innerHeight&&cr.left>=0&&cr.right<=innerWidth,controlsVisible:ar.top>=0&&ar.bottom<=innerHeight},nativeCrop:view.detail.meta},null,2)],{type:'application/json'}));show(selected);$('#status').textContent='已保存原版、加强版与验证数据'}catch(e){$('#status').textContent=e.message;console.error(e)}finally{document.querySelectorAll('button').forEach(b=>b.disabled=false)}};
+ show(true);document.querySelectorAll('button').forEach(b=>b.disabled=false);
+}catch(e){$('#status').textContent=e.message;console.error(e)}

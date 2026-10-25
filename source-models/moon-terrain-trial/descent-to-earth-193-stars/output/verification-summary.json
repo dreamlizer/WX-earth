@@ -1,0 +1,37 @@
+{
+  "starfield": {
+    "count": 16000,
+    "opacity": 0.54,
+    "followsCameraTranslation": true,
+    "worldRotation": [
+      0.1452897368598418,
+      0.27836521847727563,
+      0.13478854750635788,
+      0.9398062273503102
+    ],
+    "depthTest": true,
+    "depthWrite": false
+  },
+  "playback": {
+    "completed": 1,
+    "frames": 4727,
+    "startTime": 193,
+    "endTime": 271.7266666666667,
+    "maxAudioVisualDelta": 3.3333333249174757e-07,
+    "stalls": 0,
+    "muted": true,
+    "nativeEnded": true
+  },
+  "errors": [],
+  "webglError": 0,
+  "starPixelsAllKeyframes": true,
+  "priorRightlightVersionUnchanged": true,
+  "projectTestsPassed": 41,
+  "earthPoseErrorDegrees": 2.9575586669421963e-06,
+  "finalSunInEarthView": [
+    0.9243389912987643,
+    0.31553454148278065,
+    0.2145585754427762
+  ],
+  "scope": "Independent browser preview only; no mini-program source modification or upload"
+}

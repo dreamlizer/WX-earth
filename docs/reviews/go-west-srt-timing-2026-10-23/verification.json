@@ -1,0 +1,24 @@
+{
+  "testFilesPassed": 49,
+  "whitespaceCheckPassed": true,
+  "sceneFramesComparedStepSec": 0.05,
+  "sceneIntervalSeconds": [
+    0,
+    260
+  ],
+  "sceneFramesUnchanged": true,
+  "firstTogetherEnterSec": 34.8,
+  "firstTogetherSrtSec": 35.3,
+  "globalLyricLeadSec": 0,
+  "recognizedPhraseAnchors": 51,
+  "separatelyRecognizedPairs": 5,
+  "preservedFileSha256MatchesPreviousUpload": {
+    "miniprogram/assets/data/go-west-text.js": true,
+    "miniprogram/pages/gl/zen-visual-clock.js": true,
+    "miniprogram/pages/gl/config.js": true
+  },
+  "previewed": false,
+  "uploaded": false,
+  "published": false,
+  "phoneSyncAccepted": null
+}

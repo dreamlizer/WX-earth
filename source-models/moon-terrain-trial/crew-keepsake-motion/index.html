@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>月球纪念照 · 无声动态预览</title>
+<link rel="stylesheet" href="./style.css">
+<script type="importmap">{"imports":{"three":"/mech-encounter-candidates/preview/vendor/three.module.js"}}</script>
+<main>
+ <section id="stage" aria-label="完整竖屏预览"><canvas id="render" width="540" height="960" aria-label="三人看地球与浮动相框"></canvas></section>
+ <aside id="controls">
+  <h1>月球纪念照</h1><p class="subtitle">无声预览 · 照片留在这片宇宙里</p>
+  <output id="clock">263.00 秒</output>
+  <nav><button id="play" disabled>播放结尾</button><button id="replay" disabled>重看结尾</button><button id="full" disabled>从193秒播放</button><button id="photo" disabled>照片停留</button></nav>
+  <input id="time" type="range" min="193" max="289.726667" step="0.01" value="263" aria-label="预览时间" disabled>
+  <p id="phase">准备场景</p><p id="status" role="status">正在加载已有月面与动画背影照片…</p>
+  <p class="note">约267秒快门收暗，相框浮现后缓慢放大、微微转动。曲终以后继续轻浮，直到暂停。拖动滑条会暂停。</p>
+  <details><summary>检查与说明</summary><p>复用已确认的193秒至曲终3D场景。这一页不创建播放器、不下载音乐，也没有快门音效。旧网页和小程序保持原样。</p><nav><button id="capture" disabled>保存关键帧与检查</button><a href="./output/contact-sheet.png" target="_blank">关键帧</a><a href="./README.md" target="_blank">说明</a></nav><pre id="report"></pre></details>
+ </aside>
+</main><script type="module" src="./viewer.js"></script>
+</html>

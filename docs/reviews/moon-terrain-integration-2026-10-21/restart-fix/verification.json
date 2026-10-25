@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-22",
+  "surface": "WeChat DevTools Stable 2.02.2608070 native simulator UI",
+  "rootCause": "Fast-forward changed camera time only; releasing to 1x let stale native audio time rewind the timeline and clamp the active terrain to 193s.",
+  "originalReproduced": true,
+  "originalHandoffTime": 193.31466666666753,
+  "originalAfterReleaseTime": 30.26133333333331,
+  "fixedSeekTarget": 209.17133333333436,
+  "fixedSeekBeforeAudio": 56.97066666666667,
+  "fixedSeekAfterAudio": 209.17133333333436,
+  "finalNormalStartEvents": 1,
+  "finalNormalEndedEvents": 1,
+  "finalNormalEnd": {
+    "event": "audio-ended",
+    "wall": 1792600177255,
+    "elapsed": 272.095,
+    "time": 271.71733333333333,
+    "audio": 0,
+    "duration": 271.7266666666667,
+    "waiting": false,
+    "phase": "TERRAIN",
+    "terrain": "ready",
+    "selected": true,
+    "terrainActive": true
+  },
+  "maxSampledCameraAudioDifferenceSeconds": 0.005333333333339851,
+  "traceEvents": 58,
+  "normalCapturedFrames": 76,
+  "projectTests": 44,
+  "sourcesSHA256": {
+    "miniprogram/pages/gl/moon-playback-clock.js": "1178bc7dd23527a5302c13f7cca3de95f25f6667b5fdbcecc2d99697e62bbeb6",
+    "miniprogram/pages/gl/moon-voyage-manager.js": "5b5714e37b8998cfa0976c0cf10f8ca36119e9d4e50b57ce46fec3b819c42ed1",
+    "miniprogram/pages/gl/moon-voyage-audio.js": "a4a3b759bf5de862b378785cd89cb6964c10aa6e697971af97a02e7400f47229",
+    "miniprogram/pages/gl/moon-voyage-lifecycle.js": "ad0be197496ee6b319cb4cbe1e41a8f33e832058d0bad14d9170f73728462325",
+    "miniprogram/pages/gl/moon-voyage-trace.js": "4e9ce21b24f60f21808ece71f2162a7984d40497a1ec149bbb182b50a47b0bb9"
+  },
+  "miniProgramUploaded": false,
+  "miniProgramPublished": false,
+  "realPhoneVerified": false,
+  "limitations": "Native screenshot sampling has gaps and is not a continuous movie/audio recording or a real phone performance measurement."
+}

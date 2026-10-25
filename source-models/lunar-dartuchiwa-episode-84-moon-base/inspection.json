@@ -1,0 +1,23 @@
+{
+  "source_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-024/235b100f248646f4a6304eb33eb0cb78.glb",
+  "uid": "235b100f248646f4a6304eb33eb0cb78",
+  "sketchfab": "https://sketchfab.com/3d-models/none-235b100f248646f4a6304eb33eb0cb78",
+  "file": "/Users/a1234/Documents/Codex项目/wx-earth/source-models/lunar-dartuchiwa-episode-84-moon-base/model.glb",
+  "bytes": 1349484,
+  "sha256": "10779709b1e2d4a7df8cba8f7eec7ab259687aae6ee6b1abe29567df5b06bd4e",
+  "triangles_est": 3930,
+  "vertices_est": 8966,
+  "meshes": 1,
+  "materials": 1,
+  "images": 2,
+  "animations": 0,
+  "skins": 0,
+  "extensions_used": [],
+  "generator": "Sketchfab-12.67.0",
+  "extras": {
+    "author": "dartuchiwa (https://sketchfab.com/dartuchiwa)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/episode-84-moon-base-235b100f248646f4a6304eb33eb0cb78",
+    "title": "Episode 84 - Moon Base"
+  }
+}

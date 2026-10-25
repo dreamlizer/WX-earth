@@ -3,6 +3,7 @@ import { fixTexture } from './asset-manager.js';
 
 let earthPackage = null;
 let moonPackage = null;
+let moonColorPackage = null;
 export function ensureEarthVisualPackage() {
   if (!earthPackage) earthPackage = new Promise((resolve, reject) => {
     require('../../earth-look-assets/ready.js', resolve, reject);
@@ -14,6 +15,12 @@ export function ensureMoonVisualPackage() {
     require('../../moon-look-assets/ready.js', resolve, reject);
   }).catch(error => { moonPackage = null; throw error; });
   return moonPackage;
+}
+export function ensureMoonColorPackage() {
+  if (!moonColorPackage) moonColorPackage = new Promise((resolve, reject) => {
+    require('../../moon-color-assets/ready.js', resolve, reject);
+  }).catch(error => { moonColorPackage = null; throw error; });
+  return moonColorPackage;
 }
 
 export async function installEarthVisual(ctx) {

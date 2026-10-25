@@ -10,7 +10,7 @@
 node source-models/mech-encounter-candidates/preview/server.cjs
 ```
 
-然后打开 <http://127.0.0.1:18980/>。网页可切换并拖拽查看当前 18 款模型，滚轮或双指缩放；含动画的模型可以暂停，另有自动旋转和视角重置。页面直接读取 `source-models/` 下的本地源文件，不需要外网，也不会改动小程序。Mech Drone 使用本地贴图重建预览材质，以兼容其旧版 glTF 材质扩展；原始文件保持不变。预览器使用本地 Three.js 0.160.1，许可见 `preview/vendor/LICENSE`。
+然后打开 <http://127.0.0.1:18980/>。网页可切换并拖拽查看当前列表中的模型，含 EVA 机体和月面环形山摆件，滚轮或双指缩放；含动画的模型可以暂停，另有自动旋转和视角重置。页面直接读取 `source-models/` 下的本地源文件，不需要外网，也不会改动小程序。Mech Drone 使用本地贴图重建预览材质，以兼容其旧版 glTF 材质扩展；原始文件保持不变。预览器使用本地 Three.js 0.160.1，许可见 `preview/vendor/LICENSE`。
 
 ## 高精细人形机器人与机甲
 

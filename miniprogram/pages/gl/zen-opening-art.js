@@ -1,9 +1,12 @@
 import { ZenVisualClock } from './zen-visual-clock.js';
 import { ensureSceneArtPackage } from './scene-art-loader.js';
+import { GoWestOpening3D, goWestTitleFrame } from './go-west-opening.js';
 const clamp = x => Math.max(0, Math.min(1, x));
 const smooth = x => { const t=clamp(x); return t*t*(3-2*t); };
 const SONG_ART = {
   102:{title:'how-deep-title',artist:'bee-gees',artistWidth:.26,titleGrowth:.10},
+  104:{title:'go-west-title',artist:'pet-shop-boys',artistWidth:.43,titleGrowth:.16,
+    artistGrowth:.24,titleFade:3,artistDelay:1,titleDrift:0,artistDrop:9},
   103:{title:'out-of-darkness-title',artist:'aubrey-ashburn',artistWidth:.455,titleGrowth:.50,
     artistGrowth:.70,artistDelay:2,titleFade:3.4,titleStart:-.08,titleDrift:.18,artistDrift:-.05,artistDrop:18}
 };
@@ -24,26 +27,33 @@ export function openingArtFrame(time, firstLyricMs, titleGrowth=.10, options={})
     artistDrop:(options.artistDrop ?? 12)*artistProgress
   };
 }
+// Fourth track owns free-standing metal letters; other song art stays unchanged.
+export function goWestOpeningFrame(time,firstLyricMs){
+  return goWestTitleFrame(time,firstLyricMs);
+}
 // Camera-facing GPU planes preserve subpixel scales without relayout/setData.
 export class ZenOpeningArt {
-  constructor({THREE,scene,camera,getViewport}) {
-    Object.assign(this,{THREE,scene,camera,getViewport});
+  constructor({THREE,scene,camera,getViewport,globeGroup=null}) {
+    Object.assign(this,{THREE,scene,camera,getViewport,globeGroup});
+    this.earthAnchor=new THREE.Vector3();this.earthScale=new THREE.Vector3();
+    this.earthCenter=new THREE.Vector3();this.earthBody={center:this.earthCenter,radius:1};
     this.clock=new ZenVisualClock();this.group=new THREE.Group();this.group.name='ZEN_OPENING_ART';
     this.group.visible=false;scene.add(this.group);this.disposed=false;
-    this.layers={};this.textures=new Set();this.maps={};
+    this.layers={};this.textures=new Set();this.maps={};this.standardMaterials={};
     this.ready=ensureSceneArtPackage().then(()=>{
       if(this.disposed)return;
       this.loadTextures();
     }).catch(error=>console.warn('[Zen opening] Art package unavailable:',error?.message || error));
     for(const key of ['title','star','artist']) {
       const material=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,depthTest:false});
+      this.standardMaterials[key]=material;
       const plane=new THREE.Mesh(new THREE.PlaneGeometry(1,1),material);
       plane.renderOrder=9999;plane.frustumCulled=false;this.layers[key]=plane;this.group.add(plane);
     }
   }
   loadTextures() {
     const {THREE}=this;
-    for(const file of ['how-deep-title','bee-gees','out-of-darkness-title','aubrey-ashburn','blue-starlight']) {
+    for(const file of ['how-deep-title','bee-gees','out-of-darkness-title','aubrey-ashburn','blue-starlight','pet-shop-boys']) {
       const map=new THREE.TextureLoader().load('/scene-art-assets/zen-opening/'+file+'.png',texture=>{
         if(this.disposed){texture.dispose();return;}
         texture.minFilter=texture.magFilter=THREE.LinearFilter;
@@ -55,36 +65,60 @@ export class ZenOpeningArt {
     this.layers.star.material.map=this.maps['blue-starlight'];
     this.layers.star.material.needsUpdate=true;
   }
-  update(opening,enabled) {
+  update(opening,enabled,goWestChinese=[],chineseBottom=10) {
     if(this.disposed)return;
     if(!enabled || !opening || opening.stopped){this.group.visible=false;this.clock.reset();return;}
     const song=SONG_ART[opening.preset || 102];
     if(!song){this.group.visible=false;this.clock.reset();return;}
-    if(!this.maps[song.title] || !this.maps[song.artist]){this.group.visible=false;return;}
+    if(!this.maps[song.artist] || (opening.preset!==104 && !this.maps[song.title])){this.group.visible=false;return;}
+    const time=this.clock.read(opening.getAudio());
+    this.group.position.copy(this.camera.position);this.group.quaternion.copy(this.camera.quaternion);
+    if(opening.preset===104){
+      if(!this.billboard)this.billboard=new GoWestOpening3D({THREE:this.THREE,parent:this.group,maps:this.maps});
+      Object.values(this.layers).forEach(layer=>layer.visible=false);
+      if(this.globeGroup){
+        this.globeGroup.getWorldPosition(this.earthAnchor);this.globeGroup.getWorldScale(this.earthScale);
+        this.camera.worldToLocal(this.earthAnchor);
+        this.earthCenter.copy(this.earthAnchor);this.earthBody.radius=this.earthScale.x;
+        // Camera-facing upper limb, slightly outside the unit Earth surface.
+        this.earthAnchor.y+=.80*this.earthScale.x;this.earthAnchor.z+=.63*this.earthScale.x;
+      }
+      this.billboard.update(time,opening.firstLyricMs,opening.topPx,this.getViewport(),this.camera,
+        goWestChinese,chineseBottom,this.globeGroup?this.earthAnchor:null,this.globeGroup?this.earthBody:null,
+        opening.lyricTime ?? time);
+      this.group.visible=this.billboard.root.visible;return;
+    }
+    if(this.billboard)this.billboard.root.visible=false;
+    Object.values(this.layers).forEach(layer=>layer.visible=true);
     for(const key of ['title','artist']) {
+      this.layers[key].material=this.standardMaterials[key];
       const material=this.layers[key].material,map=this.maps[song[key]];
       if(material.map!==map){material.map=map;material.needsUpdate=true;}
     }
-    const time=this.clock.read(opening.getAudio()), f=openingArtFrame(time,opening.firstLyricMs,song.titleGrowth,song);
+    const f=openingArtFrame(time,opening.firstLyricMs,song.titleGrowth,song);
     this.group.visible=f.titleAlpha>0 || f.artistAlpha>0;
     if(!this.group.visible)return;
     this.group.position.copy(this.camera.position);this.group.quaternion.copy(this.camera.quaternion);
     const vp=this.getViewport(), depth=2;
     const screenH=2*depth*Math.tan(this.camera.fov*Math.PI/360), screenW=screenH*this.camera.aspect;
-    const place=(key,width,height,top,alpha,shift=0)=>{
+    const place=(key,width,height,top,alpha,shift=0,y=0,yaw=0,roll=0)=>{
       const plane=this.layers[key];
-      plane.position.set(screenW*shift,screenH*(.5-(top+height*.5)/vp.windowHeight),-depth);
+      plane.position.set(screenW*shift,screenH*(.5-(top+height*.5)/vp.windowHeight-y),-depth);
+      plane.rotation.set(0,yaw,roll);
       plane.scale.set(screenW*width,screenH*height/vp.windowHeight,1);plane.material.opacity=alpha;
+      if(plane.material.uniforms?.alpha)plane.material.uniforms.alpha.value=alpha;
     };
     const titleH=44*f.titleScale;
-    place('title',.84*f.titleScale,titleH,opening.topPx-(titleH-44)*.5,f.titleAlpha,f.titleShift);
-    place('star',.84,33,opening.topPx+40,f.starAlpha,f.titleShift);
-    place('artist',song.artistWidth*f.artistScale,20*f.artistScale,opening.topPx+65+f.artistDrop,f.artistAlpha,f.artistShift);
+    place('title',.84*f.titleScale,titleH,opening.topPx-(titleH-44)*.5,f.titleAlpha,f.titleShift,f.titleY,f.titleYaw,f.titleRoll);
+    place('star',.84,33,opening.topPx+40,f.starAlpha,f.titleShift,f.titleY,0,f.titleRoll);
+    place('artist',song.artistWidth*f.artistScale,20*f.artistScale,opening.topPx+65+f.artistDrop,f.artistAlpha,f.artistShift,f.artistY,f.artistYaw,f.artistRoll);
   }
   dispose() {
     if(this.disposed)return;this.disposed=true;
     this.group.parent?.remove(this.group);
-    Object.values(this.layers).forEach(p=>{p.geometry.dispose();p.material.dispose();});
+    Object.values(this.layers).forEach(p=>p.geometry.dispose());
+    Object.values(this.standardMaterials).forEach(m=>m.dispose());
+    this.billboard?.dispose();
     this.textures.forEach(t=>t.dispose());this.textures.clear();
   }
 }
@@ -124,6 +158,9 @@ export function darknessVisualFrame(time, timeline, cueTimes, resumeAt = 0) {
   // One soft passage of sunlight, followed by sustained brighter geography.
   const sunPeak=darknessEase(lightAge/4.5)*(1-darknessEase((lightAge-6)/6));
   const intro = darknessEase((time-1.2)/6);
+  // Keep the shared zen scene while loading and for the first two audio seconds.
+  const darken = darknessEase((time-2)/6);
+  const fromZen = value => 1+(value-1)*darken;
   const tail = darknessEase((time-(timeline.end+1))/10);
   let pulse = 0;
   for (const e of events) {
@@ -135,12 +172,12 @@ export function darknessVisualFrame(time, timeline, cueTimes, resumeAt = 0) {
   const drifters=[10,23,48,59,82,94].map((at,index)=>({index:100+index,
     progress:(time-at)/6.5,ambient:true})).filter(e=>e.progress>=0&&e.progress<=1);
   return {
-    time, surface:(.075*intro+.075*call+.25*release+.16*home+.52*light+.06*sunPeak)*settle,
-    dayGain:.32+.80*light, nightGain:.75+.25*home,
-    rim:(.016*intro+.045*call+.13*release+.12*home+.22*light+.10*pulse)*settle,
+    time, darken, surface:fromZen((.075*intro+.075*call+.25*release+.16*home+.52*light+.06*sunPeak)*settle),
+    dayGain:fromZen(.32+.80*light), nightGain:fromZen(.75+.25*home),
+    rim:(.016*intro+.045*call+.13*release+.12*home+.22*light+.10*pulse)*settle*darken,
     warmth:.08*home+.48*light, stars:(.12+.020*intro+.055*call+.11*release+.08*home+.10*light)*settle,
     arc:(.60*release+.24*pulse)*(1-tail*.75),
-    ambientArcs:intro*(.34+.08*call)*(1-.45*light),
+    ambientArcs:intro*(.34+.08*call)*(1-.45*light)*darken,
     sunPeak,sunTravel:darknessEase(lightAge/12),sunlight:(1.20*sunPeak+.10*light)*settle,
     rotationSpeed:2.1+.3*light,
     meteors:events.filter(e => ['call','wind','light'].includes(e.motif)).slice(0,3)
@@ -240,13 +277,15 @@ export class DarknessVisual {
   prepare(opening, enabled, paused, now) {
     if (!enabled) { this.reset();return null; }
     if (paused && this.frame) return {...this.frame,rotationSpeed:0};
-    // Keep a little starlight while audio/subtitles load; Earth remains dark.
+    // Loading does not start the darkening timer; only the audio clock does.
     if (!opening || opening.preset !== 103) {
+      if (this.opening) this.reset();
       this.frame=darknessVisualFrame(0,{events:[],end:Infinity},new Map());
       return this.frame;
     }
     if (opening.stopped) {this.reset();return null;}
     if (this.opening !== opening) {
+      this.reset();
       this.opening=opening;this.timeline=buildDarknessTimeline(opening.visualLines,opening.visualLeadInMs);
       this.clock.reset();
     }
@@ -265,6 +304,9 @@ export class DarknessVisual {
   }
   apply(material,cloudMesh) {
     const f=this.frame;if (!f) return;
+    // Leave the live zen uniforms, star phase and overlays untouched at entry.
+    if (f.darken===0 && !this.saved.size) return;
+    const fromZen = (value,target) => value+(target-value)*f.darken;
     const u=material?.uniforms;
     if (u?.uSongSurfaceGain) {
       u.uSongSurfaceGain.value=f.surface;u.uSongDayGain.value=f.dayGain;
@@ -283,23 +325,23 @@ export class DarknessVisual {
       if (!o.material) return;
       // Country/city text sprites would remain bright against the dark opening.
       if (o.renderOrder === 999 && typeof o.userData?.baseScaleX === 'number') {
-        this.save(o.material,'opacity');o.material.opacity=0;return;
+        this.save(o.material,'opacity');o.material.opacity=this.saved.get(o.material).opacity*(1-f.darken);return;
       }
       const ro=o.material.userData?.ro;
       if (![20,28,40].includes(ro)) return;
       this.save(o.material,'opacity');this.save(o.material,'transparent');
       o.material.transparent=true;
-      o.material.opacity=this.saved.get(o.material).opacity*f.surface*(ro===28?.16:.55);
+      o.material.opacity=this.saved.get(o.material).opacity*f.surface*fromZen(1,ro===28?.16:.55);
     });
     const su=this.starCtl?.mesh?.material?.uniforms;
-    for (const name of ['uOpacity','uBreathSpeed','uBreathStrength','time']) if (su?.[name]) this.save(su[name],'value');
+    for (const name of ['uOpacity','uBreathStrength']) if (su?.[name]) this.save(su[name],'value');
     if (su?.uOpacity) {
       this.save(this.starCtl.mesh,'visible');
-      su.uOpacity.value=f.stars;this.starCtl.mesh.visible=f.stars>0;
+      su.uOpacity.value=fromZen(this.saved.get(su.uOpacity).value,f.stars);
+      this.starCtl.mesh.visible=su.uOpacity.value>0;
     }
-    if (su?.uBreathSpeed) su.uBreathSpeed.value=.22;
-    if (su?.uBreathStrength) su.uBreathStrength.value=.18;
-    if (su?.time) su.time.value=f.time;
+    // Preserve the native clock and breath rate, so dimming cannot jump star phase.
+    if (su?.uBreathStrength) su.uBreathStrength.value=fromZen(this.saved.get(su.uBreathStrength).value,.18);
     this.material=material;
     this.globeGroup.getWorldPosition(this.center);
     this.group.position.copy(this.center);this.group.quaternion.copy(this.camera.quaternion);

@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict'),path=require('path');
+const root=path.resolve(__dirname,'..'),dir=root+'/miniprogram/pages/gl/';
+const T=require(root+'/miniprogram/node_modules/threejs-miniprogram').createScopedThreejs({width:390,height:720,createImage:()=>({})});
+const load=(name,extra={})=>{let s=fs.readFileSync(dir+name+'.js','utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'').replace(/export \{ registerGLTFLoader \};/,'');const box={console,TextDecoder,TextEncoder,setTimeout,clearTimeout,ArrayBuffer,Uint8Array,...extra,module:{exports:{}}};vm.runInNewContext(s+'\nmodule.exports={'+({'vendor/gltf-loader':'registerGLTFLoader','moon-terrain-characters':'createPilotFactory','moon-terrain-grounding':'createGroundingFactory','moon-terrain-camera':'createTerrainCameraFactory','moon-terrain-detail':'installTerrainDetail','moon-terrain-config':'TERRAIN_CONFIG','moon-terrain-scene':'buildTerrainScene'}[name])+'};',box);return box.module.exports;};
+const scope={...load('vendor/gltf-loader'),...load('moon-terrain-config')};Object.assign(scope,load('moon-terrain-characters'));Object.assign(scope,load('moon-terrain-grounding',scope),load('moon-terrain-camera'),load('moon-terrain-detail'));
+const wx={getFileSystemManager:()=>({readFile({filePath,success,fail}){fs.readFile(filePath,(e,b)=>e?fail(e):success({data:b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)}));}})};
+const original=T.TextureLoader;T.TextureLoader=class{setCrossOrigin(){return this;}setPath(){return this;}load(url,done){const t=new T.Texture({width:2048,height:2048});queueMicrotask(()=>done(t));return t;}};
+const renderer={capabilities:{getMaxAnisotropy:()=>8},shadowMap:{needsUpdate:false}};
+const build=load('moon-terrain-scene',{...scope,wx,fixTexture(){},createStarfield:()=>{const g=new T.BufferGeometry();g.addAttribute('position',new T.Float32BufferAttribute([0,0,0],3));g.addAttribute('size',new T.Float32BufferAttribute([1],1));return new T.Points(g,new T.ShaderMaterial({uniforms:{uOpacity:{value:1},time:{value:0}}}));},applyNormalStarUniforms(){}}).buildTerrainScene;
+(async()=>{let scene;const view=await build({THREE:T,renderer,paths:{'terrain.glb':root+'/source-models/moon-terrain-trial/preview/assets/terrain.glb'},isPCClient:false,isCurrent:()=>true,ownedTextures:new Set(),onScene:s=>{scene=s;},yieldFrame:()=>Promise.resolve()});
+assert.equal(view.refinedCrew.userData.seats.length,3);assert.equal(view.contacts.length,11);for(const c of view.contacts)assert.ok(c.afterGap>=-.000001);
+for(const t of [193,216,233,241,255,271.7266666667]){view.pose(t);assert.ok(Number.isFinite(view.camera.position.x));}
+const shader={uniforms:{},vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader};view.terrain.children.find(x=>x.isMesh).material.onBeforeCompile(shader);assert.ok(shader.fragmentShader.includes('safePatchUV'));assert.ok(shader.fragmentShader.includes('contactCenters[11]'));assert.ok(!shader.fragmentShader.includes('vMapUv'));assert.ok(!shader.fragmentShader.includes('directionalLightShadows'));
+console.log('PASS r108 terrain construction, authored three pilots, 11 contacts, full camera path and shader patch anchors');
+
+})().catch(e=>{console.error(e);process.exitCode=1;});

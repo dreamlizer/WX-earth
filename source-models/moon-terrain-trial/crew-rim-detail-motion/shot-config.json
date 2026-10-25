@@ -1,0 +1,101 @@
+{
+  "start": 193,
+  "end": 271.7266666666667,
+  "width": 540,
+  "height": 960,
+  "moonRadius": 650,
+  "blendEdge": 12,
+  "keyframes": [
+    193,
+    205,
+    216,
+    228,
+    233,
+    237,
+    241,
+    245,
+    250,
+    255,
+    263,
+    271.7266666666667
+  ],
+  "phases": [
+    [
+      193,
+      "第二圈 · 远景接近"
+    ],
+    [
+      205,
+      "下降 · 展开大环形山"
+    ],
+    [
+      216,
+      "完整大坑 · 人物尚不可辨"
+    ],
+    [
+      228,
+      "沿坑缘外侧靠近高脊"
+    ],
+    [
+      234,
+      "先看三人 · 望向画外"
+    ],
+    [
+      239,
+      "顺着他们的视线转向"
+    ],
+    [
+      241,
+      "远地球入画 · 三人同望"
+    ],
+    [
+      255,
+      "慢慢前行 · 一直到曲终"
+    ]
+  ],
+  "audio": {
+    "file": "../descent-to-earth-193/assets/moon-tail-193.wav",
+    "sourceStart": 193,
+    "sha1": "b6907476df6166a35745ebfeebab0d20f550fe4f",
+    "clock": "sourceStart + HTMLAudioElement.currentTime (exact decoded PCM tail)",
+    "sourceFile": "../descent-to-earth-193/assets/Zen-moon.mp3"
+  },
+  "crewLayout": {
+    "metersPerUnit": 25,
+    "scaleMeaning": "Art-directed compromise: human silhouettes enlarged about 2.5x over normal; terrain at a designed local scale",
+    "representativeCraterCrossSectionUnits": 55,
+    "representativeCraterCrossSectionMeters": 1375,
+    "center": [
+      61.25,
+      7.5709698566618755,
+      -3.85
+    ],
+    "seatOffset": 0.0004,
+    "seats": [
+      {
+        "kind": "rei",
+        "x": 61.18,
+        "z": -3.85,
+        "scale": 0.05,
+        "groundY": 7.57171285700305,
+        "seatedHeightMeters": 2.8875
+      },
+      {
+        "kind": "shinji",
+        "x": 61.25,
+        "z": -3.85,
+        "scale": 0.05125,
+        "groundY": 7.5709698566618755,
+        "seatedHeightMeters": 2.9596875
+      },
+      {
+        "kind": "asuka",
+        "x": 61.32,
+        "z": -3.85,
+        "scale": 0.05,
+        "groundY": 7.556280758966295,
+        "seatedHeightMeters": 2.8875
+      }
+    ]
+  }
+}

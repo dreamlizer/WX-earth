@@ -1,0 +1,410 @@
+[
+  {
+    "sourceStart": 36.02,
+    "srt": 2,
+    "call": 35.3,
+    "reply": null,
+    "sungEnd": 38.866,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 39.47,
+    "srt": 3,
+    "call": 39.333,
+    "reply": null,
+    "sungEnd": 42.866,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 43.45,
+    "srt": 4,
+    "call": 43.166,
+    "reply": null,
+    "sungEnd": 47.333,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 47.65,
+    "srt": 5,
+    "call": 47.333,
+    "reply": null,
+    "sungEnd": 51.3,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 51.44,
+    "srt": 6,
+    "call": 51.3,
+    "reply": null,
+    "sungEnd": 54.933,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 55.42,
+    "srt": 7,
+    "call": 55.133,
+    "reply": null,
+    "sungEnd": 58.733,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 59.37,
+    "srt": 8,
+    "call": 59.1,
+    "reply": null,
+    "sungEnd": 62.766,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 63.39,
+    "srt": 9,
+    "call": 63.166,
+    "reply": null,
+    "sungEnd": 66.6,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 67.27,
+    "srt": 10,
+    "call": 66.733,
+    "reply": null,
+    "sungEnd": 70.666,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 70.87,
+    "srt": 11,
+    "call": 70.666,
+    "reply": null,
+    "sungEnd": 74.6,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 74.75,
+    "srt": 12,
+    "call": 74.7,
+    "reply": null,
+    "sungEnd": 78.7,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 78.79,
+    "srt": 13,
+    "call": 78.733,
+    "reply": null,
+    "sungEnd": 82.533,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 87.49,
+    "srt": 14,
+    "call": 86.76599999999999,
+    "reply": 89.3,
+    "sungEnd": 95.666,
+    "method": "srt-split; tail Go West retains source estimate 93.29"
+  },
+  {
+    "sourceStart": 99.59,
+    "srt": 16,
+    "call": 98.9,
+    "reply": null,
+    "sungEnd": 102.7,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 103.12,
+    "srt": 17,
+    "call": 102.733,
+    "reply": null,
+    "sungEnd": 106.7,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 107.23,
+    "srt": 18,
+    "call": 106.8,
+    "reply": null,
+    "sungEnd": 110.533,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 111.04,
+    "srt": 19,
+    "call": 110.76599999999999,
+    "reply": null,
+    "sungEnd": 114.366,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 115.25,
+    "srt": 20,
+    "call": 114.7,
+    "reply": null,
+    "sungEnd": 118.333,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 119.11,
+    "srt": 21,
+    "call": 118.6,
+    "reply": null,
+    "sungEnd": 122.2,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 123.01,
+    "srt": 22,
+    "call": 122.566,
+    "reply": null,
+    "sungEnd": 126.266,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 126.8,
+    "srt": 23,
+    "call": 126.666,
+    "reply": null,
+    "sungEnd": 131.2,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 130.72,
+    "srt": 24,
+    "call": 130.72,
+    "reply": 131.6,
+    "sungEnd": 134.133,
+    "method": "previous SRT row merges lead as farewell; retain source lead, response anchor provisional"
+  },
+  {
+    "sourceStart": 134.42,
+    "srt": 25,
+    "call": 134.2,
+    "reply": null,
+    "sungEnd": 138.166,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 138.35,
+    "srt": 26,
+    "call": 138.166,
+    "reply": null,
+    "sungEnd": 142.066,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 142.3,
+    "srt": 27,
+    "call": 142.133,
+    "reply": null,
+    "sungEnd": 145.9,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 146.47,
+    "srt": 28,
+    "call": 146.2,
+    "reply": null,
+    "sungEnd": 149.86599999999999,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 150.33,
+    "srt": 29,
+    "call": 150.1,
+    "reply": null,
+    "sungEnd": 153.966,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 154.28,
+    "srt": 30,
+    "call": 154.0,
+    "reply": null,
+    "sungEnd": 158.066,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 158.18,
+    "srt": 31,
+    "call": 158.066,
+    "reply": null,
+    "sungEnd": 161.7,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 163.55,
+    "srt": 32,
+    "call": 163.333,
+    "reply": null,
+    "sungEnd": 166.1,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 166.52,
+    "srt": 33,
+    "call": 166.1,
+    "reply": null,
+    "sungEnd": 169.86599999999999,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 171.5,
+    "srt": 34,
+    "call": 171.2,
+    "reply": null,
+    "sungEnd": 174.966,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 174.31,
+    "srt": 35,
+    "call": 174.31,
+    "reply": null,
+    "sungEnd": 177.766,
+    "method": "first We will find merges into previous row; retain source start"
+  },
+  {
+    "sourceStart": 178.83,
+    "srt": 36,
+    "call": 178.333,
+    "reply": null,
+    "sungEnd": 182.733,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 182.5,
+    "srt": 37,
+    "call": 182.5,
+    "reply": null,
+    "sungEnd": 185.86599999999999,
+    "method": "To live crosses SRT rows 36-37; retain source lead estimate"
+  },
+  {
+    "sourceStart": 186.33,
+    "srt": 38,
+    "call": 186.3,
+    "reply": 187.566,
+    "sungEnd": 190.14,
+    "method": "srt-split; phrase end estimated within merged row 39"
+  },
+  {
+    "sourceStart": 190.14,
+    "srt": 39,
+    "call": 190.14,
+    "reply": 191.3,
+    "sungEnd": 193.68,
+    "method": "merged rows 39-40; source lead and estimated response/end"
+  },
+  {
+    "sourceStart": 194.2,
+    "srt": 40,
+    "call": 193.68,
+    "reply": 194.69,
+    "sungEnd": 197.69,
+    "method": "merged rows 40-41; word-span estimate"
+  },
+  {
+    "sourceStart": 197.99,
+    "srt": 41,
+    "call": 197.69,
+    "reply": 198.68,
+    "sungEnd": 202.133,
+    "method": "merged row 41; word-span estimate"
+  },
+  {
+    "sourceStart": 202.01,
+    "srt": 42,
+    "call": 202.133,
+    "reply": null,
+    "sungEnd": 205.5,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 205.92,
+    "srt": 43,
+    "call": 206.0,
+    "reply": null,
+    "sungEnd": 209.6,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 210.14,
+    "srt": 44,
+    "call": 210.133,
+    "reply": null,
+    "sungEnd": 211.6,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 211.78,
+    "srt": 45,
+    "call": 211.6,
+    "reply": 213.5,
+    "sungEnd": 215.4,
+    "method": "srt-split"
+  },
+  {
+    "sourceStart": 215.26,
+    "srt": 47,
+    "call": 215.666,
+    "reply": null,
+    "sungEnd": 219.53300000000002,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 219.38,
+    "srt": 48,
+    "call": 219.666,
+    "reply": null,
+    "sungEnd": 223.53300000000002,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 223.23,
+    "srt": 49,
+    "call": 223.566,
+    "reply": null,
+    "sungEnd": 227.466,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 228.74,
+    "srt": 50,
+    "call": 229.36599999999999,
+    "reply": null,
+    "sungEnd": 231.2,
+    "method": "merged-cadence-estimate"
+  },
+  {
+    "sourceStart": 231.4,
+    "srt": 51,
+    "call": 231.266,
+    "reply": 233.366,
+    "sungEnd": 235.166,
+    "method": "srt-split"
+  },
+  {
+    "sourceStart": 235.03,
+    "srt": 53,
+    "call": 235.2,
+    "reply": 237.4,
+    "sungEnd": 239.2,
+    "method": "srt-split; response end estimated before trailing Go West in row 54"
+  },
+  {
+    "sourceStart": 239.2,
+    "srt": 54,
+    "call": 239.2,
+    "reply": 241.3,
+    "sungEnd": 243.21,
+    "method": "destiny omitted by ASR; retain original words and source lead, cadence-estimated response"
+  },
+  {
+    "sourceStart": 244.07,
+    "srt": 56,
+    "call": 243.466,
+    "reply": 245.166,
+    "sungEnd": 247.1,
+    "method": "srt-split"
+  }
+]
